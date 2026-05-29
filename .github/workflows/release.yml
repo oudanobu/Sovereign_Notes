@@ -146,6 +146,7 @@ jobs:
           
           # 7. 引导 Gradle 执行老旧版 Android 终端在 100% 离线下的真机编译
           cd platforms/android
+          chmod +x ./gradlew
           ./gradlew assembleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 -Pandroid.compileOptions.sourceCompatibility=1.8 -Pandroid.compileOptions.targetCompatibility=1.8 --no-daemon
           cd ../..
           
