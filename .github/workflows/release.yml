@@ -144,36 +144,22 @@ jobs:
           # 6. 配置底层 Android 工程使其强制兼容 Java 8
           echo "android { compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 } }" > platforms/android/app/build-extras.gradle
           
-          # 7. 全局动态搜索 gradlew 文件所在的真正目录并切换进去
-          echo "正在全盘检索 gradlew 的真实驻留路径..."
-          GRADLE_PATH=$(find . -name "gradlew" -exec dirname {} \; | head -n 1)
+          # 7. 让 Cordova 自己处理 Gradle 的下载与初始化并进行编译
+          export JAVA_HOME=$JAVA_HOME_17_X64
+          cordova build android --release --verbose
           
-          if [ -z "$GRADLE_PATH" ]; then
-            echo "❌ 严重错误：在整个工作区内均未找到 gradlew 文件！请检查 Cordova 是否成功生成了 Android 工程。"
-            exit 1
-          fi
-          
-          echo "🎯 成功定位！目标目录为: $GRADLE_PATH"
-          cd "$GRADLE_PATH"
-          
-          # 8. 赋予可执行权限
-          chmod +x ./gradlew
-          
-          # 9. 调取现代 JDK 17 兼容环境强行降级编译
-          ./gradlew assembleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 -Pandroid.compileOptions.sourceCompatibility=1.8 -Pandroid.compileOptions.targetCompatibility=1.8 --no-daemon
-          
-          # 10. 动态寻找编译出来的 APK 文件并复制到预设的成果物收集区
-          echo "正在搜寻编译完毕的 APK 安装包..."
-          APK_SRC=$(find . -name "*-release-unsigned.apk" -o -name "*-release.apk" | head -n 1)
+          # 8. 编译完成后，动态寻找编译出来的 APK 文件并复制到预设的成果物收集区
+          echo "正在搜寻 Cordova 编译完毕的 APK 安装包..."
+          APK_SRC=$(find platforms/android/app/build/outputs/apk/release/ -name "*-release-unsigned.apk" -o -name "*-release.apk" | head -n 1)
           
           if [ -z "$APK_SRC" ]; then
-            echo "❌ 严重错误：未找到生成的 APK 文件！"
+            echo "❌ 严重错误：Cordova 未能成功产出 APK 文件！"
             exit 1
           fi
           
           # 强制拷贝到最初在根目录创建的发布产物区
           cp "$APK_SRC" "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk"
-          echo "✨ APK 成功归档至发布目录！"
+          echo "✨ APK 成功由 Cordova 引擎编译并归档！"
 
       # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts (保持极佳的目录结构) ====================
       - name: Upload Workspace Compiled Artifacts
