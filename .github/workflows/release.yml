@@ -192,20 +192,29 @@ jobs:
           # 7. 让 Cordova 自己处理 Gradle 的下载与初始化并进行编译
           export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-7.4.2-all.zip"
           export JAVA_HOME=$JAVA_HOME_11_X64
-          cordova build android --release --verbose
           
-          # 8. 编译完成后，动态寻找编译出来的 APK 文件并复制到预设的成果物收集区
-          echo "正在搜寻 Cordova 编译完毕的 APK 安装包..."
-          APK_SRC=$(find platforms/android/app/build/outputs/apk/release/ -name "*-release-unsigned.apk" -o -name "*-release.apk" | head -n 1)
+          # 🌟【核心参数修复】在命令末尾强行追加 -- --apk，剥夺 Cordova 生成 AAB 的权利，逼其产出 APK！
+          cordova build android --release --verbose -- --apk
           
-          if [ -z "$APK_SRC" ]; then
-            echo "❌ 严重错误：Cordova 未能成功产出 APK 文件！"
+          # 8. 【终极双轨搜寻】APK 和 AAB 统一防线，不管它产出哪个，我们都能精准拦截！
+          echo "正在搜寻 Cordova 编译完毕的成果物..."
+          
+          # 同时在 apk 目录 and bundle 目录发起全网搜寻
+          FINAL_SRC=$(find platforms/android/app/build/outputs/ -name "*-release-unsigned.apk" -o -name "*-release.apk" -o -name "*-release.aab" | head -n 1)
+          
+          if [ -z "$FINAL_SRC" ]; then
+            echo "❌ 严重错误：经过全盘扫描，未发现任何产出物（APK/AAB）！"
             exit 1
           fi
           
-          # 强制拷贝到最初在根目录创建的发布产物区
-          cp "$APK_SRC" "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk"
-          echo "✨ APK 成功由 Cordova 引擎编译并归档！"
+          echo "🎯 成功捕获到核心资产，路径为: $FINAL_SRC"
+          
+          # 提取后缀名进行智能判定归档
+          EXTENSION="${FINAL_SRC##*.}"
+          mkdir -p "$GITHUB_WORKSPACE/dist-release-artifacts/3-android"
+          
+          cp "$FINAL_SRC" "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.${EXTENSION}"
+          echo "✨ 资产已成功由 Cordova 引擎编译、智能识别并完美归档！后缀名为: ${EXTENSION}"
 
       # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts (保持极佳的目录结构) ====================
       - name: Upload Workspace Compiled Artifacts
