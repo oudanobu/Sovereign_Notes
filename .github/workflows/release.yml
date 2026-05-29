@@ -127,6 +127,14 @@ jobs:
         with:
           gradle-version: '7.4.2' # 降级 Gradle 内核，给老项目提供 XmlParser 支持
 
+      # 🌟【核心修复】在编译前，强制补齐 GitHub 宿主机缺失的 30.0.3 打包工具链
+      - name: Install Exact Android Build Tools 30.0.3
+        run: |
+          echo "正在为系统补齐 Android Build Tools 30.0.3..."
+          # 使用系统内置的 sdkmanager 自动接受协议并下载指定版本
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
+        shell: bash
+
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
         run: |
           # 1. 部署 Cordova 跨平台原生打包编译引擎
