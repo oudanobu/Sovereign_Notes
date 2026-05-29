@@ -55,8 +55,8 @@ export default function App() {
   const [activeNoteType, setActiveNoteType] = useState<'markdown' | 'mindmap'>('markdown');
   const [mindmapData, setMindmapData] = useState<MindMapData | undefined>(undefined);
 
-  // Modals state
-  const [showSyncDialog, setShowSyncDialog] = useState(false);
+  // Navigation state
+  const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
 
@@ -659,17 +659,37 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               </button>
             </div>
 
-            <button
-              {...bindTouchTap(() => setShowSyncDialog(true))}
-              className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between gap-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
-              title={t('syncCenter')}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <Sliders className="w-4 h-4 text-slate-800" />
-                <span>{t('syncCenter')}</span>
-              </div>
-              <span className="text-[9px] bg-slate-900 text-slate-200 py-0.5 px-2 rounded-full uppercase tracking-wider font-extrabold">{lang === 'zh' ? '开启同步' : 'Online'}</span>
-            </button>
+            {/* Return to notes button if in settings, otherwise Sync Settings button */}
+            {mainView === 'settings' ? (
+              <button
+                {...bindTouchTap(() => {
+                  setMainView('notes');
+                  setActivePanel('list');
+                })}
+                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between gap-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
+                title={lang === 'zh' ? '返回笔记' : 'Back to Notes'}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <FileText className="w-4 h-4 text-slate-800" />
+                  <span>{lang === 'zh' ? '返回笔记' : 'Back to Notes'}</span>
+                </div>
+              </button>
+            ) : (
+              <button
+                {...bindTouchTap(() => {
+                  setMainView('settings');
+                  setActivePanel('workspace');
+                })}
+                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between gap-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
+                title={t('syncCenter')}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <Sliders className="w-4 h-4 text-slate-800" />
+                  <span>{t('syncCenter')}</span>
+                </div>
+                <span className="text-[9px] bg-slate-900 text-slate-200 py-0.5 px-2 rounded-full uppercase tracking-wider font-extrabold">{lang === 'zh' ? '开启同步' : 'Online'}</span>
+              </button>
+            )}
           </div>
 
           {/* Categories and 6 Level Tags */}
@@ -740,10 +760,13 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
         </div>
       </aside>
 
-      {/* 2. CENTER LIST BLOCK */}
-      <section className={`w-full lg:w-80 border-r border-gray-200 bg-slate-50/50 flex flex-col h-full flex-shrink-0 ${
-        activePanel === 'list' ? 'flex' : 'hidden lg:flex'
-      }`}>
+      {/* Conditionally render List + Workspace OR Settings Workspace */}
+      {mainView === 'notes' ? (
+        <>
+          {/* 2. CENTER LIST BLOCK */}
+          <section className={`w-full lg:w-80 border-r border-gray-200 bg-slate-50/50 flex flex-col h-full flex-shrink-0 ${
+            activePanel === 'list' ? 'flex' : 'hidden lg:flex'
+          }`}>
         <div className="px-4 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
           <div className="flex items-center gap-2">
             <button
@@ -1144,6 +1167,20 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           </div>
         )}
       </main>
+        </>
+      ) : (
+        <div className={`flex-1 w-full bg-slate-100 flex flex-col h-full ${activePanel === 'workspace' || activePanel === 'list' ? 'flex' : 'hidden lg:flex'}`}>
+          <SyncDialog
+            notes={notes}
+            tags={tags}
+            folders={folders}
+            onSyncCompleted={loadDatabaseState}
+            lang={lang}
+            t={t}
+            isInline={true}
+          />
+        </div>
+      )}
 
       </div> {/* Close Columns Container Wrapper */}
 
@@ -1162,9 +1199,12 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
         {/* Note List Trigger */}
         <button
-          {...bindTouchTap(() => setActivePanel('list'))}
+          {...bindTouchTap(() => {
+            setMainView('notes');
+            setActivePanel('list');
+          })}
           className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-0.5 rounded-xl transition cursor-pointer min-h-[44px] ${
-            activePanel === 'list' ? 'text-slate-950 font-black bg-slate-50' : 'text-slate-400 hover:text-slate-700 font-bold'
+            activePanel === 'list' && mainView === 'notes' ? 'text-slate-950 font-black bg-slate-50' : 'text-slate-400 hover:text-slate-700 font-bold'
           }`}
         >
           <FileText className="w-4.5 h-4.5" />
@@ -1174,6 +1214,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
         {/* Note Workspace Trigger */}
         <button
           {...bindTouchTap(() => {
+            setMainView('notes');
             if (activeSelectedNoteInstance) {
               setActivePanel('workspace');
             } else {
@@ -1186,7 +1227,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             }
           })}
           className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-0.5 rounded-xl transition cursor-pointer min-h-[44px] ${
-            activePanel === 'workspace' ? 'text-slate-950 font-black bg-slate-50' : 'text-slate-400 hover:text-slate-705 font-bold'
+            activePanel === 'workspace' && mainView === 'notes' ? 'text-slate-950 font-black bg-slate-50' : 'text-slate-400 hover:text-slate-705 font-bold'
           }`}
         >
           <Edit3 className="w-4.5 h-4.5" />
@@ -1195,18 +1236,6 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       </div>
 
       {/* 4. MODALS CONTAINER */}
-      {showSyncDialog && (
-        <SyncDialog
-          notes={notes}
-          tags={tags}
-          folders={folders}
-          onSyncCompleted={loadDatabaseState}
-          onClose={() => setShowSyncDialog(false)}
-          lang={lang}
-          t={t}
-        />
-      )}
-
       {showChangelog && (
         <ChangelogDialog
           onClose={() => setShowChangelog(false)}

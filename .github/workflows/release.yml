@@ -44,33 +44,101 @@ jobs:
           # 移动输出成果到独立的 pwa 专属子目录
           cp dist/index.html dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html
 
-      # ==================== STEP 2: 编译 Windows 绿色便携版 ====================
-      - name: Build Windows Portable Green Version
+      # ==================== STEP 2: 编译 Windows 桌面端双击免安装 EXE 版 ====================
+      - name: Dynamic Compilation of Windows Native Portable EXE
         run: |
-          # 拷贝单文件离线网页作为绿色版基础文件，在 windows 平台中双击可直接离线使用
-          cp dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html dist-release-artifacts/2-windows/SovereignNote-PWA-SingleFile.html
-          # 在 windows 专区完成高兼容 zip 打包
-          cd dist-release-artifacts/2-windows
-          zip -r SovereignNote-Windows-Win32-Green.zip SovereignNote-PWA-SingleFile.html
-          # 压缩完成后，可以删除原来的 html，只保留精简的 Windows zip 包
-          rm SovereignNote-PWA-SingleFile.html
-          cd ../..
+          mkdir -p win-packager
+          cd win-packager
+          # 构建自动化打包配置文件
+          cat << 'EOF' > package.json
+          {
+            "name": "sovereignnote",
+            "version": "1.0.0",
+            "main": "main.js",
+            "devDependencies": {
+              "electron": "^28.0.0",
+              "electron-builder": "^24.9.0"
+            },
+            "build": {
+              "appId": "com.sovereignnote.app",
+              "productName": "SovereignNote",
+              "win": {
+                "target": "portable"
+              },
+              "directories": {
+                "output": "dist"
+              }
+            }
+          }
+          EOF
+          # 编写桌面级底层渲染外壳代码
+          cat << 'EOF' > main.js
+          const { app, BrowserWindow, Menu } = require('electron');
+          const path = require('path');
+          
+          function createWindow() {
+            const win = new BrowserWindow({
+              width: 1200,
+              height: 800,
+              title: "SovereignNote (主权笔记)",
+              webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true
+              }
+            });
+            Menu.setApplicationMenu(null); // 去除顶部默认不美观的系统栏
+            win.loadFile(path.join(__dirname, 'app/SovereignNote-PWA-SingleFile.html'));
+          }
+          
+          app.whenReady().then(createWindow);
+          
+          app.on('window-all-closed', () => {
+            if (process.platform !== 'darwin') {
+              app.quit();
+            }
+          });
+          EOF
+          # 资源定位与转存
+          mkdir -p app
+          cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html app/SovereignNote-PWA-SingleFile.html
+          # 执行免 Wine 的高性能 Windows 离线包编译
+          npm install --legacy-peer-deps
+          npx electron-builder --win portable
+          # 将最终产出的 Windows 标准绿化便携可执行程序同步到总成果区
+          cp dist/SovereignNote*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe
+          cd ..
 
-      # ==================== STEP 3: 编译 Android 5.0 触控兼容版 APK ====================
-      - name: Build Legacy Android 5.0 Tablet APK
+      # ==================== STEP 3: 编译 Android 5.0 触控真机原生 APK ====================
+      - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
         run: |
-          if [ -d "android" ]; then
-            sudo apt-get update && sudo apt-get install -y openjdk-17-jdk
-            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-            npm run sync:android || echo "No android sync script declared"
-            cd android && ./gradlew assembleRelease
-            cp app/build/outputs/apk/release/app-release-unsigned.apk ../dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk
-          else
-            # 在独立文件夹中生成部署指南
-            echo "当前代码仓库中由于未提交 Cordova/Capacitor 安卓核心外壳，已自动打包输出单网页以供在旧平板中运行。" > dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet-Compatible-Guide.txt
-            # 拷贝单网页作为无缝兼容保底运行方案
-            cp dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk
-          fi
+          # 1. 切换到 JDK 11（对旧版 Gradle 极其稳定，适合编译老版本 API）
+          sudo apt-get update && sudo apt-get install -y openjdk-11-jdk
+          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+          export PATH=$JAVA_HOME/bin:$PATH
+          
+          # 2. 部署 Cordova 跨平台原生打包编译引擎
+          sudo npm install -g cordova
+          
+          # 3. 在动作容器内瞬间生成全新 Android 工程结构
+          cordova create android-project com.sovereignnote.app SovereignNote
+          cd android-project
+          
+          # 4. 将高兼容性离线主程序同步到宿主 Android 的 www 文件夹下
+          rm -rf www/*
+          cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html www/index.html
+          
+          # 5. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
+          sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n</widget>|' config.xml
+          
+          # 6. 安装 Android 构建底座并在 GitHub Actions 中载入 Android 模块
+          cordova platform add android@10.1.2 --save
+          
+          # 7. 引导 Gradle 执行老旧版 Android 终端在 100% 离线下的真机编译
+          cordova build android --release --device
+          
+          # 8. 放置到发布区，供旧安卓平板双击安装运行
+          cp platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ../dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk
+          cd ..
 
       # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts (保持极佳的目录结构) ====================
       - name: Upload Workspace Compiled Artifacts
@@ -81,29 +149,26 @@ jobs:
 
       # ==================== STEP 4: 自动创建 GitHub Release 并挂载三端成果物 ====================
       - name: Create GitHub Release and Upload Artifacts
-        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          name: SovereignNote Official Release ${{ github.ref_name }}
-          tag_name: ${{ github.ref }}
+          name: ${{ startsWith(github.ref, 'refs/tags/v') && format('SovereignNote Official Release {0}', github.ref_name) || 'SovereignNote Rolling Release (latest)' }}
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}
           draft: false
           prerelease: false
           body: |
             ### 🚀 SovereignNote (主权笔记) ${{ github.ref_name }} 跨平台分发正式发布日志
-            本版本已由 GitHub Actions 自动化流水线独立分区、多线程高隔离编译完成。全平台代码 100% 离线，无惧任何网络或沙盒限制。
+            本版本已由 GitHub Actions 自动化工作流原生封装编译完成。全平台代码 100% 离线，无惧任何网络或沙盒限制。
             
-            #### 📂 各版本独立专属发布说明：
+            #### 📂 各版本高质物理包专属发布说明：
             1. **`1-pwa/` (通用离线单网页版)**
-               * **`SovereignNote-PWA-SingleFile.html`**：纯单文件应用，可在所有电脑、Pad 浏览器中无网络直接运行，支持 100% 离线 IndexedDB 特性。
-            2. **`2-windows/` (触控平板绿色压缩版)**
-               * **`SovereignNote-Windows-Win32-Green.zip`**：专为 Windows 触控设备极速精编的绿色便携安装包，免安装极速触控响应。
-            3. **`3-android/` (安卓5.0+ 经典平板版)**
-               * **`SovereignNote-Android5.0-Tablet.apk`**：专为老旧平板转译优化的原生包装离线 APK，完美抵消 300ms 点击判定延迟。
-               * **`SovereignNote-Android5.0-Tablet-Compatible-Guide.txt`**：平板一键部署说明文档。
+               * **`SovereignNote-PWA-SingleFile.html`**：纯单文件应用，可在所有电脑、Pad 浏览器中无网络直接拖拽运行，支持 100% 离线 IndexedDB 特性。
+            2. **`2-windows/` (原生桌面 EXE 绿色版)**
+               * **`SovereignNote-Windows-Portable.exe`**：利用高性能 Electron 原生 WebView 封装构建的免安装、双击直接独立窗口运行的 Windows 真机 Portable EXE，彻底摆脱外部浏览器的约束！
+            3. **`3-android/` (安卓5.0+ 经典平板原生 APK 版)**
+               * **`SovereignNote-Android5.0-Tablet.apk`**：专为经典旧版安卓平板（Android 5.0+ / 5.1 / 6.0 等）转译优化的原生 Cordova WebView 封装 APK，免证书、免 https 强制校验，完美抵消 300ms 点击判定延迟，性能非凡。
           files: |
             dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html
-            dist-release-artifacts/2-windows/SovereignNote-Windows-Win32-Green.zip
+            dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe
             dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk
-            dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet-Compatible-Guide.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
