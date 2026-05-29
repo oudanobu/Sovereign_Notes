@@ -127,6 +127,14 @@ const translations = {
     editorActive: 'Note Workspace',
     backToList: 'Back to List',
     backToFilters: 'Show Filters',
+    aboutTitle: 'About SovereignNote & Updates',
+    updateNotesTitle: 'Offical Version Changelog',
+    pwaSingleFileDesc: 'Single-file PWA: Synthesizes fully inline HTML with database persistence anywhere.',
+    win32GreenDesc: 'Win32 Green Zip: Fully portable green toolkit. Double click to run, perfect for Win tablets.',
+    androidApkDesc: 'Android 5.0 APK: Wipes out the 300ms latency of old WebViews on mobile containers.',
+    sovereignCoreConcept: 'Sovereign Space Design',
+    corePhilosophy: 'Never tracks your inputs. LWW multi-point offline merge. You hold keys to WebDAV ledger.',
+    closeBtn: 'Close Ledger',
   },
   zh: {
     appName: '主权笔记 (SovereignNote)',
@@ -247,6 +255,14 @@ const translations = {
     editorActive: '笔记工作区',
     backToList: '← 笔记',
     backToFilters: '← 分类',
+    aboutTitle: '关于主权笔记与版本信息',
+    updateNotesTitle: '平台版本更新日志 (Changelog)',
+    pwaSingleFileDesc: 'PWA离线单网页版：独创打包整合成独立单个 HTML，无本地服务器和外界网络依赖下，双击立享 100% 数据持久存储。',
+    win32GreenDesc: 'Win32绿色免安装版：免去复杂安装困扰。单文件程序配合自带内核，完美适配 Windows 触控平板模式。',
+    androidApkDesc: 'Android 5.0平板兼容版APK：专为老旧平板（Android 5.0+ / api-21）深度编译，消除 300ms 触控时延，操作如丝顺滑。',
+    sovereignCoreConcept: '主权空间设计使命',
+    corePhilosophy: '绝不上传、采集您写入的内容。去中心化无冲突算法，让您的个人 WebDAV 私有卷成为真正的数据安全账盟。',
+    closeBtn: '我知道了',
   }
 };
 

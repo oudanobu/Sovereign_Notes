@@ -25,6 +25,7 @@ import { MindMapEditor } from './components/MindMapEditor';
 import { CalendarPanel } from './components/CalendarPanel';
 import { FolderTagHierarchy } from './components/FolderTagHierarchy';
 import { SyncDialog } from './components/SyncDialog';
+import { ChangelogDialog } from './components/ChangelogDialog';
 import { useLanguage } from './utils/i18n';
 import { bindTouchTap } from './utils/touchUtils';
 
@@ -57,6 +58,7 @@ export default function App() {
   // Modals state
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
 
   // Initialize and check database seeding
   useEffect(() => {
@@ -728,7 +730,13 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('localSovereignDB')}</span>
           </div>
-          <span className="text-[9.5px] font-mono font-bold text-slate-505">{t('versionString')}</span>
+          <button
+            {...bindTouchTap(() => setShowChangelog(true))}
+            className="text-[9.5px] font-mono font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer active:scale-95 transition-all outline-none py-1 px-2 hover:bg-indigo-55/60 rounded-lg min-h-[32px] flex items-center justify-center font-extrabold"
+            title={t('aboutTitle')}
+          >
+            {t('versionString')}
+          </button>
         </div>
       </aside>
 
@@ -1194,6 +1202,14 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           folders={folders}
           onSyncCompleted={loadDatabaseState}
           onClose={() => setShowSyncDialog(false)}
+          lang={lang}
+          t={t}
+        />
+      )}
+
+      {showChangelog && (
+        <ChangelogDialog
+          onClose={() => setShowChangelog(false)}
           lang={lang}
           t={t}
         />

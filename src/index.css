@@ -1,15 +1,17 @@
 @import "tailwindcss";
 
-/* Ensure we block overscroll rubber banding */
+/* Ensure we block overscroll rubber banding and handle layout overflow safely */
 html,
 body,
 #root {
   overscroll-behavior: none;
   overscroll-behavior-y: none;
   overscroll-behavior-x: none;
+  overflow: hidden;
+  height: 100%;
 }
 
-/* 优化所有按钮和可互动的触控体验 */
+/* 优化所有按钮和可互动的触控体验，严格遵循胖手指原则（Fat Finger Principle） */
 button,
 a,
 select,
@@ -17,12 +19,24 @@ input,
 textarea,
 .tag-item,
 .calendar-cell,
-.note-list-item {
-  touch-action: manipulation; /* 禁用浏览器的双击缩放，消除Win/安卓平板的点击延迟 */
-  user-select: none;         /* 防止手指长按标签或按钮时，错误触发系统文字选中蓝块 */
+.note-list-item,
+.folder-row {
+  touch-action: manipulation; /* 禁用系统双击缩放，彻底消除 Win/Android 平板 300ms 点击延迟 */
+  user-select: none;         /* 防止平板和手机上手指长按误触发系统文本选择蓝块 */
+  min-height: 44px;           /* 确保物理触控高度不小于 44px 黄金尺寸 */
+  min-width: 44px;
 }
 
-/* 确保可点击元素触控区域（Padding / 尺寸）大于 44px */
+/* 针对多级子孙标签树的展开折叠图标，人为扩大其物理触控点击热区 */
+.tag-toggle-icon {
+  padding: 12px !important; 
+  margin: -12px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 确保可点击元素触控区域最小尺寸 */
 .touch-target-min {
   min-height: 44px;
   min-width: 44px;
