@@ -24,11 +24,11 @@ jobs:
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: 18 # 锁定的稳定 LTS 编译版本
+          node-version: 20 # 开启稳定的 LTS Node 20 编译链，完美适应 Vite 6 与 Tailwind 4
           cache: 'npm'
 
       - name: Install Project Dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps # 强制绕过旧版对 React 19 / Vite 6 的严苛 Peer Deps 限制，确保 100% 畅通无阻安装
 
       # 初始化三端独立分发母版件目录结构
       - name: Initialize Structured Artifact Directories
