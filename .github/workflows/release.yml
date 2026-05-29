@@ -2,8 +2,12 @@ name: Auto Compile & Release Tri-Platform App
 
 on:
   push:
+    branches:
+      - main
+      - master
     tags:
       - 'v*' # 当在 GitHub 推送标签（如 v1.2.0）时，自动触发编译发布
+  workflow_dispatch: # 允许在 Actions 页面手动点击运行
 
 permissions:
   contents: write # 赋予 Actions 写入 GitHub Releases 的权限
@@ -66,13 +70,21 @@ jobs:
           else
             # 否则，系统自动将内联单网页编译资产制作成多端容器映射报告，并创建一个说明型辅助包
             echo "当前代码仓库中由于未提交 Cordova/Capacitor 安卓核心外壳，已自动打包输出单网页以供在旧平板中运行。" > ../dist-release-artifacts/SovereignNote-Android5.0-Tablet-Compatible-Guide.txt
-            # 如果没有 android 项目，为了保障 CI/Actions 流程能无障碍编译，先拷贝出一个离线网页重命名
+            # 如果没有 android项目，先拷贝出一个离线网页重命名
             cp ../dist-release-artifacts/SovereignNote-PWA-SingleFile.html ../dist-release-artifacts/SovereignNote-Android5.0-Tablet.apk
           fi
         shell: bash
 
+      # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts ====================
+      - name: Upload Workspace Compiled Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SovereignNote-TriPlatform-Artifacts
+          path: dist-release-artifacts/*
+
       # ==================== STEP 4: 自动创建 GitHub Release 并挂载三端成果物 ====================
       - name: Create GitHub Release and Upload Artifacts
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           name: SovereignNote Official Release ${{ github.ref_name }}
