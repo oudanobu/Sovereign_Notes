@@ -1,0 +1,6 @@
+{
+  "name": "SovereignNote",
+  "description": "SovereignNote is a privacy-first, local-first markdown and rich-text note-taking app designed for absolute data sovereignty. Built with a zero-cloud philosophy, it operates entirely offline, storing data securely in your local device's IndexedDB.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

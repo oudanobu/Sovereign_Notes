@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/* Ensure we block overscroll rubber banding */
+html,
+body,
+#root {
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+}
+
+/* 优化所有按钮和可互动的触控体验 */
+button,
+a,
+select,
+input,
+textarea,
+.tag-item,
+.calendar-cell,
+.note-list-item {
+  touch-action: manipulation; /* 禁用浏览器的双击缩放，消除Win/安卓平板的点击延迟 */
+  user-select: none;         /* 防止手指长按标签或按钮时，错误触发系统文字选中蓝块 */
+}
+
+/* 确保可点击元素触控区域（Padding / 尺寸）大于 44px */
+.touch-target-min {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* 思维导图画布画布区锁定，完全接管 Windows 触控笔和手指，允许自定义拖拽和缩放 */
+.mindmap-canvas {
+  touch-action: none !important;
+  user-select: none !important;
+}
+
+/* Prevent unwanted selection inside content view, let user select text *only* where explicitly needed */
+.selectable-content {
+  user-select: text !important;
+}
