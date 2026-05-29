@@ -128,62 +128,43 @@ jobs:
           gradle-version: '7.4.2' # 降级 Gradle 内核，给老项目提供 XmlParser 支持
 
       # 🌟【核心修复】临时借用系统预装的 Java 17 来喂给 sdkmanager，避开 ClassVersion 冲突
-      # 🌟【地表最强兜底】第一路线失败时，自动强行下载官方历史兼容包进行解压组装
-      - name: Install Exact Android Build Tools 30.0.3 (With Auto-Fallback)
+      # 🌟【终极暴力通关】彻底抛弃傲娇的 sdkmanager，用纯 Linux 原生网络流强行灌注依赖包
+      - name: Hard-Inject Android Build Tools 30.0.3
         run: |
           echo "=========================================================="
-          echo " 🚀 [第一路线] 尝试使用系统自带的 sdkmanager 进行标准安装..."
+          echo " 🛠️  启动硬核主权架构：绕过所有 Java 工具链，直接注入二进制资产..."
           echo "=========================================================="
           
-          # 1. 临时指定高版本 Java 试图唤醒 sdkmanager
-          JAVA_17_PATH=$(ls -d /opt/hostedtoolcache/Java_Zulu_jdk/17.* 2>/dev/null | head -n 1)/x64/bin/java
-          if [ ! -f "$JAVA_17_PATH" ]; then JAVA_17_PATH="/usr/bin/java"; fi
-          export JAVACMD="$JAVA_17_PATH"
+          # 1. 明确声明并创建老旧 Android 编译器所死死咬住的底层物理路径
+          TARGET_DIR="$ANDROID_HOME/build-tools/30.0.3"
+          mkdir -p "$TARGET_DIR"
           
-          # 使用 Heredoc 规避管道破碎，并加入 || true 允许它失败而不导致整个工作流死掉
-          (
-            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses << EOF
-          y
-          y
-          y
-          y
-          EOF
-            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
-          ) && echo "✨ [第一路线] 官方工具链安装成功！" || {
-            
+          # 2. 绕过一切协议检查，直接通过 curl 奔向谷歌官方的 Linux 历史依赖存储库，把压缩包拽下来
+          echo "正在从谷歌官方远程仓库强拉 30.0.3 编译器压缩包..."
+          curl -sSLo build-tools.zip https://dl.google.com/android/repository/build-tools_r30.0.3-linux.zip
+          
+          # 3. 暴力解压到临时目录
+          echo "解压并组装目标文件结构..."
+          unzip -q build-tools.zip -d "$TARGET_DIR-tmp"
+          
+          # 4. 抹平压缩包内自带的相对层级（android-11），直接将全部核心编译器资产甩进 30.0.3 目录下
+          mv "$TARGET_DIR-tmp"/android-11/* "$TARGET_DIR/"
+          
+          # 5. 战场大扫除
+          rm -rf build-tools.zip "$TARGET_DIR-tmp"
+          
+          # 6. 【致命关键】赋予解压出来的底层构建核心（如编译器的命脉 aapt, dx）Linux 系统可执行权限
+          chmod +x "$TARGET_DIR/aapt" "$TARGET_DIR/dx" "$TARGET_DIR/zipalign" 2>/dev/null || true
+          
+          # 7. 闭环防御性校验：确保直到文件安全落盘，才允许流水线放行
+          if [ -f "$TARGET_DIR/aapt" ]; then
             echo "=========================================================="
-            echo " ⚠️  [第一路线崩溃] 触发极客兜底方案：人肉拦截官方历史兼容包..."
+            echo " 🎉 [神迹降临] 古董级 build-tools 30.0.3 资产已强行肉身就位！"
             echo "=========================================================="
-            
-            # 2. 精准创建老旧 Android 编译器所期望的底层硬件资产目录
-            TARGET_DIR="$ANDROID_HOME/build-tools/30.0.3"
-            mkdir -p "$TARGET_DIR"
-            
-            # 3. 直接去谷歌官方的 Android 开发者依赖存储库中，强行拉取 30.0.3 的原生 Linux 兼容包
-            echo "正在从谷歌远程仓库强拉古董级 build-tools 压缩包..."
-            curl -sSLo build-tools.zip https://dl.google.com/android/repository/build-tools_r30.0.3-linux.zip
-            
-            # 4. 暴力解压，并利用 --strip-components=1 抹平解压出来的多余包裹层，直接注入目标目录
-            echo "正在将资产注入本地 SDK 目录: $TARGET_DIR"
-            unzip -q build-tools.zip -d "$TARGET_DIR-tmp"
-            mv "$TARGET_DIR-tmp"/android-11/* "$TARGET_DIR/"
-            
-            # 5. 清理战场，赋予解压出来的底层二进制文件（如 aapt, dx 等）可执行权限
-            rm -rf build-tools.zip "$TARGET_DIR-tmp"
-            chmod +x "$TARGET_DIR/aapt" "$TARGET_DIR/dx" 2>/dev/null || true
-            
-            # 6. 最终验证文件是否存在，确保直到成功才放行
-            if [ -f "$TARGET_DIR/aapt" ]; then
-              echo "✨ [兜底成功] 30.0.3 兼容包已人工强行就位！"
-            else
-              echo "❌ [严重错误] 兜底方案也未能成功写入兼容包，中断编译！"
-              exit 1
-            fi
-          }
-          
-          echo "=========================================================="
-          echo " 🎉 Android 30.0.3 编译基础环境已全盘锁定，准备开始打包！"
-          echo "=========================================================="
+          else
+            echo "❌ [毁灭性错误] 文件写入验证失败，请检查网络或磁盘空间！"
+            exit 1
+          fi
         shell: bash
 
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
