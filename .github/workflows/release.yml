@@ -128,31 +128,62 @@ jobs:
           gradle-version: '7.4.2' # 降级 Gradle 内核，给老项目提供 XmlParser 支持
 
       # 🌟【核心修复】临时借用系统预装的 Java 17 来喂给 sdkmanager，避开 ClassVersion 冲突
-      - name: Install Exact Android Build Tools 30.0.3
+      # 🌟【地表最强兜底】第一路线失败时，自动强行下载官方历史兼容包进行解压组装
+      - name: Install Exact Android Build Tools 30.0.3 (With Auto-Fallback)
         run: |
-          echo "正在为系统补齐 Android Build Tools 30.0.3..."
+          echo "=========================================================="
+          echo " 🚀 [第一路线] 尝试使用系统自带的 sdkmanager 进行标准安装..."
+          echo "=========================================================="
           
-          # 动态寻找 GitHub 虚拟机中预装的 Java 17 或 21 的路径
-          # GitHub 默认在 /opt/hostedtoolcache/Java_Zulu_jdk/ 下留有高版本备份
+          # 1. 临时指定高版本 Java 试图唤醒 sdkmanager
           JAVA_17_PATH=$(ls -d /opt/hostedtoolcache/Java_Zulu_jdk/17.* 2>/dev/null | head -n 1)/x64/bin/java
-          
-          # 如果找不到预装的，直接用系统默认的高版本系统软链接
-          if [ ! -f "$JAVA_17_PATH" ]; then
-            JAVA_17_PATH="/usr/bin/java"
-          fi
-          
-          echo "🎯 临时调用的 Java 运行路径为: $JAVA_17_PATH"
-          
-          # 【精髓所在】通过 JAVACMD 环境变量，强行让 sdkmanager 独立运行在现代 Java 环境下
-          # 这样既能让工具顺利运行，又绝对不会污染后续 Cordova 所需的全局 Java 11 环境
+          if [ ! -f "$JAVA_17_PATH" ]; then JAVA_17_PATH="/usr/bin/java"; fi
           export JAVACMD="$JAVA_17_PATH"
           
-          # 先用官方自带的免交互命令，自动全量同意所有 Android 协议
-          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          # 使用 Heredoc 规避管道破碎，并加入 || true 允许它失败而不导致整个工作流死掉
+          (
+            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses << EOF
+          y
+          y
+          y
+          y
+          EOF
+            $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
+          ) && echo "✨ [第一路线] 官方工具链安装成功！" || {
+            
+            echo "=========================================================="
+            echo " ⚠️  [第一路线崩溃] 触发极客兜底方案：人肉拦截官方历史兼容包..."
+            echo "=========================================================="
+            
+            # 2. 精准创建老旧 Android 编译器所期望的底层硬件资产目录
+            TARGET_DIR="$ANDROID_HOME/build-tools/30.0.3"
+            mkdir -p "$TARGET_DIR"
+            
+            # 3. 直接去谷歌官方的 Android 开发者依赖存储库中，强行拉取 30.0.3 的原生 Linux 兼容包
+            echo "正在从谷歌远程仓库强拉古董级 build-tools 压缩包..."
+            curl -sSLo build-tools.zip https://dl.google.com/android/repository/build-tools_r30.0.3-linux.zip
+            
+            # 4. 暴力解压，并利用 --strip-components=1 抹平解压出来的多余包裹层，直接注入目标目录
+            echo "正在将资产注入本地 SDK 目录: $TARGET_DIR"
+            unzip -q build-tools.zip -d "$TARGET_DIR-tmp"
+            mv "$TARGET_DIR-tmp"/android-11/* "$TARGET_DIR/"
+            
+            # 5. 清理战场，赋予解压出来的底层二进制文件（如 aapt, dx 等）可执行权限
+            rm -rf build-tools.zip "$TARGET_DIR-tmp"
+            chmod +x "$TARGET_DIR/aapt" "$TARGET_DIR/dx" 2>/dev/null || true
+            
+            # 6. 最终验证文件是否存在，确保直到成功才放行
+            if [ -f "$TARGET_DIR/aapt" ]; then
+              echo "✨ [兜底成功] 30.0.3 兼容包已人工强行就位！"
+            else
+              echo "❌ [严重错误] 兜底方案也未能成功写入兼容包，中断编译！"
+              exit 1
+            fi
+          }
           
-          # 协议签完后，直接安全下载，不再附加任何多余管道
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
-          echo "✨ Build Tools 30.0.3 补齐成功！"
+          echo "=========================================================="
+          echo " 🎉 Android 30.0.3 编译基础环境已全盘锁定，准备开始打包！"
+          echo "=========================================================="
         shell: bash
 
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
