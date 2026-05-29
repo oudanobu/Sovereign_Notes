@@ -116,11 +116,16 @@ jobs:
           cd ..
 
       # ==================== STEP 3: 编译 Android 5.0 触控真机原生 APK ====================
-      - name: Set up Java JDK 17 for Modern Gradle Run
+      - name: Setup Java JDK 11 (For Android 5.0 Legacy Target)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17' # 核心修改：使用 JDK 17 满足 Gradle 9.x 的硬性运行要求
+          java-version: '11' # 配合 config.xml 里的降级规范，锁死 JDK 11
+
+      - name: Setup Gradle 7.4.2 Override
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '7.4.2' # 降级 Gradle 内核，给老项目提供 XmlParser 支持
 
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
         run: |
@@ -136,7 +141,7 @@ jobs:
           cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html www/index.html
           
           # 4. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
-          sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n</widget>|' config.xml
+          sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n    <preference name="android-minSdkVersion" value="21" />\n    <preference name="android-targetSdkVersion" value="30" />\n    <preference name="GradleVersion" value="7.4.2" />\n</widget>|' config.xml
           
           # 5. 安装 Android 构建底座并在 GitHub Actions 中载入 Android 模块
           cordova platform add android@10.1.2 --save
@@ -145,7 +150,8 @@ jobs:
           echo "android { compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 } }" > platforms/android/app/build-extras.gradle
           
           # 7. 让 Cordova 自己处理 Gradle 的下载与初始化并进行编译
-          export JAVA_HOME=$JAVA_HOME_17_X64
+          export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-7.4.2-all.zip"
+          export JAVA_HOME=$JAVA_HOME_11_X64
           cordova build android --release --verbose
           
           # 8. 编译完成后，动态寻找编译出来的 APK 文件并复制到预设的成果物收集区
