@@ -147,7 +147,11 @@ jobs:
           # 这样既能让工具顺利运行，又绝对不会污染后续 Cordova 所需的全局 Java 11 环境
           export JAVACMD="$JAVA_17_PATH"
           
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
+          # 先用官方自带的免交互命令，自动全量同意所有 Android 协议
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          
+          # 协议签完后，直接安全下载，不再附加任何多余管道
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;30.0.3"
           echo "✨ Build Tools 30.0.3 补齐成功！"
         shell: bash
 
