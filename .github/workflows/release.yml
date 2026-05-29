@@ -116,32 +116,38 @@ jobs:
           cd ..
 
       # ==================== STEP 3: 编译 Android 5.0 触控真机原生 APK ====================
+      - name: Set up Java JDK 17 for Modern Gradle Run
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17' # 核心修改：使用 JDK 17 满足 Gradle 9.x 的硬性运行要求
+
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
         run: |
-          # 1. 切换到 JDK 11（对旧版 Gradle 极其稳定，适合编译老版本 API）
-          sudo apt-get update && sudo apt-get install -y openjdk-11-jdk
-          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-          export PATH=$JAVA_HOME/bin:$PATH
-          
-          # 2. 部署 Cordova 跨平台原生打包编译引擎
+          # 1. 部署 Cordova 跨平台原生打包编译引擎
           sudo npm install -g cordova
           
-          # 3. 在动作容器内瞬间生成全新 Android 工程结构
+          # 2. 在动作容器内瞬间生成全新 Android 工程结构
           cordova create android-project com.sovereignnote.app SovereignNote
           cd android-project
           
-          # 4. 将高兼容性离线主程序同步到宿主 Android 的 www 文件夹下
+          # 3. 将高兼容性离线主程序同步到宿主 Android 的 www 文件夹下
           rm -rf www/*
           cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html www/index.html
           
-          # 5. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
+          # 4. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
           sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n</widget>|' config.xml
           
-          # 6. 安装 Android 构建底座并在 GitHub Actions 中载入 Android 模块
+          # 5. 安装 Android 构建底座并在 GitHub Actions 中载入 Android 模块
           cordova platform add android@10.1.2 --save
           
+          # 6. 配置底层 Android 工程使其强制兼容 Java 8
+          echo "android { compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 } }" > platforms/android/app/build-extras.gradle
+          
           # 7. 引导 Gradle 执行老旧版 Android 终端在 100% 离线下的真机编译
-          cordova build android --release --device
+          cd platforms/android
+          ./gradlew assembleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 -Pandroid.compileOptions.sourceCompatibility=1.8 -Pandroid.compileOptions.targetCompatibility=1.8 --no-daemon
+          cd ../..
           
           # 8. 放置到发布区，供旧安卓平板双击安装运行
           cp platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ../dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk
