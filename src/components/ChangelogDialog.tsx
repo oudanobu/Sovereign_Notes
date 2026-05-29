@@ -23,7 +23,7 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-900 tracking-tight">{t('aboutTitle')}</h3>
-              <p className="text-[10.5px] font-mono text-indigo-600 font-extrabold tracking-wider uppercase mt-0.5">SovereignNote v1.2.0 (Stable)</p>
+              <p className="text-[10.5px] font-mono text-indigo-600 font-extrabold tracking-wider uppercase mt-0.5">SovereignNote v1.3.0 (Stable)</p>
             </div>
           </div>
           <button
@@ -44,6 +44,29 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
               <p className="text-xs font-black text-indigo-950 uppercase tracking-wider">{t('sovereignCoreConcept')}</p>
               <p className="text-[11.5px] leading-relaxed text-indigo-900/85 font-medium">{t('corePhilosophy')}</p>
             </div>
+          </div>
+
+          {/* v1.3.0 Feature Update */}
+          <div className="space-y-3.5">
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5 pt-1">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-amber-600">{lang === 'zh' ? 'v1.3.0 全新架构特性' : 'v1.3.0 Architecture Updates'}</span>
+            </h4>
+            
+            <ul className="space-y-2.5 text-xs text-slate-700 font-bold list-none pl-1">
+              <li className="flex items-center gap-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                <span>{lang === 'zh' ? '独立设置与同步中心：将悬浮同步对话框重构为独立的左侧应用面板，彻底消除覆盖遮挡，多开编辑畅通无阻' : 'Standalone Settings Workspace: Converted the floating modal into a persistent side-panel layout, eliminating overlay blocking and enabling true side-by-side sync-editing'}</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                <span>{lang === 'zh' ? 'Windows 真正原生免安装构建：自动化引入 Electron-Builder Pipeline，将输出正统便携式 .exe 封装' : 'Native Windows Portable EXE: Introduced Electron-Builder pipeline in GitHub Actions to output a proper standalone .exe portable application'}</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                <span>{lang === 'zh' ? '全屏视野优化：更具桌面极客味道的全高面板设计与精细阴影' : 'Fullscreen vision optimization: Full-height side panels and refined shadow geometry for a true desktop hacker feel'}</span>
+              </li>
+            </ul>
           </div>
 
           {/* Tri-platform compile outputs */}
@@ -71,7 +94,7 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-900">SovereignNote-Windows-Win32-Green.zip</span>
+                  <span className="text-xs font-black text-slate-900">SovereignNote-Windows-Portable.exe</span>
                   <p className="text-[11px] leading-relaxed text-gray-500 font-medium">{t('win32GreenDesc')}</p>
                 </div>
               </div>
