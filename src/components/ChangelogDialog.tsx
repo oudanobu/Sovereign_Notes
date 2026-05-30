@@ -23,7 +23,7 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-900 tracking-tight">{t('aboutTitle')}</h3>
-              <p className="text-[10.5px] font-mono text-indigo-600 font-extrabold tracking-wider uppercase mt-0.5">SovereignNote v1.3.0 (Stable)</p>
+              <p className="text-[10.5px] font-mono text-indigo-600 font-extrabold tracking-wider uppercase mt-0.5">SovereignNote v1.4.0 (Stable)</p>
             </div>
           </div>
           <button
@@ -45,6 +45,35 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
               <p className="text-[11.5px] leading-relaxed text-indigo-900/85 font-medium">{t('corePhilosophy')}</p>
             </div>
           </div>
+
+          {/* v1.4.0 Feature Update */}
+          <div className="space-y-3.5">
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center space-x-1.5 pt-1">
+              <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+              <span className="text-purple-600">{lang === 'zh' ? 'v1.4.0 核心能力跃迁' : 'v1.4.0 Core Enhancements'}</span>
+            </h4>
+            
+            <ul className="space-y-2.5 text-xs text-slate-700 font-bold list-none pl-1">
+              <li className="flex items-center space-x-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>{lang === 'zh' ? '无限触控手写白板 (Sovereign Whiteboard Studio)：新增自由绘图、色彩标注与全画裁切导出，并自动将其完全离线且所见即所得地融合进笔记宇宙' : 'Infinite Canvas Whiteboard: Introducing the Sovereign Whiteboard Studio, with direct pen-drawing, vector primitives, and local exports, dynamically folded into offline notes.'}</span>
+              </li>
+              <li className="flex items-center space-x-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>{lang === 'zh' ? '所见即所得富文本引擎 (WYSIWYG Markdown)：无缝双向跨界编译，实现格式栏一键视觉操作，后台静默保护级降维至 Markdown' : 'WYSIWYG Markdown Editor: Added explicit format bar bridging visual edits seamlessly backwards to pure markdown.'}</span>
+              </li>
+              <li className="flex items-center space-x-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>{lang === 'zh' ? '适老与护眼超大字号无极模式：全局字号和基础组件缩放 104%，突破设备底层锁定，关切数字阅读平权' : 'Large Font Accessibility Mode: One-click absolute font-scaling multiplier overriding OS UI restrictions for legibility.'}</span>
+              </li>
+              <li className="flex items-center space-x-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>{lang === 'zh' ? 'Android / PWA 后院储存壁垒穿透：面对 Android 内置 Web 包下载锁死 “找不到备份文件” 的现状，通过 Clipboard 脱壳直链，和新一代 HTML5 ShowSaveFilePicker，将选择权 100% 抢回手中' : 'Android OS File-System Export Overhaul: Implemented native clipboard snapshot fallback bypassing silent-kill Download restrictions in Cordova Android sandboxes.'}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="w-full h-px bg-gray-150 my-2"></div>
 
           {/* v1.3.0 Feature Update */}
           <div className="space-y-3.5">
