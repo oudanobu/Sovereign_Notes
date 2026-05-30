@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Note, Tag, Folder } from './types';
+import { Note, Tag, Folder, CalendarEvent } from './types';
 
 const DB_NAME = 'LocalSovereignNotesDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -46,6 +46,13 @@ export function openDB(): Promise<IDBDatabase> {
       // 4. Sync Meta Store
       if (!db.objectStoreNames.contains('sync_meta')) {
         db.createObjectStore('sync_meta', { keyPath: 'key' });
+      }
+
+      // 5. Events Store
+      if (!db.objectStoreNames.contains('events')) {
+        const eventStore = db.createObjectStore('events', { keyPath: 'id' });
+        eventStore.createIndex('date', 'date', { unique: false });
+        eventStore.createIndex('isDeleted', 'isDeleted', { unique: false });
       }
     };
   });
@@ -251,3 +258,29 @@ export async function importDatabaseSnapshot(jsonString: string): Promise<{
     parsed.folders.forEach((f: Folder) => foldersStore.put(f));
   });
 }
+
+// Event Operations
+export async function getEvents(): Promise<CalendarEvent[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    if (!db.objectStoreNames.contains('events')) {
+      resolve([]);
+      return;
+    }
+    const store = getStore(db, 'events');
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+export async function saveEvent(event: CalendarEvent): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const store = getStore(db, 'events', 'readwrite');
+    const request = store.put(event);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+

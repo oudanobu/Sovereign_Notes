@@ -75,3 +75,14 @@ export interface WebDavConfig {
   password?: string;
   folderPath: string;
 }
+
+export interface CalendarEvent {
+  id: string;
+  date: string; // "YYYY-MM-DD" style e.g. "2026-05-30"
+  title: string;
+  description?: string;
+  color?: string; // e.g. "rose", "indigo", "emerald", "amber"
+  createdAt: number;
+  isDeleted: boolean;
+}
+

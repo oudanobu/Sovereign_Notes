@@ -208,7 +208,7 @@ jobs:
           # 启动编译，此时有了 build.json 的保护，它会乖乖吐出正宗的 APK 文件
           cordova build android --release --verbose
           
-          # 8. 成果物全盘捕获与精准归档
+          # 8. 成果物全盘捕获与数字签名归档
           echo "正在搜寻 Cordova 编译完毕的成果物..."
           
           # 终极多重搜寻防线（通杀所有可能的命名与路径变体）
@@ -220,10 +220,35 @@ jobs:
           fi
           
           echo "🎯 成功捕获到老设备核心资产: $FINAL_SRC"
-          mkdir -p "$GITHUB_WORKSPACE/dist-release-artifacts/3-android"
           
-          cp "$FINAL_SRC" "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk"
-          echo "✨ 恭喜！纯正版离线 APK 安装包已完美归档！"
+          echo "🚀 正在生成兼容 Android 全版本（Android 5.0 - 13+）的 2048 位安全自签名 Keystore 密钥..."
+          keytool -genkeypair -v \
+            -keystore sovereign.keystore \
+            -alias sovereign-alias \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 20000 \
+            -storepass "SovereignPass123" \
+            -keypass "SovereignPass123" \
+            -dname "CN=SovereignNote, OU=SovereignApp, O=SovereignOrg, L=SovereignCity, S=SovereignState, C=CN"
+
+          echo "🚀 正在对 APK 进行 4 字节对齐优化（zipalign）以符合 Android 系统高性能加载标准..."
+          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$FINAL_SRC" aligned.apk
+
+          echo "🚀 正在执行高级签名安全校验（apksigner，同时搭载并覆盖 V1 + V2 + V3 签名方案），确保无缝适配低于及高于安卓 6.0/13 的所有环境..."
+          $ANDROID_HOME/build-tools/30.0.3/apksigner sign \
+            --ks sovereign.keystore \
+            --ks-key-alias sovereign-alias \
+            --ks-pass pass:"SovereignPass123" \
+            --key-pass pass:"SovereignPass123" \
+            --out signed.apk aligned.apk
+
+          echo "🚀 运行数字签名合法性完整自检，极速扫描校验链条状态..."
+          $ANDROID_HOME/build-tools/30.0.3/apksigner verify -v signed.apk
+
+          mkdir -p "$GITHUB_WORKSPACE/dist-release-artifacts/3-android"
+          cp signed.apk "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk"
+          echo "✨ 恭喜！具备全平台高维对齐、安全自签名（V1/V2/V3方案全开）的 APK 物理资产包已成功归档，保证能在安卓 6.0 和 13 设备上瞬时完成无阻碍安装！"
 
       # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts (保持极佳的目录结构) ====================
       - name: Upload Workspace Compiled Artifacts

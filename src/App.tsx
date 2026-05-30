@@ -18,8 +18,8 @@ import {
   Sparkles,
   Sliders
 } from 'lucide-react';
-import { Note, Tag, Folder, MindMapData } from './types';
-import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders } from './db';
+import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
+import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent } from './db';
 import { MarkdownRenderer } from './components/MarkdownRenderer';
 import { MindMapEditor } from './components/MindMapEditor';
 import { CalendarPanel } from './components/CalendarPanel';
@@ -38,6 +38,7 @@ export default function App() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   // Filtering states
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -178,9 +179,12 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
         loadedFolders = seedFolders;
       }
 
+      const loadedEvents = await getEvents();
+
       setNotes(loadedNotes);
       setTags(loadedTags);
       setFolders(loadedFolders);
+      setEvents(loadedEvents);
 
       // Select first note on launch
       const nonDeletedNotes = loadedNotes.filter(n => !n.isDeleted);
@@ -197,9 +201,30 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     const loadedNotes = await getNotes();
     const loadedTags = await getTags();
     const loadedFolders = await getFolders();
+    const loadedEvents = await getEvents();
     setNotes(loadedNotes);
     setTags(loadedTags);
     setFolders(loadedFolders);
+    setEvents(loadedEvents);
+  };
+
+  const handleSaveEvent = async (event: CalendarEvent) => {
+    await saveEvent(event);
+    setEvents(prev => {
+      const idx = prev.findIndex(e => e.id === event.id);
+      if (idx > -1) {
+        return prev.map(e => e.id === event.id ? event : e);
+      }
+      return [...prev, event];
+    });
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    const current = events.find(e => e.id === eventId);
+    if (!current) return;
+    const deletedEvent = { ...current, isDeleted: true };
+    await saveEvent(deletedEvent);
+    setEvents(prev => prev.map(e => e.id === eventId ? deletedEvent : e));
   };
 
   const handleSelectNote = (note: Note) => {
@@ -732,6 +757,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           {/* Interactive Date calendar */}
           <CalendarPanel
             notes={notes}
+            events={events}
             selectedDate={selectedDate}
             onSelectDate={(date) => {
               setSelectedFolderId(null);
@@ -739,6 +765,8 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               setSelectedDate(date);
               setActivePanel('list');
             }}
+            onSaveEvent={handleSaveEvent}
+            onDeleteEvent={handleDeleteEvent}
             lang={lang}
             t={t}
           />
