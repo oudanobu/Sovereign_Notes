@@ -183,6 +183,10 @@ jobs:
           # 4. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
           sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n    <preference name="android-minSdkVersion" value="21" />\n    <preference name="android-targetSdkVersion" value="30" />\n    <preference name="GradleVersion" value="7.4.2" />\n</widget>|' config.xml
           
+          # 🌟【降维打击补丁】在根目录下直接给 Cordova 塞入一个最高优先级的构建配置文件
+          # 明确规定：不管是 release 还是 debug，必须采用传统纯正的 apk 打包格式，坚决封杀现代 AAB 的干扰！
+          echo '{"android": {"release": {"packageType": "apk"}}}' > build.json
+          
           # 5. 安装 Android 构建底座并在 GitHub Actions 中载入 Android 模块
           cordova platform add android@10.1.2 --save
           
@@ -193,28 +197,25 @@ jobs:
           export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-7.4.2-all.zip"
           export JAVA_HOME=$JAVA_HOME_11_X64
           
-          # 🌟【核心参数修复】在命令末尾强行追加 -- --apk，剥夺 Cordova 生成 AAB 的权利，逼其产出 APK！
-          cordova build android --release --verbose -- --apk
+          # 启动编译，此时有了 build.json 的保护，它会乖乖吐出正宗的 APK 文件
+          cordova build android --release --verbose
           
-          # 8. 【终极双轨搜寻】APK 和 AAB 统一防线，不管它产出哪个，我们都能精准拦截！
+          # 8. 成果物全盘捕获与精准归档
           echo "正在搜寻 Cordova 编译完毕的成果物..."
           
-          # 同时在 apk 目录 and bundle 目录发起全网搜寻
-          FINAL_SRC=$(find platforms/android/app/build/outputs/ -name "*-release-unsigned.apk" -o -name "*-release.apk" -o -name "*-release.aab" | head -n 1)
+          # 终极多重搜寻防线（通杀所有可能的命名与路径变体）
+          FINAL_SRC=$(find platforms/android/app/build/outputs/ -name "*-release-unsigned.apk" -o -name "*-release.apk" -o -name "*.apk" | head -n 1)
           
           if [ -z "$FINAL_SRC" ]; then
-            echo "❌ 严重错误：经过全盘扫描，未发现任何产出物（APK/AAB）！"
+            echo "❌ 严重错误：未能发现任何 APK 产出物！"
             exit 1
           fi
           
-          echo "🎯 成功捕获到核心资产，路径为: $FINAL_SRC"
-          
-          # 提取后缀名进行智能判定归档
-          EXTENSION="${FINAL_SRC##*.}"
+          echo "🎯 成功捕获到老设备核心资产: $FINAL_SRC"
           mkdir -p "$GITHUB_WORKSPACE/dist-release-artifacts/3-android"
           
-          cp "$FINAL_SRC" "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.${EXTENSION}"
-          echo "✨ 资产已成功由 Cordova 引擎编译、智能识别并完美归档！后缀名为: ${EXTENSION}"
+          cp "$FINAL_SRC" "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk"
+          echo "✨ 恭喜！纯正版离线 APK 安装包已完美归档！"
 
       # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts (保持极佳的目录结构) ====================
       - name: Upload Workspace Compiled Artifacts
