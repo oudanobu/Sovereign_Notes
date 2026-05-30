@@ -228,7 +228,7 @@ export function MindMapEditor({ data, onChange, lang, t }: MindMapEditorProps) {
         <div className="flex space-x-2 pointer-events-auto">
           <button
             {...bindTouchTap(() => setShowHelp(!showHelp))}
-            className="p-2.5 px-4 rounded-xl bg-white/95 border border-gray-150 text-xs font-bold text-slate-650 shadow-sm hover:text-slate-900 transition flex items-center gap-1.5 cursor-pointer touch-target-min"
+            className="p-2.5 px-4 rounded-xl bg-white/95 border border-gray-150 text-xs font-bold text-slate-650 shadow-sm hover:text-slate-900 transition flex items-center space-x-1.5 cursor-pointer touch-target-min"
           >
             <HelpCircle className="w-4 h-4" />
             {t('helpGuide')}
@@ -246,19 +246,19 @@ export function MindMapEditor({ data, onChange, lang, t }: MindMapEditorProps) {
             </button>
           </div>
           <ul className="text-xs text-gray-750 space-y-3 font-medium">
-            <li className="flex items-start gap-2">
+            <li className="flex items-start space-x-2">
               <span className="p-1 px-2 bg-gray-100 text-gray-800 font-bold font-mono rounded-lg text-[10px] border border-gray-200 whitespace-nowrap">{t('doubleClickEdit')}</span>
               <span className="mt-0.5">{t('doubleClickDesc')}</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start space-x-2">
               <span className="p-1 px-2 bg-gray-100 text-gray-800 font-bold font-mono rounded-lg text-[10px] border border-gray-200 whitespace-nowrap">{t('addChildNode')}</span>
               <span className="mt-0.5">{t('addChildDesc')}</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start space-x-2">
               <span className="p-1 px-2 bg-gray-100 text-gray-800 font-bold font-mono rounded-lg text-[10px] border border-gray-200 whitespace-nowrap">{t('addSiblingNode')}</span>
               <span className="mt-0.5">{t('addSiblingDesc')}</span>
             </li>
-            <li className="flex items-start gap-2">
+            <li className="flex items-start space-x-2">
               <span className="p-1 px-3 bg-red-50 text-red-700 font-bold font-mono rounded-lg text-[10px] border border-red-100 whitespace-nowrap">{t('trashBtn')}</span>
               <span className="mt-0.5 text-red-650">{t('deleteNodeDesc')}</span>
             </li>
@@ -322,7 +322,7 @@ export function MindMapEditor({ data, onChange, lang, t }: MindMapEditorProps) {
                 style={{ left: x, top: y }}
               >
                 {isEditing ? (
-                  <div className="bg-white border-2 border-emerald-500 rounded-xl p-1.5 shadow-2xl flex items-center gap-1.5 z-30">
+                  <div className="bg-white border-2 border-emerald-500 rounded-xl p-1.5 shadow-2xl flex items-center space-x-1.5 z-30">
                     <input
                       type="text"
                       className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-emerald-500 font-sans font-semibold w-44 text-slate-800"
@@ -374,7 +374,7 @@ export function MindMapEditor({ data, onChange, lang, t }: MindMapEditorProps) {
                     <div className={`absolute top-11 transition-opacity duration-150 bg-white border border-gray-200 rounded-xl p-1 shadow-lg flex items-center divide-x divide-gray-150 gap-1 z-20 ${
                       selectedNodeId === node.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 hover:opacity-100'
                     }`}>
-                      <div className="flex gap-0.5">
+                      <div className="flex space-x-0.5">
                         <button
                           {...bindTouchTap(() => {
                             setEditingNodeId(node.id);
@@ -395,7 +395,7 @@ export function MindMapEditor({ data, onChange, lang, t }: MindMapEditorProps) {
                       </div>
                       
                       {!isRoot && (
-                        <div className="flex gap-0.5 pl-1">
+                        <div className="flex space-x-0.5 pl-1">
                           <button
                             {...bindTouchTap(() => handleAddSibling(node.id))}
                             className="p-2 w-11 h-11 hover:bg-blue-50 text-blue-650 hover:text-blue-800 rounded-lg transition flex items-center justify-center cursor-pointer"

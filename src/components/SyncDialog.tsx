@@ -341,7 +341,7 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
     }`}>
       {/* Core Header */}
       <div className="px-6 py-4.5 border-b border-gray-150 flex items-center justify-between bg-slate-50">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center space-x-2.5">
           <Shield className="w-5 h-5 text-emerald-600" />
           <div>
             <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">{t('syncCenterTitle')}</h2>
@@ -413,13 +413,13 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
           <div>
             {/* STATUS LOG NOTIFICATIONS */}
             {successMessage && (
-              <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl text-xs font-bold flex items-start gap-2.5 animate-fade-in shadow-sm">
+              <div className="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl text-xs font-bold flex items-start space-x-2.5 animate-fade-in shadow-sm">
                 <Check className="w-4.5 h-4.5 mt-0.5 flex-shrink-0" />
                 <span>{successMessage}</span>
               </div>
             )}
             {errorMessage && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-800 p-3.5 rounded-xl text-xs font-bold flex items-start gap-2.5 shadow-sm">
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-800 p-3.5 rounded-xl text-xs font-bold flex items-start space-x-2.5 shadow-sm">
                 <AlertTriangle className="w-4.5 h-4.5 mt-0.5 flex-shrink-0" />
                 <span>{errorMessage}</span>
               </div>
@@ -473,7 +473,7 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                 <div className="bg-slate-50 rounded-2xl p-4 border border-gray-150 text-xs space-y-3.5">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{lang === 'zh' ? '局域对等机服务主机 IP' : 'Sync Server Host (IP Address)'}</label>
-                    <div className="flex gap-2">
+                    <div className="flex space-x-2">
                       <input
                         type="text"
                         className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-slate-950 bg-white text-gray-700 min-h-[44px]"
@@ -483,7 +483,7 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                       <button
                         {...bindTouchTap(handleLanSyncNow)}
                         disabled={isSyncing}
-                        className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white disabled:bg-gray-450 rounded-xl font-bold flex items-center gap-1.5 cursor-pointer text-xs min-h-[44px]"
+                        className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white disabled:bg-gray-450 rounded-xl font-bold flex items-center space-x-1.5 cursor-pointer text-xs min-h-[44px]"
                       >
                         {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                         {lang === 'zh' ? '开始拉取对齐' : 'Align State'}
@@ -550,11 +550,11 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3.5 pt-1">
+                  <div className="flex justify-end space-x-3.5 pt-1">
                     <button
                       {...bindTouchTap(() => handleWebDavSync('download'))}
                       disabled={isSyncing}
-                      className="px-4 py-2.5 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 disabled:bg-gray-100 disabled:text-gray-300 rounded-xl font-bold flex items-center gap-1.5 cursor-pointer min-h-[44px] text-xs"
+                      className="px-4 py-2.5 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 disabled:bg-gray-100 disabled:text-gray-300 rounded-xl font-bold flex items-center space-x-1.5 cursor-pointer min-h-[44px] text-xs"
                     >
                       <Download className="w-4 h-4" />
                       {lang === 'zh' ? '拉取合并' : 'Pull Cloud'}
@@ -562,7 +562,7 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                     <button
                       {...bindTouchTap(() => handleWebDavSync('upload'))}
                       disabled={isSyncing}
-                      className="px-4 py-2.5 bg-slate-900 text-white hover:bg-slate-800 disabled:bg-gray-400 rounded-xl font-bold flex items-center gap-1.5 cursor-pointer min-h-[44px] text-xs"
+                      className="px-4 py-2.5 bg-slate-900 text-white hover:bg-slate-800 disabled:bg-gray-400 rounded-xl font-bold flex items-center space-x-1.5 cursor-pointer min-h-[44px] text-xs"
                     >
                       <Upload className="w-4 h-4" />
                       {lang === 'zh' ? '推送归档' : 'Push Cloud'}

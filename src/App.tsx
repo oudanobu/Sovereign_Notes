@@ -624,7 +624,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
   const activeSelectedNoteInstance = notes.find(n => n.id === selectedNoteId && !n.isDeleted);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased">
+    <div className="absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased">
       
       {/* Columns Container Wrapper */}
       <div className="flex-1 flex overflow-hidden relative min-h-0">
@@ -636,9 +636,9 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
         <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
           
           {/* Logo Name & Settings / Language triggers */}
-          <div className="flex flex-col gap-3.5 border-b border-gray-150 pb-4">
+          <div className="flex flex-col space-y-3.5 border-b border-gray-150 pb-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center space-x-2">
                 <div className="h-7 w-7 rounded-xl bg-slate-900 flex items-center justify-center text-white">
                   <FileText className="w-4.5 h-4.5" />
                 </div>
@@ -651,7 +651,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               {/* Language Selector Trigger */}
               <button
                 {...bindTouchTap(() => setLang(lang === 'en' ? 'zh' : 'en'))}
-                className="px-2.5 py-1.5 hover:bg-slate-150 border border-gray-200 hover:border-slate-400 bg-slate-50 text-slate-700 font-extrabold text-[10.5px] uppercase rounded-xl transition duration-150 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer min-h-[44px] min-w-[54px]"
+                className="px-2.5 py-1.5 hover:bg-slate-150 border border-gray-200 hover:border-slate-400 bg-slate-50 text-slate-700 font-extrabold text-[10.5px] uppercase rounded-xl transition duration-150 flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer min-h-[44px] min-w-[54px]"
                 title={lang === 'en' ? '切换为中文版' : 'Switch to English Context'}
               >
                 <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
@@ -666,10 +666,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   setMainView('notes');
                   setActivePanel('list');
                 })}
-                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between gap-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
+                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between space-x-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
                 title={lang === 'zh' ? '返回笔记' : 'Back to Notes'}
               >
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center space-x-2 text-xs">
                   <FileText className="w-4 h-4 text-slate-800" />
                   <span>{lang === 'zh' ? '返回笔记' : 'Back to Notes'}</span>
                 </div>
@@ -680,10 +680,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   setMainView('settings');
                   setActivePanel('workspace');
                 })}
-                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between gap-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
+                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between space-x-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
                 title={t('syncCenter')}
               >
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center space-x-2 text-xs">
                   <Sliders className="w-4 h-4 text-slate-800" />
                   <span>{t('syncCenter')}</span>
                 </div>
@@ -746,7 +746,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
         {/* Sync panel indicator */}
         <div className="border-t border-gray-150 p-4 bg-slate-50/50 flex justify-between items-center text-xs">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center space-x-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('localSovereignDB')}</span>
           </div>
@@ -768,7 +768,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             activePanel === 'list' ? 'flex' : 'hidden lg:flex'
           }`}>
         <div className="px-4 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center space-x-2">
             <button
               {...bindTouchTap(() => setActivePanel('sidebar'))}
               className="lg:hidden p-2 text-slate-700 bg-slate-50/85 hover:text-slate-950 hover:bg-slate-100 border border-gray-200 rounded-xl transition cursor-pointer min-h-[38px] flex items-center justify-center font-bold text-xs"
@@ -783,10 +783,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           </div>
 
           {/* Document launcher buttons - 44px Optimised target */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center space-x-1.5">
             <button
               {...bindTouchTap(() => handleCreateNote('markdown'))}
-              className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center gap-1 min-h-[44px] min-w-[50px] border border-gray-150"
+              className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center space-x-1 min-h-[44px] min-w-[50px] border border-gray-150"
               title={t('addMarkdown')}
             >
               <PlusCircle className="w-4 h-4 text-emerald-600" />
@@ -794,7 +794,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             </button>
             <button
               {...bindTouchTap(() => handleCreateNote('mindmap'))}
-              className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center gap-1 min-h-[44px] min-w-[50px] border border-gray-150"
+              className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center space-x-1 min-h-[44px] min-w-[50px] border border-gray-150"
               title={t('addMindmap')}
             >
               <Workflow className="w-4 h-4 text-blue-600" />
@@ -827,7 +827,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   isActive ? 'bg-white border-l-4 border-slate-900 shadow-sm' : 'hover:bg-gray-150/40'
                 }`}
               >
-                <div className="flex justify-between items-start gap-1 pb-1">
+                <div className="flex justify-between items-start space-x-1 pb-1">
                   <h4 className="font-extrabold text-xs font-sans text-slate-800 leading-snug line-clamp-2 pr-1 flex-1">{note.title}</h4>
                   <span className={`text-[10px] uppercase font-bold py-0.5 px-1.5 rounded-md ${
                     note.type === 'mindmap' ? 'bg-blue-50 text-blue-600 border border-blue-105' : 'bg-slate-100 text-slate-650'
@@ -865,7 +865,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
         {/* Bulk tools for active directory (Spacious touch headers) */}
         {(selectedFolderId || selectedTagId) && (
-          <div className="p-3.5 border-t border-gray-150 bg-white flex flex-col gap-2 shadow-inner">
+          <div className="p-3.5 border-t border-gray-150 bg-white flex flex-col space-y-2 shadow-inner">
             <div className="flex justify-between items-center">
               <span className="text-[10.5px] font-extrabold text-gray-400 uppercase tracking-wider">{t('filteredFolderActions')}</span>
               <button
@@ -880,7 +880,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 {selectedFolderId && (
                   <button
                     {...bindTouchTap(handleBulkExportByFolder)}
-                    className="w-full text-left text-[11px] font-bold text-slate-700 hover:text-slate-950 p-2.5 hover:bg-slate-50 border rounded-xl flex items-center gap-2 cursor-pointer min-h-[44px]"
+                    className="w-full text-left text-[11px] font-bold text-slate-700 hover:text-slate-950 p-2.5 hover:bg-slate-50 border rounded-xl flex items-center space-x-2 cursor-pointer min-h-[44px]"
                   >
                     <Download className="w-3.5 h-3.5" />
                     {t('exportCategory')}
@@ -889,7 +889,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 {selectedTagId && (
                   <button
                     {...bindTouchTap(handleBulkExportByTagRecursively)}
-                    className="w-full text-left text-[11px] font-bold text-slate-700 hover:text-slate-950 p-2.5 hover:bg-slate-50 border rounded-xl flex items-center gap-2 cursor-pointer min-h-[44px]"
+                    className="w-full text-left text-[11px] font-bold text-slate-700 hover:text-slate-950 p-2.5 hover:bg-slate-50 border rounded-xl flex items-center space-x-2 cursor-pointer min-h-[44px]"
                   >
                     <Download className="w-3.5 h-3.5" />
                     {t('exportTagSubtree')}
@@ -909,9 +909,9 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             
             {/* WORKSPACE TOPBAR CONTROL BOARD */}
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0 bg-slate-50">
-              <div className="flex-1 min-w-0 mr-4">
-                <div className="flex items-center gap-2">
+            <div className="px-5 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center space-y-4 sm:space-y-0 flex-shrink-0 bg-slate-50 relative z-10">
+              <div className="flex-1 w-full sm:w-auto min-w-0 mr-0 sm:mr-4">
+                <div className="flex items-center space-x-2">
                   {/* Back button to list on mobile/tablet screen */}
                   <button
                     {...bindTouchTap(() => setActivePanel('list'))}
@@ -933,7 +933,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 </div>
                 
                 {/* Categorization Dropdowns */}
-                <div className="flex items-center gap-2 mt-2 text-[10.5px] text-gray-500 font-bold font-sans">
+                <div className="flex items-center space-x-2 mt-2 text-[10.5px] text-gray-500 font-bold font-sans">
                   <span>{t('inCategory')}</span>
                   <select
                     value={noteFolderId || ''}
@@ -952,12 +952,12 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
                   <span className="mx-1 text-gray-300">|</span>
                   <span>{t('tagsLabel')}</span>
-                  <div className="flex flex-wrap items-center gap-1">
+                  <div className="flex flex-wrap items-center -ml-1.5 -mt-1.5">
                     {noteTagIds.map((tid) => {
                       const tInstance = tags.find(tag => tag.id === tid && !tag.isDeleted);
                       if (!tInstance) return null;
                       return (
-                        <span key={tid} className="bg-slate-100 border border-gray-200 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center gap-1 uppercase min-h-[30px]">
+                        <span key={tid} className="bg-slate-100 border border-gray-200 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center space-x-1 uppercase min-h-[30px] ml-1.5 mt-1.5">
                           {tInstance.name}
                           <button
                             {...bindTouchTap(() => {
@@ -983,7 +983,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                           triggerLocalSave({ tagIds: updated });
                         }
                       }}
-                      className="bg-transparent border border-none text-slate-500 py-1.5 px-2.5 cursor-pointer focus:outline-none text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-850 min-h-[38px]"
+                      className="bg-transparent border border-none text-slate-500 py-1.5 px-2.5 cursor-pointer focus:outline-none text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-850 min-h-[38px] ml-1.5 mt-1.5"
                     >
                       <option value="">{t('addTagBtn')}</option>
                       {tags.filter(tInst => !tInst.isDeleted && !noteTagIds.includes(tInst.id)).map(tInst => (
@@ -995,7 +995,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               </div>
 
               {/* EDITOR VIEW SWITCHES */}
-              <div className="flex items-center gap-3 flex-shrink-0">
+              <div className="flex items-center flex-wrap space-x-3 flex-shrink-0 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-200">
                 {activeNoteType === 'markdown' ? (
                   <div className="bg-gray-150/70 p-1 rounded-xl flex items-center border border-gray-200 shadow-xs">
                     <button
@@ -1033,7 +1033,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-xl text-[10.5px] font-extrabold uppercase flex items-center gap-2 tracking-wider shadow-xs min-h-[44px]">
+                  <div className="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-xl text-[10.5px] font-extrabold uppercase flex items-center space-x-2 tracking-wider shadow-xs min-h-[44px]">
                     <Workflow className="w-4 h-4 text-blue-500" />
                     {t('interactiveMindmapBoard')}
                   </div>
@@ -1042,7 +1042,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 {/* Import and export action dropdown buttons per-note */}
                 <div className="h-5 w-px bg-gray-200"></div>
                 
-                <div className="flex items-center gap-1.5 text-xs text-gray-550">
+                <div className="flex items-center space-x-1.5 text-xs text-gray-550">
                   <select
                     onChange={(e) => {
                       const val = e.target.value as any;
@@ -1150,7 +1150,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 {t('emptySelectSubtitle')}
               </p>
             </div>
-            <div className="flex gap-2.5 pt-3">
+            <div className="flex space-x-2.5 pt-3">
               <button
                 {...bindTouchTap(() => handleCreateNote('markdown'))}
                 className="px-5 py-3.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition shadow-md hover:shadow-lg cursor-pointer min-h-[44px]"

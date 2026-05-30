@@ -169,7 +169,7 @@ export function FolderTagHierarchy({
               : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
           }`}
         >
-          <div className="flex items-center gap-1 min-w-0 flex-1">
+          <div className="flex items-center space-x-1 min-w-0 flex-1">
             {hasChildren ? (
               <button
                 {...bindTouchTap((e) => toggleTagExpand(tag.id, e))}
@@ -184,13 +184,13 @@ export function FolderTagHierarchy({
             <span className="truncate pr-1.5" title={tag.path}>{tag.name}</span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center space-x-1">
             <span className={`text-[10px] font-bold py-0.5 px-2 rounded-full ${isSelected ? 'bg-slate-800 text-slate-300' : 'bg-gray-150 text-gray-700'}`}>
               {noteCount}
             </span>
             
             {/* Quick Actions (optimised for immediate tap control) */}
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center space-x-0.5">
               {tag.level < 5 && (
                 <button
                   {...bindTouchTap((e) => {
@@ -240,7 +240,7 @@ export function FolderTagHierarchy({
       {/* 1. Folder Directories Block */}
       <div className="space-y-2">
         <div className="flex justify-between items-center px-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center space-x-1.5">
             <FolderIcon className="w-4 h-4 text-slate-500" />
             <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">{t('categoriesHeader')}</h3>
           </div>
@@ -267,7 +267,7 @@ export function FolderTagHierarchy({
                 : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
             }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-2">
               <FolderIcon className={`w-3.5 h-3.5 ${selectedFolderId === 'null' ? 'text-white' : 'text-slate-400'}`} />
               <span>{t('uncategorized')}</span>
             </div>
@@ -292,11 +292,11 @@ export function FolderTagHierarchy({
                     : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
                 }`}
               >
-                <div className="flex items-center gap-2 truncate pr-1 flex-1">
+                <div className="flex items-center space-x-2 truncate pr-1 flex-1">
                   <FolderIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
                   <span className="truncate">{folder.name}</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center space-x-1.5">
                   <span className={`text-[10px] py-0.5 px-2 rounded-full ${isSelected ? 'bg-slate-800 text-slate-300' : 'bg-gray-150 text-gray-750'}`}>
                     {count}
                   </span>
@@ -328,7 +328,7 @@ export function FolderTagHierarchy({
       {/* 2. Hierarchical Tags Block */}
       <div className="space-y-2">
         <div className="flex justify-between items-center px-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center space-x-1.5">
             <TagIcon className="w-4 h-4 text-slate-500" />
             <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">{t('sovereignTagsHeader')}</h3>
           </div>
@@ -371,7 +371,7 @@ export function FolderTagHierarchy({
                   autoFocus
                 />
               </div>
-              <div className="flex justify-end gap-2 text-xs">
+              <div className="flex justify-end space-x-2 text-xs">
                 <button
                   type="button"
                   {...bindTouchTap(() => setShowFolderModal(false))}
@@ -422,7 +422,7 @@ export function FolderTagHierarchy({
                   </p>
                 )}
               </div>
-              <div className="flex justify-end gap-2 text-xs">
+              <div className="flex justify-end space-x-2 text-xs">
                 <button
                   type="button"
                   {...bindTouchTap(() => {

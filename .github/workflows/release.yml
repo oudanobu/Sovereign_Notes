@@ -181,7 +181,7 @@ jobs:
           cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html www/index.html
           
           # 4. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
-          sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n    <preference name="android-minSdkVersion" value="21" />\n    <preference name="android-targetSdkVersion" value="30" />\n    <preference name="GradleVersion" value="7.4.2" />\n</widget>|' config.xml
+          sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n    <preference name="android-minSdkVersion" value="21" />\n    <preference name="android-targetSdkVersion" value="33" />\n    <preference name="android-architecture" value="multi" />\n    <preference name="GradleVersion" value="7.4.2" />\n</widget>|' config.xml
           
           # 🌟【降维打击补丁】在根目录下直接给 Cordova 塞入一个最高优先级的构建配置文件
           # 明确规定：不管是 release 还是 debug，必须采用传统纯正的 apk 打包格式，坚决封杀现代 AAB 的干扰！
@@ -190,6 +190,14 @@ jobs:
           # 5. 安装 Android 构建底座并在 GitHub Actions 中载入 Android 模块
           cordova platform add android@10.1.2 --save
           
+          # 🌟 暴力人肉重写底层模板偷渡的 minSdkVersion 24，强行按回 21 (Android 5.0)
+          find platforms/android/ -name "build.gradle" -exec sed -i 's/minSdkVersion 24/minSdkVersion 21/g' {} + || true
+          find platforms/android/ -name "build.gradle" -exec sed -i 's/defaultMinSdkVersion=24/defaultMinSdkVersion=21/g' {} + || true
+
+          # 🌟 注入 NDK 跨架构联合打包命令（合并 ARM 与 Intel X86 资产）
+          echo "android.useDeprecatedNdk=true" >> platforms/android/gradle.properties
+          echo "cdvBuildMultipleApks=false" >> platforms/android/gradle.properties
+
           # 6. 配置底层 Android 工程使其强制兼容 Java 8
           echo "android { compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 } }" > platforms/android/app/build-extras.gradle
           

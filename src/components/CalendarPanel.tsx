@@ -116,14 +116,14 @@ export function CalendarPanel({ notes, selectedDate, onSelectDate, lang, t }: Ca
   return (
     <div className="bg-white rounded-2xl border border-gray-150 p-4 shadow-sm font-sans">
       <div className="flex justify-between items-center mb-3.5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center space-x-2">
           <Calendar className="w-4 h-4 text-slate-500" />
           <h3 className="font-extrabold text-xs text-slate-700 uppercase tracking-wider">{t('calendarHeader')}</h3>
         </div>
         {selectedDate && (
           <button
             {...bindTouchTap(() => onSelectDate(null))}
-            className="text-[10px] uppercase font-bold bg-slate-55 text-slate-500 px-3 py-1.5 rounded-xl border border-gray-150 hover:text-slate-900 hover:bg-slate-100 transition duration-150 flex items-center gap-1.5 cursor-pointer"
+            className="text-[10px] uppercase font-bold bg-slate-55 text-slate-500 px-3 py-1.5 rounded-xl border border-gray-150 hover:text-slate-900 hover:bg-slate-100 transition duration-150 flex items-center space-x-1.5 cursor-pointer"
           >
             <RefreshCw className="w-3 h-3" />
             {t('clearFilter')}
@@ -162,11 +162,11 @@ export function CalendarPanel({ notes, selectedDate, onSelectDate, lang, t }: Ca
       </div>
 
       <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center space-x-1.5">
           <span className="w-2.5 h-2.5 rounded bg-emerald-500"></span>
           <span>{lang === 'zh' ? '有笔记' : 'Has Notes'}</span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center space-x-1.5">
           <span className="w-2.5 h-2.5 rounded bg-slate-900"></span>
           <span>{lang === 'zh' ? '已选中' : 'Selected'}</span>
         </div>
