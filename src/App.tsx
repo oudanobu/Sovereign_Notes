@@ -16,7 +16,9 @@ import {
   Columns,
   Workflow,
   Sparkles,
-  Sliders
+  Sliders,
+  PenTool,
+  BookOpen
 } from 'lucide-react';
 import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
 import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent } from './db';
@@ -26,6 +28,8 @@ import { CalendarPanel } from './components/CalendarPanel';
 import { FolderTagHierarchy } from './components/FolderTagHierarchy';
 import { SyncDialog } from './components/SyncDialog';
 import { ChangelogDialog } from './components/ChangelogDialog';
+import { RichTextEditor } from './components/RichTextEditor';
+import { WhiteboardEditor } from './components/WhiteboardEditor';
 import { useLanguage } from './utils/i18n';
 import { bindTouchTap } from './utils/touchUtils';
 
@@ -52,9 +56,13 @@ export default function App() {
   const [noteContent, setNoteContent] = useState('');
   const [noteTagIds, setNoteTagIds] = useState<string[]>([]);
   const [noteFolderId, setNoteFolderId] = useState<string | null>(null);
-  const [editorMode, setEditorMode] = useState<'edit' | 'preview' | 'dual' | 'mindmap'>('dual');
-  const [activeNoteType, setActiveNoteType] = useState<'markdown' | 'mindmap'>('markdown');
+  const [editorMode, setEditorMode] = useState<'edit' | 'preview' | 'dual' | 'mindmap' | 'whiteboard' | 'richtext'>('dual');
+  const [activeNoteType, setActiveNoteType] = useState<'markdown' | 'mindmap' | 'whiteboard'>('markdown');
   const [mindmapData, setMindmapData] = useState<MindMapData | undefined>(undefined);
+
+  // New accessibility states
+  const [isLargeFont, setIsLargeFont] = useState<boolean>(() => localStorage.getItem('sovereign_large_font') === 'true');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<'all' | 'whiteboard'>('all');
 
   // Navigation state
   const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
@@ -237,6 +245,8 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     if (note.type === 'mindmap') {
       setMindmapData(note.mindmapData);
       setEditorMode('mindmap');
+    } else if (note.type === 'whiteboard') {
+      setEditorMode('whiteboard');
     } else {
       setEditorMode('dual');
     }
@@ -244,14 +254,22 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
   };
 
   // Note Action Handlers
-  const handleCreateNote = async (type: 'markdown' | 'mindmap') => {
+  const handleCreateNote = async (type: 'markdown' | 'mindmap' | 'whiteboard') => {
     const newNoteId = 'note_' + Math.random().toString(36).substring(2, 9);
+    
+    let defaultTitle = '';
+    if (type === 'markdown') {
+      defaultTitle = lang === 'zh' ? '🗒️ 未命名 Markdown 笔记' : '🗒️ Untitled Markdown';
+    } else if (type === 'mindmap') {
+      defaultTitle = lang === 'zh' ? '🗺️ 未命名思维导图' : '🗺️ Untitled Mindmap';
+    } else {
+      defaultTitle = lang === 'zh' ? '🎨 未命名绘图白板' : '🎨 Untitled Whiteboard';
+    }
+
     const newNote: Note = {
       id: newNoteId,
-      title: type === 'markdown' 
-        ? (lang === 'zh' ? '🗒️ 未命名 Markdown 笔记' : '🗒️ Untitled Markdown') 
-        : (lang === 'zh' ? '🗺️ 未命名思维导图' : '🗺️ Untitled Mindmap'),
-      content: type === 'markdown' ? '# New Note\nWrite syntax here...' : '',
+      title: defaultTitle,
+      content: type === 'whiteboard' ? '[]' : (type === 'markdown' ? '# New Note\nWrite syntax here...' : ''),
       type: type,
       folderId: selectedFolderId && selectedFolderId !== 'null' ? selectedFolderId : null,
       tagIds: selectedTagId ? [selectedTagId] : [],
@@ -596,6 +614,11 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       // 1. Skip soft-deleted index
       if (note.isDeleted) return false;
 
+      // 1.5 Unique Type Separation Filter (Whiteboards Studio vs Standard Notebooks)
+      if (selectedTypeFilter === 'whiteboard') {
+        if (note.type !== 'whiteboard') return false;
+      }
+
       // 2. Folder Category Filter (Explicit click or Uncategorized)
       if (selectedFolderId !== null) {
         if (selectedFolderId === 'null') {
@@ -644,12 +667,12 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
       return true;
     });
-  }, [notes, tags, selectedFolderId, selectedTagId, selectedDate, searchQuery]);
+  }, [notes, tags, selectedFolderId, selectedTagId, selectedDate, searchQuery, selectedTypeFilter]);
 
   const activeSelectedNoteInstance = notes.find(n => n.id === selectedNoteId && !n.isDeleted);
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased">
+    <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased ${isLargeFont ? 'large-font-mode' : ''}`}>
       
       {/* Columns Container Wrapper */}
       <div className="flex-1 flex overflow-hidden relative min-h-0">
@@ -673,15 +696,34 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 </div>
               </div>
 
-              {/* Language Selector Trigger */}
-              <button
-                {...bindTouchTap(() => setLang(lang === 'en' ? 'zh' : 'en'))}
-                className="px-2.5 py-1.5 hover:bg-slate-150 border border-gray-200 hover:border-slate-400 bg-slate-50 text-slate-700 font-extrabold text-[10.5px] uppercase rounded-xl transition duration-150 flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer min-h-[44px] min-w-[54px]"
-                title={lang === 'en' ? '切换为中文版' : 'Switch to English Context'}
-              >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                <span>{lang === 'en' ? '中文' : 'EN'}</span>
-              </button>
+              {/* Language Selector & Big Font Accessibility Button bar */}
+              <div className="flex items-center space-x-1.5">
+                <button
+                  {...bindTouchTap(() => setLang(lang === 'en' ? 'zh' : 'en'))}
+                  className="px-1.5 hover:bg-slate-150 border border-gray-200 hover:border-slate-400 bg-slate-50 text-slate-700 font-extrabold text-[10px] uppercase rounded-xl transition duration-150 flex flex-col items-center justify-center shadow-xs cursor-pointer min-h-[44px] min-w-[42px]"
+                  title={lang === 'en' ? '切换为中文版' : 'Switch to English Context'}
+                >
+                  <Sparkles className="w-3 h-3 text-indigo-500 mb-0.5" />
+                  <span>{lang === 'en' ? '中文' : 'EN'}</span>
+                </button>
+
+                <button
+                  {...bindTouchTap(() => {
+                    const nextLargeVal = !isLargeFont;
+                    setIsLargeFont(nextLargeVal);
+                    localStorage.setItem('sovereign_large_font', String(nextLargeVal));
+                  })}
+                  className={`px-1.5 border rounded-xl font-black text-[10px] uppercase transition duration-150 flex flex-col items-center justify-center shadow-xs cursor-pointer min-h-[44px] min-w-[42px] ${
+                    isLargeFont 
+                      ? 'bg-rose-600 border-rose-650 text-white shadow-sm' 
+                      : 'bg-slate-50 border-gray-250 text-slate-700 hover:bg-slate-100 hover:border-slate-350'
+                  }`}
+                  title={lang === 'zh' ? '一键开启整体系统高对比度大字体' : 'Toggle Large Font accessibility Scale'}
+                >
+                  <BookOpen className="w-3 h-3 text-pink-500 mb-0.5" />
+                  <span>{isLargeFont ? '大' : 'A'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Return to notes button if in settings, otherwise Sync Settings button */}
@@ -715,6 +757,36 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 <span className="text-[9px] bg-slate-900 text-slate-200 py-0.5 px-2 rounded-full uppercase tracking-wider font-extrabold">{lang === 'zh' ? '开启同步' : 'Online'}</span>
               </button>
             )}
+          </div>
+
+          {/* Column Category Separation Bar */}
+          <div className="flex border-b border-gray-150 pb-3.5 mb-2 gap-1.5 shrink-0 select-none">
+            <button
+              {...bindTouchTap(() => {
+                setSelectedTypeFilter('all');
+                setActivePanel('list');
+              })}
+              className={`flex-1 text-center py-2 px-1 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition duration-150 cursor-pointer min-h-[44px] flex items-center justify-center space-x-1 border ${
+                selectedTypeFilter === 'all'
+                  ? 'bg-slate-900 border-slate-950 text-white shadow-sm'
+                  : 'bg-slate-50 border-gray-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+              }`}
+            >
+              <span>📂 {lang === 'zh' ? '综合文库' : 'Library'}</span>
+            </button>
+            <button
+              {...bindTouchTap(() => {
+                setSelectedTypeFilter('whiteboard');
+                setActivePanel('list');
+              })}
+              className={`flex-1 text-center py-2 px-1 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition duration-150 cursor-pointer min-h-[44px] flex items-center justify-center space-x-1 border ${
+                selectedTypeFilter === 'whiteboard'
+                  ? 'bg-purple-600 border-purple-705 text-white shadow-sm'
+                  : 'bg-slate-50 border-gray-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+              }`}
+            >
+              <span>🎨 {lang === 'zh' ? '独立画板' : 'Canvas'}</span>
+            </button>
           </div>
 
           {/* Categories and 6 Level Tags */}
@@ -811,22 +883,40 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           </div>
 
           {/* Document launcher buttons - 44px Optimised target */}
-          <div className="flex items-center space-x-1.5">
+          <div className="flex items-center space-x-1.5 animate-fade-in">
+            {selectedTypeFilter !== 'whiteboard' && (
+              <>
+                <button
+                  {...bindTouchTap(() => handleCreateNote('markdown'))}
+                  className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center space-x-1 min-h-[44px] min-w-[50px] border border-gray-150 bg-slate-50/50"
+                  title={t('addMarkdown')}
+                >
+                  <PlusCircle className="w-4 h-4 text-emerald-600" />
+                  <span className="text-[10px] font-extrabold uppercase text-slate-800">MD</span>
+                </button>
+                <button
+                  {...bindTouchTap(() => handleCreateNote('mindmap'))}
+                  className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center space-x-1 min-h-[44px] min-w-[50px] border border-gray-150 bg-slate-50/50"
+                  title={t('addMindmap')}
+                >
+                  <Workflow className="w-4 h-4 text-blue-600" />
+                  <span className="text-[10px] font-extrabold uppercase text-slate-800">Map</span>
+                </button>
+              </>
+            )}
             <button
-              {...bindTouchTap(() => handleCreateNote('markdown'))}
-              className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center space-x-1 min-h-[44px] min-w-[50px] border border-gray-150"
-              title={t('addMarkdown')}
+              {...bindTouchTap(() => handleCreateNote('whiteboard'))}
+              className={`p-1.5 rounded-xl transition cursor-pointer flex items-center justify-center space-x-1 min-h-[44px] min-w-[50px] border ${
+                selectedTypeFilter === 'whiteboard'
+                  ? 'bg-purple-600 border-purple-700 text-white hover:bg-purple-705'
+                  : 'bg-slate-50 hover:bg-slate-100 border-gray-150 text-slate-800 hover:text-slate-950'
+              }`}
+              title={lang === 'zh' ? '添加自由绘画手写白板' : 'Add Infinite Canvas Whiteboard'}
             >
-              <PlusCircle className="w-4 h-4 text-emerald-600" />
-              <span className="text-[10px] font-extrabold uppercase text-slate-800">MD</span>
-            </button>
-            <button
-              {...bindTouchTap(() => handleCreateNote('mindmap'))}
-              className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-700 hover:text-slate-950 transition cursor-pointer flex items-center justify-center space-x-1 min-h-[44px] min-w-[50px] border border-gray-150"
-              title={t('addMindmap')}
-            >
-              <Workflow className="w-4 h-4 text-blue-600" />
-              <span className="text-[10px] font-extrabold uppercase text-slate-800">Map</span>
+              <PenTool className={`w-4 h-4 ${selectedTypeFilter === 'whiteboard' ? 'text-white' : 'text-purple-600'}`} />
+              <span className={`text-[10px] font-black uppercase ${selectedTypeFilter === 'whiteboard' ? 'text-white' : 'text-slate-800'}`}>
+                {lang === 'zh' ? '画板' : 'Canvas'}
+              </span>
             </button>
           </div>
         </div>
@@ -843,9 +933,11 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             });
 
             // Clean teaser text representing note content
-            const contentCleanTeaser = note.content
-              ? note.content.replace(/#+\s/g, '').replace(/[*_`]/g, '').slice(0, 75)
-              : (lang === 'zh' ? '暂无内容描摹。添加属性...' : 'Empty Notebook. Fill elements...');
+            const contentCleanTeaser = note.type === 'whiteboard'
+              ? (lang === 'zh' ? '🎨 触控手写无限绘图白板 (已自动存储，支持导出照片)' : '🎨 Infinite Canvas Whiteboard (Auto-saved, PNG export)')
+              : (note.content
+                ? note.content.replace(/#+\s/g, '').replace(/[*_`]/g, '').slice(0, 75)
+                : (lang === 'zh' ? '暂无内容描摹。添加属性...' : 'Empty Notebook. Fill elements...'));
 
             return (
               <div
@@ -858,9 +950,11 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 <div className="flex justify-between items-start space-x-1 pb-1">
                   <h4 className="font-extrabold text-xs font-sans text-slate-800 leading-snug line-clamp-2 pr-1 flex-1">{note.title}</h4>
                   <span className={`text-[10px] uppercase font-bold py-0.5 px-1.5 rounded-md ${
-                    note.type === 'mindmap' ? 'bg-blue-50 text-blue-600 border border-blue-105' : 'bg-slate-100 text-slate-650'
+                    note.type === 'mindmap' 
+                      ? 'bg-blue-50 text-blue-600 border border-blue-105' 
+                      : (note.type === 'whiteboard' ? 'bg-purple-50 text-purple-600 border border-purple-105' : 'bg-slate-100 text-slate-650')
                   }`}>
-                    {note.type === 'mindmap' ? 'Map' : 'MD'}
+                    {note.type === 'mindmap' ? 'Map' : (note.type === 'whiteboard' ? (lang === 'zh' ? '白板' : 'Board') : 'MD')}
                   </span>
                 </div>
 
@@ -1028,37 +1122,53 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   <div className="bg-gray-150/70 p-1 rounded-xl flex items-center border border-gray-200 shadow-xs">
                     <button
                       {...bindTouchTap(() => setEditorMode('edit'))}
-                      className={`px-3 py-2 text-[10.5px] font-black uppercase rounded-lg tracking-wider transition min-h-[38px] ${
+                      className={`px-2 py-1.5 text-[10px] font-black uppercase rounded-lg tracking-wider transition min-h-[36px] ${
                         editorMode === 'edit'
                           ? 'bg-white text-slate-900 shadow-sm'
-                          : 'text-gray-550 hover:text-gray-900'
+                          : 'text-gray-550 hover:text-gray-901'
                       }`}
                     >
-                      <Edit3 className="w-3.5 h-3.5 inline mr-1" />
+                      <Edit3 className="w-3 h-3 inline mr-1" />
                       {t('writeMode')}
                     </button>
                     <button
                       {...bindTouchTap(() => setEditorMode('dual'))}
-                      className={`px-3 py-2 text-[10.5px] font-black uppercase rounded-lg tracking-wider transition min-h-[38px] ${
+                      className={`px-2 py-1.5 text-[10px] font-black uppercase rounded-lg tracking-wider transition min-h-[36px] ${
                         editorMode === 'dual'
                           ? 'bg-white text-slate-900 shadow-sm'
-                          : 'text-gray-550 hover:text-gray-900'
+                          : 'text-gray-550 hover:text-gray-901'
                       }`}
                     >
-                      <Columns className="w-3.5 h-3.5 inline mr-1" />
+                      <Columns className="w-3 h-3 inline mr-1" />
                       {t('dualView')}
                     </button>
                     <button
                       {...bindTouchTap(() => setEditorMode('preview'))}
-                      className={`px-3 py-2 text-[10.5px] font-black uppercase rounded-lg tracking-wider transition min-h-[38px] ${
+                      className={`px-2 py-1.5 text-[10px] font-black uppercase rounded-lg tracking-wider transition min-h-[36px] ${
                         editorMode === 'preview'
                           ? 'bg-white text-slate-900 shadow-sm'
-                          : 'text-gray-550 hover:text-gray-900'
+                          : 'text-gray-550 hover:text-gray-901'
                       }`}
                     >
-                      <Eye className="w-3.5 h-3.5 inline mr-1" />
+                      <Eye className="w-3 h-3 inline mr-1" />
                       {t('readMode')}
                     </button>
+                    <button
+                      {...bindTouchTap(() => setEditorMode('richtext'))}
+                      className={`px-2 py-1.5 text-[10px] font-black uppercase rounded-lg tracking-wider transition min-h-[36px] ${
+                        editorMode === 'richtext'
+                          ? 'bg-purple-600 text-white shadow-sm font-black'
+                          : 'text-gray-550 hover:text-gray-901'
+                      }`}
+                    >
+                      <Sparkles className="w-3 h-3 inline mr-1" />
+                      {lang === 'zh' ? '富文本' : 'Rich'}
+                    </button>
+                  </div>
+                ) : activeNoteType === 'whiteboard' ? (
+                  <div className="bg-purple-50 border border-purple-150 text-purple-705 px-3.5 py-1.5 rounded-xl text-[10px] font-extrabold uppercase flex items-center space-x-1.5 tracking-wider shadow-xs min-h-[40px]">
+                    <PenTool className="w-3.5 h-3.5 text-purple-650 animate-pulse" />
+                    <span>{lang === 'zh' ? '手写无限绘图板' : 'Infinite Board UI'}</span>
                   </div>
                 ) : (
                   <div className="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-xl text-[10.5px] font-extrabold uppercase flex items-center space-x-2 tracking-wider shadow-xs min-h-[44px]">
@@ -1161,6 +1271,34 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                     }}
                     lang={lang}
                     t={t}
+                  />
+                </div>
+              )}
+
+              {/* WYSIWYG RICH TEXT EDITOR PORT */}
+              {editorMode === 'richtext' && activeNoteType === 'markdown' && (
+                <div className="w-full h-full p-5 bg-slate-100/40 flex flex-col overflow-hidden">
+                  <RichTextEditor
+                    value={noteContent}
+                    onChange={(updatedMarkdown) => {
+                      setNoteContent(updatedMarkdown);
+                      triggerLocalSave({ content: updatedMarkdown });
+                    }}
+                    lang={lang}
+                  />
+                </div>
+              )}
+
+              {/* INFINITE CANVAS WHITEBOARD PORT */}
+              {activeNoteType === 'whiteboard' && (
+                <div className="w-full h-full p-5 bg-slate-100/40 flex flex-col overflow-hidden">
+                  <WhiteboardEditor
+                    content={noteContent}
+                    onSave={(updatedCanvasJson) => {
+                      setNoteContent(updatedCanvasJson);
+                      triggerLocalSave({ content: updatedCanvasJson });
+                    }}
+                    lang={lang}
                   />
                 </div>
               )}

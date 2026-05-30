@@ -80,3 +80,37 @@ textarea,
 .space-x-3 > * + * { margin-left: 0.75rem !important; margin-right: 0 !important; }
 .space-x-3\.5 > * + * { margin-left: 0.875rem !important; margin-right: 0 !important; }
 .space-x-4 > * + * { margin-left: 1rem !important; margin-right: 0 !important; }
+
+/* -------------------------------------------------------------
+ * ACCESSIBILITY: LARGE FONT MODE OVERRIDE FOR TABLETS/MOBILE
+ * ------------------------------------------------------------- */
+.large-font-mode p,
+.large-font-mode span,
+.large-font-mode div,
+.large-font-mode button,
+.large-font-mode select,
+.large-font-mode input,
+.large-font-mode textarea,
+.large-font-mode label,
+.large-font-mode h1,
+.large-font-mode h2,
+.large-font-mode h3,
+.large-font-mode h4,
+.large-font-mode h5,
+.large-font-mode blockquote,
+.large-font-mode select option {
+  font-size: 104% !important;
+}
+
+.large-font-mode .text-\[8\.5px\] { font-size: 11px !important; }
+.large-font-mode .text-\[9px\] { font-size: 11.5px !important; }
+.large-font-mode .text-\[9\.5px\] { font-size: 12px !important; }
+.large-font-mode .text-\[10px\] { font-size: 12.5px !important; }
+.large-font-mode .text-\[10\.5px\] { font-size: 13px !important; }
+.large-font-mode .text-\[11px\] { font-size: 13.5px !important; }
+.large-font-mode .text-\[11\.5px\] { font-size: 14px !important; }
+.large-font-mode .text-xs { font-size: 0.875rem !important; } /* Normal text-xs 12px -> 14px */
+.large-font-mode .text-sm { font-size: 1rem !important; }     /* Normal text-sm 14px -> 16px */
+.large-font-mode .text-base { font-size: 1.125rem !important; } /* Normal text-base 16px -> 18px */
+.large-font-mode .text-lg { font-size: 1.25rem !important; }   /* Normal text-lg 18px -> 20px */
+.large-font-mode .text-xl { font-size: 1.5rem !important; }    /* Normal text-xl 20px -> 24px */

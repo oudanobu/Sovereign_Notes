@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Shield, Server, Cloud, Download, Upload, AlertTriangle, Check, RefreshCw, Plus } from 'lucide-react';
+import { Shield, Server, Cloud, Download, Upload, AlertTriangle, Check, RefreshCw, Plus, Copy } from 'lucide-react';
 import { Tag, Folder, Note } from '../types';
 import { exportDatabaseSnapshot, importDatabaseSnapshot, getNotes, getTags, getFolders, bulkInsertNotes, bulkInsertTags, bulkInsertFolders } from '../db';
 import { Language } from '../utils/i18n';
@@ -105,16 +105,66 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
   const handleExportSnapshot = async () => {
     try {
       const dbJson = await exportDatabaseSnapshot();
+
+      // Check for advanced HTML5 File System Access API (supports folder & file picker)
+      if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
+        try {
+          const defaultName = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+          // @ts-ignore
+          const fileHandle = await window.showSaveFilePicker({
+            suggestedName: defaultName,
+            types: [{
+              description: 'Sovereign Note JSON Backup',
+              accept: { 'application/json': ['.json'] }
+            }]
+          });
+          const writable = await fileHandle.createWritable();
+          await writable.write(dbJson);
+          await writable.close();
+          setSuccessMessage(lang === 'zh' 
+            ? '主权快照已成功导出至您自主指定的本地设备文件夹！' 
+            : 'Database Snapshot exported successfully to your selected folder!'
+          );
+          return;
+        } catch (pickerErr: any) {
+          // If user cancelled, stop
+          if (pickerErr.name === 'AbortError') {
+             return;
+          }
+          // other errors falls back to traditional download
+        }
+      }
+
+      // Traditional standard web sandbox download fallback
       const blob = new Blob([dbJson], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = t('snapshotExportName');
+      a.download = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      setSuccessMessage(lang === 'zh' ? '本地主权数据库快照导出成功！' : 'Database Snapshot exported successfully!');
+      setSuccessMessage(
+        lang === 'zh' 
+          ? '主权数据副本已触发出货！默认保存在系统的 “下载/Download” 文件夹中。您可通过剪贴板将全部数据直接另存为任意地方。' 
+          : 'Database Snapshot exported! Typically saved inside your Downloads catalog.'
+      );
     } catch (err: any) {
       setErrorMessage(`Export failed: ${err.message}`);
+    }
+  };
+
+  // Additional helper: Copy complete backup to clipboard
+  const handleCopySnapshotToClipboard = async () => {
+    try {
+      const dbJson = await exportDatabaseSnapshot();
+      await navigator.clipboard.writeText(dbJson);
+      setSuccessMessage(
+        lang === 'zh'
+          ? '全量主权备份内容已极速复制至剪切板！您可打开手机任意“文件管理/文本编辑器/WPS”，在对应文件夹内新建文件粘贴即可！'
+          : 'Full JSON backup copied to clipboard! Paste it anywhere to save as file.'
+      );
+    } catch (err: any) {
+      setErrorMessage(`Copy failed: ${err.message}`);
     }
   };
 
@@ -441,8 +491,12 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                     className="flex flex-col items-center justify-center p-5 border border-dashed border-gray-200 rounded-2xl hover:border-slate-800 bg-slate-50/50 hover:bg-white cursor-pointer group transition duration-150 min-h-[140px]"
                   >
                     <Download className="w-7 h-7 text-gray-400 group-hover:text-slate-900 mb-3" />
-                    <span className="text-xs font-extrabold text-slate-800">{t('exportDatabaseSnapshotBtn')}</span>
-                    <span className="text-[10px] text-gray-450 mt-1 text-center font-bold">{lang === 'zh' ? '生成独立主权数据库打包副本' : 'Saves all notes, tags, and structure'}</span>
+                    <span className="text-xs font-extrabold text-slate-800">
+                      {lang === 'zh' ? '📂 自由选择活页夹/导出' : t('exportDatabaseSnapshotBtn')}
+                    </span>
+                    <span className="text-[10px] text-gray-450 mt-1 text-center font-bold">
+                      {lang === 'zh' ? '支持在符合条件的现代设备上任意自选存储文件夹与重命名' : 'Saves all notes, tags, and structure'}
+                    </span>
                   </button>
 
                   <label className="flex flex-col items-center justify-center p-5 border border-dashed border-gray-200 rounded-2xl hover:border-slate-800 bg-slate-50/50 hover:bg-white cursor-pointer group transition duration-150 min-h-[140px]">
@@ -456,6 +510,40 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                     <span className="text-xs font-extrabold text-slate-850">{t('importDatabaseSnapshotBtn')}</span>
                     <span className="text-[10px] text-gray-450 mt-1 text-center font-bold">{lang === 'zh' ? '一键上传已存快照以极速覆盖' : 'Imports file & overwrites IndexedDB'}</span>
                   </label>
+                </div>
+
+                {/* Android System Backup Path Guarding Board & Copy Clipboard Bypass */}
+                <div className="bg-slate-50 border border-gray-200 rounded-2xl p-4 space-y-3.5 mt-3 animate-in slide-in-from-bottom-2 duration-200">
+                  <div className="flex items-center space-x-2 text-slate-700">
+                    <span className="text-sm">💡</span>
+                    <h4 className="text-xs font-black uppercase text-slate-800 tracking-wider">
+                      {lang === 'zh' ? '安卓设备（手机及平板）备份找回寻踪导航' : 'Android Storage Finder Navigator'}
+                    </h4>
+                  </div>
+                  
+                  <div className="text-[10.5px] text-slate-600/90 font-bold space-y-2 leading-relaxed">
+                    <p>
+                      {lang === 'zh' 
+                        ? '1. 如果您的设备系统不支持弹出目标文件夹选择器，点击上方导出后，备份默认会存入系统的 “主存储 / Download (或 下载)” 文件夹下，文件一般命名为: Sovereign_Backup_*.json。' 
+                        : '1. If standard file system save API is unavailable, clicking Export will default to write files inside your internal store: /Download/ directory.'}
+                    </p>
+                    <p>
+                      {lang === 'zh'
+                        ? '2. 为确保完美掌控，您也可以点击下方按钮，“一键把全部数据复制为一串独立加密密码”，随后可在手机任意喜爱目录（WPS、百度云等）下直接自建文本文档粘贴重命名保存，彻底告别默认搜索困扰！'
+                        : '2. Alternatively, use Clipboard shortcut to secure text payloads to bypass OS sandbox folders altogether.'}
+                    </p>
+                  </div>
+
+                  <div className="pt-1.5">
+                    <button
+                      type="button"
+                      {...bindTouchTap(handleCopySnapshotToClipboard)}
+                      className="w-full py-2.5 px-3 bg-white border border-slate-205 hover:bg-slate-100 text-slate-700 font-extrabold text-xs rounded-xl flex items-center justify-center space-x-2 transition cursor-pointer hover:text-slate-950 active:scale-98 min-h-[44px]"
+                    >
+                      <Copy className="w-4 h-4 text-indigo-600" />
+                      <span>{lang === 'zh' ? '📋 立即复制全量主权备份至剪切板' : 'Copy Full Snapshot to Clipboard'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

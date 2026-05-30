@@ -23,7 +23,7 @@ export interface Note {
   id: string;
   title: string;
   content: string;
-  type: 'markdown' | 'mindmap';
+  type: 'markdown' | 'mindmap' | 'whiteboard';
   mindmapData?: MindMapData;
   folderId: string | null;
   tagIds: string[]; // List of tag IDs explicitly assigned
