@@ -103,9 +103,10 @@ export default function App() {
     return localStorage.getItem('sovereign_sidebar_collapsed') === 'true';
   });
 
-  const [activeSidebarTab, setActiveSidebarTab] = useState<'folders' | 'tags'>(() => {
-    return (localStorage.getItem('sovereign_active_sidebar_tab') as 'folders' | 'tags') || 'folders';
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'folders' | 'tags' | 'calendar'>(() => {
+    return (localStorage.getItem('sovereign_active_sidebar_tab') as 'folders' | 'tags' | 'calendar') || 'folders';
   });
+  const [isMetaCollapsed, setIsMetaCollapsed] = useState<boolean>(true);
 
   const handleToggleSidebar = () => {
     const nextVal = !isSidebarCollapsed;
@@ -813,6 +814,29 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 <TagIcon className="w-4.5 h-4.5" />
               </button>
 
+              {/* Calendar select */}
+              <button
+                {...bindTouchTap(() => {
+                  if (activeSidebarTab === 'calendar' && !isSidebarCollapsed) {
+                    setIsSidebarCollapsed(true);
+                    localStorage.setItem('sovereign_sidebar_collapsed', 'true');
+                  } else {
+                    setActiveSidebarTab('calendar');
+                    localStorage.setItem('sovereign_active_sidebar_tab', 'calendar');
+                    setIsSidebarCollapsed(false);
+                    localStorage.setItem('sovereign_sidebar_collapsed', 'false');
+                  }
+                })}
+                className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
+                  activeSidebarTab === 'calendar' && !isSidebarCollapsed
+                    ? 'bg-rose-600 border-rose-700 text-white shadow-xs'
+                    : 'bg-slate-50 border-gray-200 text-slate-600 hover:bg-slate-100 placeholder-slate-400'
+                }`}
+                title={lang === 'zh' ? '主权智能日历' : 'Sovereign Calendar'}
+              >
+                <CalendarIcon className="w-4.5 h-4.5" />
+              </button>
+
               {/* Canvas selector */}
               <button
                 {...bindTouchTap(() => {
@@ -891,14 +915,15 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
           {/* B. COLLAPSIBLE FUNCTIONAL CONTENT PANEL */}
           <div
-            className={`flex flex-col justify-between bg-slate-50/10 transition-all duration-300 ease-in-out overflow-hidden h-full ${
+            className={`flex flex-col justify-between bg-white border-r border-gray-150 transition-all duration-300 ease-in-out overflow-hidden h-full ${
               isSidebarCollapsed ? 'w-0 border-r-0' : 'w-[280px]'
             }`}
           >
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin flex flex-col min-h-0">
+            {/* 1. FIXED TOP BRAND & SEARCH BAR (Does not scroll) */}
+            <div className="p-4 border-b border-gray-150 flex flex-col space-y-3 bg-white flex-shrink-0 select-none">
               {/* Header brand name */}
-              <div className="flex items-center space-x-2.5 border-b border-gray-150 pb-4">
-                <div className="h-7 w-7 rounded-xl bg-slate-900 flex items-center justify-center text-white">
+              <div className="flex items-center space-x-2.5">
+                <div className="h-7 w-7 rounded-xl bg-slate-900 flex items-center justify-center text-white flex-shrink-0">
                   <FileText className="w-4.5 h-4.5" />
                 </div>
                 <div>
@@ -909,66 +934,102 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 </div>
               </div>
 
-              {/* Dynamic Selective views block */}
-              <div className="flex-1 min-h-0">
-                <FolderTagHierarchy
-                  folders={folders}
-                  tags={tags}
-                  notes={notes}
-                  selectedFolderId={selectedFolderId}
-                  selectedTagId={selectedTagId}
-                  onSelectFolder={(id) => {
-                    setSelectedDate(null);
-                    setSelectedFolderId(id);
-                    setActivePanel('list');
-                  }}
-                  onSelectTag={(id) => {
-                    setSelectedDate(null);
-                    setSelectedTagId(id);
-                    setActivePanel('list');
-                  }}
-                  onCreateFolder={handleCreateFolder}
-                  onCreateTag={handleCreateTag}
-                  onDeleteFolder={handleDeleteFolder}
-                  onDeleteTag={handleDeleteTag}
-                  lang={lang}
-                  t={t}
-                  mode={activeSidebarTab}
-                />
-              </div>
-
-              {/* Search bar inside content panel */}
-              <div className="relative mt-2">
-                <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              {/* Fixed Search Bar at absolute top */}
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   placeholder={t('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-xs font-sans focus:outline-none focus:ring-1 focus:ring-slate-900 bg-slate-50 text-slate-700"
+                  className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-xs font-sans focus:outline-none focus:ring-1 focus:ring-slate-900 bg-slate-50 text-slate-700 placeholder-slate-400 transitions animate-fade-in"
                 />
               </div>
+            </div>
 
-              {/* Interactive Date mini calendar */}
-              <CalendarPanel
-                notes={notes}
-                events={events}
-                selectedDate={selectedDate}
-                onSelectDate={(date) => {
-                  setSelectedFolderId(null);
-                  setSelectedTagId(null);
-                  setSelectedDate(date);
-                  setActivePanel('list');
-                }}
-                onSaveEvent={handleSaveEvent}
-                onDeleteEvent={handleDeleteEvent}
-                lang={lang}
-                t={t}
-              />
+            {/* 2. SCROLLABLE ACTIVE CONTENT VIEW (Occupies 100% of rest space) */}
+            <div className="flex-1 overflow-y-auto p-4 scrollbar-thin flex flex-col min-h-0 bg-white">
+              {activeSidebarTab === 'folders' && (
+                <div className="animate-fade-in flex-1 min-h-0">
+                  <FolderTagHierarchy
+                    folders={folders}
+                    tags={tags}
+                    notes={notes}
+                    selectedFolderId={selectedFolderId}
+                    selectedTagId={selectedTagId}
+                    onSelectFolder={(id) => {
+                      setSelectedDate(null);
+                      setSelectedFolderId(id);
+                      setActivePanel('list');
+                    }}
+                    onSelectTag={(id) => {
+                      setSelectedDate(null);
+                      setSelectedTagId(id);
+                      setActivePanel('list');
+                    }}
+                    onCreateFolder={handleCreateFolder}
+                    onCreateTag={handleCreateTag}
+                    onDeleteFolder={handleDeleteFolder}
+                    onDeleteTag={handleDeleteTag}
+                    lang={lang}
+                    t={t}
+                    mode="folders"
+                  />
+                </div>
+              )}
+
+              {activeSidebarTab === 'tags' && (
+                <div className="animate-fade-in flex-1 min-h-0">
+                  <FolderTagHierarchy
+                    folders={folders}
+                    tags={tags}
+                    notes={notes}
+                    selectedFolderId={selectedFolderId}
+                    selectedTagId={selectedTagId}
+                    onSelectFolder={(id) => {
+                      setSelectedDate(null);
+                      setSelectedFolderId(id);
+                      setActivePanel('list');
+                    }}
+                    onSelectTag={(id) => {
+                      setSelectedDate(null);
+                      setSelectedTagId(id);
+                      setActivePanel('list');
+                    }}
+                    onCreateFolder={handleCreateFolder}
+                    onCreateTag={handleCreateTag}
+                    onDeleteFolder={handleDeleteFolder}
+                    onDeleteTag={handleDeleteTag}
+                    lang={lang}
+                    t={t}
+                    mode="tags"
+                  />
+                </div>
+              )}
+
+              {activeSidebarTab === 'calendar' && (
+                <div className="animate-fade-in flex-1 min-h-0">
+                  <CalendarPanel
+                    notes={notes}
+                    events={events}
+                    selectedDate={selectedDate}
+                    onSelectDate={(date) => {
+                      setSelectedFolderId(null);
+                      setSelectedTagId(null);
+                      setSelectedDate(date);
+                      setActivePanel('list');
+                    }}
+                    onSaveEvent={handleSaveEvent}
+                    onDeleteEvent={handleDeleteEvent}
+                    lang={lang}
+                    t={t}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Local database status sync string */}
-            <div className="border-t border-gray-150 p-4 bg-slate-50/50 flex justify-between items-center text-xs">
+            <div className="border-t border-gray-150 p-4 bg-slate-50/50 flex justify-between items-center text-xs flex-shrink-0">
               <div className="flex items-center space-x-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -989,7 +1050,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       {mainView === 'notes' ? (
         <>
           {/* 2. CENTER LIST BLOCK */}
-          <section className={`w-full lg:w-80 border-r border-gray-200 bg-slate-50/50 flex flex-col h-full flex-shrink-0 ${
+          <section className={`w-full lg:w-[390px] border-r border-gray-200 bg-slate-50/50 flex flex-col h-full flex-shrink-0 ${
             activePanel === 'list' ? 'flex' : 'hidden lg:flex'
           }`}>
         <div className="px-4 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
@@ -1171,92 +1232,112 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             {/* WORKSPACE TOPBAR CONTROL BOARD */}
             <div className="workspace-topbar px-5 py-3 border-b border-gray-200 flex flex-col xl:flex-row xl:justify-between items-start xl:items-center gap-3.5 flex-shrink-0 bg-slate-50 relative z-10">
               <div className="workspace-topbar-left flex-1 w-full xl:w-auto min-w-0 mr-0 xl:mr-4">
-                <div className="flex items-center space-x-2">
-                  {/* Back button to list on mobile/tablet screen */}
-                  <button
-                    {...bindTouchTap(() => setActivePanel('list'))}
-                    className="lg:hidden px-3 py-2 text-slate-700 bg-white border border-gray-200 hover:text-slate-955 hover:bg-slate-100 rounded-xl transition cursor-pointer min-h-[38px] flex items-center justify-center font-extrabold text-xs whitespace-nowrap"
-                    title={t('backToList')}
-                  >
-                    <span>{t('backToList')}</span>
-                  </button>
-                  <input
-                    type="text"
-                    value={noteTitle}
-                    onChange={(e) => {
-                      setNoteTitle(e.target.value);
-                      triggerLocalSave({ title: e.target.value });
-                    }}
-                    className="w-full bg-transparent border-none text-sm font-black text-slate-900 focus:outline-none focus:ring-0 placeholder-gray-300 font-sans p-0 leading-tight"
-                    placeholder={t('noteTitlePlaceholder')}
-                  />
-                </div>
-                
-                {/* Categorization Dropdowns (Strict Flex Wrap Avoids Overlapping) */}
-                <div className="flex flex-wrap items-center gap-2 mt-2 text-[10.5px] text-gray-500 font-bold font-sans">
-                  <div className="flex items-center space-x-1.5 flex-shrink-0">
-                    <span>{t('inCategory')}</span>
-                    <select
-                      value={noteFolderId || ''}
-                      onChange={(e) => {
-                        const val = e.target.value || null;
-                        setNoteFolderId(val);
-                        triggerLocalSave({ folderId: val });
-                      }}
-                      className="bg-transparent border border-gray-250 hover:border-slate-450 text-gray-650 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-white focus:outline-none text-[10px] font-bold min-h-[38px]"
+                <div className="flex items-center justify-between w-full gap-2">
+                  <div className="flex items-center space-x-2 flex-1">
+                    {/* Back button to list on mobile/tablet screen */}
+                    <button
+                      {...bindTouchTap(() => setActivePanel('list'))}
+                      className="lg:hidden px-3 py-2 text-slate-700 bg-white border border-gray-200 hover:text-slate-955 hover:bg-slate-100 rounded-xl transition cursor-pointer min-h-[38px] flex items-center justify-center font-extrabold text-xs whitespace-nowrap"
+                      title={t('backToList')}
                     >
-                      <option value="">{t('uncategorized')}</option>
-                      {folders.filter(f => !f.isDeleted).map(f => (
-                        <option key={f.id} value={f.id}>{f.name}</option>
-                      ))}
-                    </select>
+                      <span>{t('backToList')}</span>
+                    </button>
+                    <input
+                      type="text"
+                      value={noteTitle}
+                      onChange={(e) => {
+                        setNoteTitle(e.target.value);
+                        triggerLocalSave({ title: e.target.value });
+                      }}
+                      className="w-full bg-transparent border-none text-sm font-black text-slate-900 focus:outline-none focus:ring-0 placeholder-gray-300 font-sans p-0 leading-tight"
+                      placeholder={t('noteTitlePlaceholder')}
+                    />
                   </div>
 
-                  <span className="mx-1 text-gray-300 hidden sm:inline">|</span>
-                  
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="flex-shrink-0">{t('tagsLabel')}</span>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {noteTagIds.map((tid) => {
-                        const tInstance = tags.find(tag => tag.id === tid && !tag.isDeleted);
-                        if (!tInstance) return null;
-                        return (
-                          <span key={tid} className="bg-slate-100 border border-gray-200 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center space-x-1 uppercase min-h-[30px] leading-tight">
-                            {tInstance.name}
-                            <button
-                              {...bindTouchTap(() => {
-                                const remaining = noteTagIds.filter(id => id !== tid);
-                                setNoteTagIds(remaining);
-                                triggerLocalSave({ tagIds: remaining });
-                              })}
-                              className="hover:text-red-500 font-bold text-[9px] w-4.5 h-4.5 flex items-center justify-center cursor-pointer"
-                            >
-                              ✕
-                            </button>
-                          </span>
-                        );
-                      })}
-
+                  {/* Property Details Collapse Switch Button */}
+                  <button
+                    {...bindTouchTap(() => setIsMetaCollapsed(!isMetaCollapsed))}
+                    className={`flex-shrink-0 px-2.5 py-1.5 rounded-xl border text-[10.5px] font-black uppercase flex items-center space-x-1.5 transition select-none cursor-pointer active:scale-95 ${
+                      !isMetaCollapsed
+                        ? 'bg-slate-900 border-slate-950 text-white shadow-xs'
+                        : 'bg-white border-gray-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                    title={lang === 'zh' ? '折叠/展开关联分类和标签' : 'Collapse/Expand details'}
+                  >
+                    <span>{lang === 'zh' ? '🏷️ 关联属性' : '🏷️ Properties'}</span>
+                    <span className="text-[9.5px] font-bold opacity-70">
+                      {isMetaCollapsed ? '▼' : '▲'}
+                    </span>
+                  </button>
+                </div>
+                
+                {/* Categorization Dropdowns (Strict Flex Wrap Avoids Overlapping - Collapsible!) */}
+                {!isMetaCollapsed && (
+                  <div className="flex flex-wrap items-center gap-2 mt-2 text-[10.5px] text-gray-500 font-bold font-sans animate-fade-in border-t border-gray-150/60 pt-2 w-full">
+                    <div className="flex items-center space-x-1.5 flex-shrink-0">
+                      <span>{t('inCategory')}</span>
                       <select
-                        value=""
+                        value={noteFolderId || ''}
                         onChange={(e) => {
-                          const val = e.target.value;
-                          if (val && !noteTagIds.includes(val)) {
-                            const updated = [...noteTagIds, val];
-                            setNoteTagIds(updated);
-                            triggerLocalSave({ tagIds: updated });
-                          }
+                          const val = e.target.value || null;
+                          setNoteFolderId(val);
+                          triggerLocalSave({ folderId: val });
                         }}
-                        className="bg-transparent border border-none text-slate-500 py-1.5 px-2.5 cursor-pointer focus:outline-none text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-850 min-h-[38px]"
+                        className="bg-transparent border border-gray-250 hover:border-slate-450 text-gray-650 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-white focus:outline-none text-[10px] font-bold min-h-[38px]"
                       >
-                        <option value="">{t('addTagBtn')}</option>
-                        {tags.filter(tInst => !tInst.isDeleted && !noteTagIds.includes(tInst.id)).map(tInst => (
-                          <option key={tInst.id} value={tInst.id}>{tInst.path}</option>
+                        <option value="">{t('uncategorized')}</option>
+                        {folders.filter(f => !f.isDeleted).map(f => (
+                          <option key={f.id} value={f.id}>{f.name}</option>
                         ))}
                       </select>
                     </div>
+
+                    <span className="mx-1 text-gray-300 hidden sm:inline">|</span>
+                    
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="flex-shrink-0">{t('tagsLabel')}</span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {noteTagIds.map((tid) => {
+                          const tInstance = tags.find(tag => tag.id === tid && !tag.isDeleted);
+                          if (!tInstance) return null;
+                          return (
+                            <span key={tid} className="bg-slate-100 border border-gray-200 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center space-x-1 uppercase min-h-[30px] leading-tight">
+                              {tInstance.name}
+                              <button
+                                {...bindTouchTap(() => {
+                                  const remaining = noteTagIds.filter(id => id !== tid);
+                                  setNoteTagIds(remaining);
+                                  triggerLocalSave({ tagIds: remaining });
+                                })}
+                                className="hover:text-red-500 font-bold text-[9px] w-4.5 h-4.5 flex items-center justify-center cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </span>
+                          );
+                        })}
+
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val && !noteTagIds.includes(val)) {
+                              const updated = [...noteTagIds, val];
+                              setNoteTagIds(updated);
+                              triggerLocalSave({ tagIds: updated });
+                            }
+                          }}
+                          className="bg-transparent border border-none text-indigo-600 hover:text-indigo-850 py-1.5 px-2.5 cursor-pointer focus:outline-none text-[10px] font-black uppercase min-h-[38px]"
+                        >
+                          <option value="">{t('addTagBtn')}</option>
+                          {tags.filter(tInst => !tInst.isDeleted && !noteTagIds.includes(tInst.id)).map(tInst => (
+                            <option key={tInst.id} value={tInst.id}>{tInst.path}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* EDITOR VIEW SWITCHES */}

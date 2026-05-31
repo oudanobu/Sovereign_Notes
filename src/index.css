@@ -255,9 +255,7 @@ textarea,
 .profile-android13 h2,
 .profile-android13 h3,
 .profile-android13 h4,
-.profile-android13 p,
-.profile-android13 span,
-.profile-android13 div {
+.profile-android13 p {
   color: #0f172a !important; /* Force readable text */
 }
 .profile-android13 .text-slate-400,
@@ -323,8 +321,6 @@ textarea,
 .profile-android5 h3,
 .profile-android5 h4,
 .profile-android5 p,
-.profile-android5 span,
-.profile-android5 div,
 .profile-android5 text {
   color: #0f172a !important;
 }
