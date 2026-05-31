@@ -136,17 +136,41 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
       }
 
       // Traditional standard web sandbox download fallback
+      const fileName = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
       const blob = new Blob([dbJson], { type: 'application/json' });
+      
+      // Try Web Share API with File (Excellent for Mobile Devices/Android)
+      if (typeof navigator !== 'undefined' && navigator.canShare) {
+        try {
+          const file = new File([blob], fileName, { type: 'application/json' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: lang === 'zh' ? 'SovereignNote 数据备份' : 'SovereignNote Backup',
+              text: lang === 'zh' ? '请妥善保存此系统级全量备份文件' : 'Please keep this full system backup safe'
+            });
+            setSuccessMessage(lang === 'zh' 
+              ? '主权快照已成功调用系统分享！您可保存至本地文件管理器或发送至微信/网盘等。' 
+              : 'Snapshot successfully shared via system dialog!'
+            );
+            return;
+          }
+        } catch (shareErr: any) {
+          console.warn('Share API failed or user cancelled, falling back to download:', shareErr);
+        }
+      }
+
+      // Final fallback: standard a-tag download
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
       setSuccessMessage(
         lang === 'zh' 
-          ? '主权数据副本已触发出货！默认保存在系统的 “下载/Download” 文件夹中。您可通过剪贴板将全部数据直接另存为任意地方。' 
-          : 'Database Snapshot exported! Typically saved inside your Downloads catalog.'
+          ? '主权数据副本已触发出货！若未弹出下载框，说明您的安卓浏览器锁死了下载权限，请使用下方“复制到剪贴板”功能！' 
+          : 'Export triggered! If nothing downloaded, your browser blocked it. Use "Copy to Clipboard" instead.'
       );
     } catch (err: any) {
       setErrorMessage(`Export failed: ${err.message}`);
@@ -157,10 +181,42 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
   const handleCopySnapshotToClipboard = async () => {
     try {
       const dbJson = await exportDatabaseSnapshot();
-      await navigator.clipboard.writeText(dbJson);
+      
+      // Try modern clipboard API first
+      let success = false;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(dbJson);
+          success = true;
+        } catch (e) {
+          console.warn('Modern clipboard failed, trying fallback', e);
+        }
+      }
+      
+      // Fallback for Android WebView / unsupported browsers
+      if (!success) {
+        const textArea = document.createElement('textarea');
+        textArea.value = dbJson;
+        // Avoid scrolling to bottom
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.position = 'fixed';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          const successful = document.execCommand('copy');
+          if (!successful) throw new Error('execCommand copy failed');
+        } catch (err) {
+          document.body.removeChild(textArea);
+          throw new Error('Clipboard access denied or unsupported in this browser.');
+        }
+        document.body.removeChild(textArea);
+      }
+      
       setSuccessMessage(
         lang === 'zh'
-          ? '全量主权备份内容已极速复制至剪切板！您可打开手机任意“文件管理/文本编辑器/WPS”，在对应文件夹内新建文件粘贴即可！'
+          ? '全量主权备份内容已极速复制至剪切板！您可打开手机任意“文件管理/文本编辑器/WPS”，新建文本文件粘贴即可！(若文件过大可能在此有短暂卡顿)'
           : 'Full JSON backup copied to clipboard! Paste it anywhere to save as file.'
       );
     } catch (err: any) {

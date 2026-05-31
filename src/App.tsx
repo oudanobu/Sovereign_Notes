@@ -962,15 +962,28 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   {contentCleanTeaser}
                 </p>
 
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center text-[10px]">
                   <span className="text-[9.5px] font-mono text-slate-400 font-bold">{updatedString}</span>
                   
-                  {/* Category badge */}
-                  {note.folderId && (
-                    <span className="text-[9px] bg-slate-100 text-slate-500 font-bold py-0.5 px-2 rounded-md truncate max-w-[125px] border border-gray-150">
-                      {folders.find(f => f.id === note.folderId)?.name}
-                    </span>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {/* Category badge */}
+                    {note.folderId && (
+                      <span className="text-[9px] bg-slate-100 text-slate-500 font-bold py-0.5 px-2 rounded-md truncate max-w-[125px] border border-gray-150">
+                        {folders.find(f => f.id === note.folderId)?.name}
+                      </span>
+                    )}
+                    
+                    <button
+                      {...bindTouchTap((e) => {
+                        e.stopPropagation();
+                        handleDeleteNote(note.id);
+                      })}
+                      className="p-1 px-[5px] text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition"
+                      title={lang === 'zh' ? '删除笔记' : 'Delete note'}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
