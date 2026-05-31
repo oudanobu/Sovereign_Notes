@@ -23,6 +23,7 @@ interface FolderTagHierarchyProps {
   onDeleteTag: (id: string) => void;
   lang: Language;
   t: (key: any) => string;
+  mode?: 'all' | 'folders' | 'tags';
 }
 
 export function FolderTagHierarchy({
@@ -39,6 +40,7 @@ export function FolderTagHierarchy({
   onDeleteTag,
   lang,
   t,
+  mode = 'all',
 }: FolderTagHierarchyProps) {
   const [newFolderName, setNewFolderName] = useState('');
   const [newTagName, setNewTagName] = useState('');
@@ -237,119 +239,123 @@ export function FolderTagHierarchy({
   return (
     <div className="space-y-6 font-sans">
       {/* 1. Folder Directories Block */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center px-1">
-          <div className="flex items-center space-x-1.5">
-            <FolderIcon className="w-4 h-4 text-slate-500" />
-            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">{t('categoriesHeader')}</h3>
-          </div>
-          <button
-            {...bindTouchTap(() => setShowFolderModal(true))}
-            className="p-2.5 hover:bg-gray-100 rounded-xl text-slate-500 hover:text-slate-900 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-            title={t('createFolderTitle')}
-          >
-            <FolderPlus className="w-4.5 h-4.5" />
-          </button>
-        </div>
-
-        {/* Categories List */}
-        <div className="space-y-1">
-          {/* Default Uncategorized Filter */}
-          <div
-            {...bindTouchTap(() => {
-              onSelectTag(null); // Clear tag filtering
-              onSelectFolder(selectedFolderId === 'null' ? null : 'null');
-            })}
-            className={`flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer transition min-h-[44px] ${
-              selectedFolderId === 'null'
-                ? 'bg-slate-900 text-white shadow-sm'
-                : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
-            }`}
-          >
-            <div className="flex items-center space-x-2">
-              <FolderIcon className={`w-3.5 h-3.5 ${selectedFolderId === 'null' ? 'text-white' : 'text-slate-400'}`} />
-              <span>{t('uncategorized')}</span>
+      {(mode === 'all' || mode === 'folders') && (
+        <div className="space-y-2">
+          <div className="flex justify-between items-center px-1">
+            <div className="flex items-center space-x-1.5">
+              <FolderIcon className="w-4 h-4 text-slate-500" />
+              <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">{t('categoriesHeader')}</h3>
             </div>
-            <span className={`text-[10px] font-bold py-0.5 px-2 rounded-full ${selectedFolderId === 'null' ? 'bg-slate-800 text-slate-300' : 'bg-gray-150 text-gray-700'}`}>
-              {notes.filter(n => !n.isDeleted && n.folderId === null).length}
-            </span>
+            <button
+              {...bindTouchTap(() => setShowFolderModal(true))}
+              className="p-2.5 hover:bg-gray-100 rounded-xl text-slate-500 hover:text-slate-900 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              title={t('createFolderTitle')}
+            >
+              <FolderPlus className="w-4.5 h-4.5" />
+            </button>
           </div>
 
-          {activeFolders.map((folder) => {
-            const isSelected = selectedFolderId === folder.id;
-            const count = getFolderNoteCount(folder.id);
-            return (
-              <div
-                key={folder.id}
-                {...bindTouchTap(() => {
-                  onSelectTag(null); // Clear tag filtering
-                  onSelectFolder(isSelected ? null : folder.id);
-                })}
-                className={`flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer group transition-colors min-h-[44px] ${
-                  isSelected
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
-                }`}
-              >
-                <div className="flex items-center space-x-2 truncate pr-1 flex-1">
-                  <FolderIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
-                  <span className="truncate">{folder.name}</span>
-                </div>
-                <div className="flex items-center space-x-1.5">
-                  <span className={`text-[10px] py-0.5 px-2 rounded-full ${isSelected ? 'bg-slate-800 text-slate-300' : 'bg-gray-150 text-gray-750'}`}>
-                    {count}
-                  </span>
-                  <button
-                    {...bindTouchTap((e) => {
-                      e.stopPropagation();
-                      const confirmMsg = t('deleteCategoryConfirm').replace('{name}', folder.name);
-                      // Bypassed confirm for Android WebView
-                      onDeleteFolder(folder.id);
-                    })}
-                    className={`p-2 rounded-xl min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer ${
-                      isSelected ? 'hover:bg-slate-800 text-red-300' : 'hover:bg-red-50 text-red-500'
-                    }`}
-                  >
-                    <Trash className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+          {/* Categories List */}
+          <div className="space-y-1">
+            {/* Default Uncategorized Filter */}
+            <div
+              {...bindTouchTap(() => {
+                onSelectTag(null); // Clear tag filtering
+                onSelectFolder(selectedFolderId === 'null' ? null : 'null');
+              })}
+              className={`flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer transition min-h-[44px] ${
+                selectedFolderId === 'null'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <FolderIcon className={`w-3.5 h-3.5 ${selectedFolderId === 'null' ? 'text-white' : 'text-slate-400'}`} />
+                <span>{t('uncategorized')}</span>
               </div>
-            );
-          })}
+              <span className={`text-[10px] font-bold py-0.5 px-2 rounded-full ${selectedFolderId === 'null' ? 'bg-slate-800 text-slate-300' : 'bg-gray-150 text-gray-700'}`}>
+                {notes.filter(n => !n.isDeleted && n.folderId === null).length}
+              </span>
+            </div>
 
-          {activeFolders.length === 0 && (
-            <p className="text-[10.5px] italic text-gray-400 pl-3 py-2">{t('noCategories')}</p>
-          )}
+            {activeFolders.map((folder) => {
+              const isSelected = selectedFolderId === folder.id;
+              const count = getFolderNoteCount(folder.id);
+              return (
+                <div
+                  key={folder.id}
+                  {...bindTouchTap(() => {
+                    onSelectTag(null); // Clear tag filtering
+                    onSelectFolder(isSelected ? null : folder.id);
+                  })}
+                  className={`flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer group transition-colors min-h-[44px] ${
+                    isSelected
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2 truncate pr-1 flex-1">
+                    <FolderIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
+                    <span className="truncate">{folder.name}</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`text-[10px] py-0.5 px-2 rounded-full ${isSelected ? 'bg-slate-800 text-slate-300' : 'bg-gray-150 text-gray-750'}`}>
+                      {count}
+                    </span>
+                    <button
+                      {...bindTouchTap((e) => {
+                        e.stopPropagation();
+                        const confirmMsg = t('deleteCategoryConfirm').replace('{name}', folder.name);
+                        // Bypassed confirm for Android WebView
+                        onDeleteFolder(folder.id);
+                      })}
+                      className={`p-2 rounded-xl min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer ${
+                        isSelected ? 'hover:bg-slate-800 text-red-300' : 'hover:bg-red-50 text-red-500'
+                      }`}
+                    >
+                      <Trash className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            {activeFolders.length === 0 && (
+              <p className="text-[10.5px] italic text-gray-400 pl-3 py-2">{t('noCategories')}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Hierarchical Tags Block */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center px-1">
-          <div className="flex items-center space-x-1.5">
-            <TagIcon className="w-4 h-4 text-slate-500" />
-            <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">{t('sovereignTagsHeader')}</h3>
+      {(mode === 'all' || mode === 'tags') && (
+        <div className="space-y-2">
+          <div className="flex justify-between items-center px-1">
+            <div className="flex items-center space-x-1.5">
+              <TagIcon className="w-4 h-4 text-slate-500" />
+              <h3 className="font-extrabold text-xs uppercase tracking-wider text-slate-500">{t('sovereignTagsHeader')}</h3>
+            </div>
+            <button
+              {...bindTouchTap(() => {
+                setSelectedParentTagId(null);
+                setShowTagModal(true);
+              })}
+              className="p-2.5 hover:bg-gray-100 rounded-xl text-slate-500 hover:text-slate-900 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              title={t('createRootTag')}
+            >
+              <Plus className="w-4.5 h-4.5" />
+            </button>
           </div>
-          <button
-            {...bindTouchTap(() => {
-              setSelectedParentTagId(null);
-              setShowTagModal(true);
-            })}
-            className="p-2.5 hover:bg-gray-100 rounded-xl text-slate-500 hover:text-slate-900 transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-            title={t('createRootTag')}
-          >
-            <Plus className="w-4.5 h-4.5" />
-          </button>
-        </div>
 
-        {/* Tree Container */}
-        <div className="space-y-1">
-          {tagTree.map(node => renderTagNode(node))}
-          {activeTags.length === 0 && (
-            <p className="text-[10.5px] italic text-gray-400 pl-3 py-2">{t('noTags')}</p>
-          )}
+          {/* Tree Container */}
+          <div className="space-y-1">
+            {tagTree.map(node => renderTagNode(node))}
+            {activeTags.length === 0 && (
+              <p className="text-[10.5px] italic text-gray-400 pl-3 py-2">{t('noTags')}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Add Folder Modal Dialog */}
       {showFolderModal && (

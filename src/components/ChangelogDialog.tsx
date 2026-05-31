@@ -123,7 +123,10 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div className="space-y-1">
-                  <span className="text-xs font-black text-slate-900">SovereignNote-Windows-Portable.exe</span>
+                  <div className="flex flex-col space-y-0.5">
+                    <span className="text-xs font-black text-slate-900">SovereignNote-Windows-Portable-x64.exe (64-bit)</span>
+                    <span className="text-xs font-black text-emerald-600">SovereignNote-Windows-Portable-ia32.exe (32-bit / Win32)</span>
+                  </div>
                   <p className="text-[11px] leading-relaxed text-gray-500 font-medium">{t('win32GreenDesc')}</p>
                 </div>
               </div>

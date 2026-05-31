@@ -19,7 +19,9 @@ import {
   Sliders,
   PenTool,
   BookOpen,
-  Trash2
+  Trash2,
+  Menu,
+  X
 } from 'lucide-react';
 import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
 import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent } from './db';
@@ -69,6 +71,37 @@ export default function App() {
   const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
+
+  // Responsive sidebar collapse state (persisted to localStorage)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('sovereign_sidebar_collapsed') === 'true';
+  });
+
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'folders' | 'tags'>(() => {
+    return (localStorage.getItem('sovereign_active_sidebar_tab') as 'folders' | 'tags') || 'folders';
+  });
+
+  const handleToggleSidebar = () => {
+    const nextVal = !isSidebarCollapsed;
+    setIsSidebarCollapsed(nextVal);
+    localStorage.setItem('sovereign_sidebar_collapsed', String(nextVal));
+  };
+
+  // Bind keyboard shortcut Alt+B / Ctrl+B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.altKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setIsSidebarCollapsed(prev => {
+          const nextVal = !prev;
+          localStorage.setItem('sovereign_sidebar_collapsed', String(nextVal));
+          return nextVal;
+        });
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Initialize and check database seeding
   useEffect(() => {
@@ -678,188 +711,253 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       {/* Columns Container Wrapper */}
       <div className="flex-1 flex overflow-hidden relative min-h-0">
         
-        {/* 1. LEFT SIDEBAR PANEL */}
-        <aside className={`w-full lg:w-80 border-r border-gray-200 bg-white flex flex-col justify-between h-full flex-shrink-0 ${
-          activePanel === 'sidebar' ? 'flex' : 'hidden lg:flex'
-        }`}>
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin">
-          
-          {/* Logo Name & Settings / Language triggers */}
-          <div className="flex flex-col space-y-3.5 border-b border-gray-150 pb-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+        {/* 1. UNIFIED COMPOSITE SIDEBAR BACKDROP */}
+        {activePanel === 'sidebar' && (
+          <div
+            {...bindTouchTap(() => setActivePanel('list'))}
+            className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden animate-fade-in"
+          />
+        )}
+
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-205 flex h-full flex-shrink-0 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+            activePanel === 'sidebar' ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          } ${
+            isSidebarCollapsed ? 'w-[68px]' : 'w-[348px]'
+          }`}
+        >
+          {/* A. PERMANENT ICON RAIL */}
+          <div className="w-[68px] flex-shrink-0 border-r border-gray-150 flex flex-col justify-between items-center py-4 select-none bg-white h-full">
+            {/* Top triggers: Hamburger and Category tab selectors */}
+            <div className="flex flex-col items-center space-y-4 w-full px-2">
+              <button
+                {...bindTouchTap(handleToggleSidebar)}
+                className="p-2 hover:bg-slate-100 text-slate-800 hover:text-slate-950 rounded-xl transition cursor-pointer active:scale-95 min-h-[44px] min-w-[44px] flex items-center justify-center border border-transparent hover:border-gray-200 bg-slate-50/40"
+                title={lang === 'zh' ? '展开/收起侧边栏 (Alt+B)' : 'Toggle Sidebar (Alt+B)'}
+              >
+                <Menu className="w-5 h-5 text-slate-800" />
+              </button>
+              
+              <div className="w-8 border-b border-gray-150"></div>
+
+              {/* Folders select */}
+              <button
+                {...bindTouchTap(() => {
+                  if (activeSidebarTab === 'folders' && !isSidebarCollapsed) {
+                    setIsSidebarCollapsed(true);
+                    localStorage.setItem('sovereign_sidebar_collapsed', 'true');
+                  } else {
+                    setActiveSidebarTab('folders');
+                    localStorage.setItem('sovereign_active_sidebar_tab', 'folders');
+                    setIsSidebarCollapsed(false);
+                    localStorage.setItem('sovereign_sidebar_collapsed', 'false');
+                  }
+                  setSelectedTypeFilter('all');
+                })}
+                className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
+                  activeSidebarTab === 'folders' && !isSidebarCollapsed
+                    ? 'bg-slate-900 border-slate-950 text-white shadow-xs'
+                    : 'bg-slate-50 border-gray-200 text-slate-600 hover:bg-slate-100 placeholder-slate-400'
+                }`}
+                title={lang === 'zh' ? '分类目录' : 'Categories'}
+              >
+                <span className="text-xs">📂</span>
+              </button>
+
+              {/* Tags select */}
+              <button
+                {...bindTouchTap(() => {
+                  if (activeSidebarTab === 'tags' && !isSidebarCollapsed) {
+                    setIsSidebarCollapsed(true);
+                    localStorage.setItem('sovereign_sidebar_collapsed', 'true');
+                  } else {
+                    setActiveSidebarTab('tags');
+                    localStorage.setItem('sovereign_active_sidebar_tab', 'tags');
+                    setIsSidebarCollapsed(false);
+                    localStorage.setItem('sovereign_sidebar_collapsed', 'false');
+                  }
+                })}
+                className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
+                  activeSidebarTab === 'tags' && !isSidebarCollapsed
+                    ? 'bg-purple-650 border-purple-700 text-white shadow-xs'
+                    : 'bg-slate-50 border-gray-200 text-slate-600 hover:bg-slate-100 placeholder-slate-400'
+                }`}
+                title={lang === 'zh' ? '标签大纲' : 'Tag Tree'}
+              >
+                <span className="text-xs">🏷️</span>
+              </button>
+
+              {/* Canvas selector */}
+              <button
+                {...bindTouchTap(() => {
+                  setSelectedTypeFilter(selectedTypeFilter === 'whiteboard' ? 'all' : 'whiteboard');
+                  setActivePanel('list');
+                })}
+                className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
+                  selectedTypeFilter === 'whiteboard'
+                    ? 'bg-amber-500 border-amber-600 text-white shadow-xs'
+                    : 'bg-slate-50 border-gray-200 text-slate-600 hover:bg-slate-100'
+                }`}
+                title={lang === 'zh' ? '画板筛选' : 'Canvas Whiteboard'}
+              >
+                <span className="text-xs">🎨</span>
+              </button>
+
+              {/* Sync settings */}
+              <button
+                {...bindTouchTap(() => {
+                  if (mainView === 'settings') {
+                    setMainView('notes');
+                    setActivePanel('list');
+                  } else {
+                    setMainView('settings');
+                    setActivePanel('workspace');
+                  }
+                })}
+                className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
+                  mainView === 'settings'
+                    ? 'bg-indigo-650 border-indigo-700 text-white shadow-xs'
+                    : 'bg-slate-50 border-gray-200 text-slate-600 hover:bg-slate-100'
+                }`}
+                title={lang === 'zh' ? '同步中心' : 'Sync Center'}
+              >
+                <Sliders className="w-4 h-4 text-slate-600" />
+              </button>
+            </div>
+
+            {/* Bottom section: Accessibility settings */}
+            <div className="flex flex-col items-center space-y-3.5 w-full px-2">
+              <button
+                {...bindTouchTap(() => setLang(lang === 'en' ? 'zh' : 'en'))}
+                className="w-11 h-11 border border-gray-200 hover:border-slate-400 bg-slate-50 text-slate-700 font-extrabold text-[10px] rounded-xl transition duration-150 flex flex-col items-center justify-center shadow-xs cursor-pointer"
+                title={lang === 'en' ? '切换为中文版' : 'Switch to English Context'}
+              >
+                <Sparkles className="w-2.5 h-2.5 text-indigo-500 mb-0.5" />
+                <span className="text-[9px] uppercase">{lang === 'en' ? '中文' : 'EN'}</span>
+              </button>
+
+              <button
+                {...bindTouchTap(() => {
+                  const nextLargeVal = !isLargeFont;
+                  setIsLargeFont(nextLargeVal);
+                  localStorage.setItem('sovereign_large_font', String(nextLargeVal));
+                })}
+                className={`w-11 h-11 border rounded-xl font-black text-[10px] transition duration-150 flex flex-col items-center justify-center shadow-xs cursor-pointer ${
+                  isLargeFont 
+                    ? 'bg-rose-600 border-rose-650 text-white shadow-sm' 
+                    : 'bg-slate-50 border-gray-250 text-slate-700 hover:bg-slate-100 hover:border-slate-350'
+                }`}
+                title={lang === 'zh' ? '大字体模式' : 'Toggle Large Font'}
+              >
+                <BookOpen className="w-2.5 h-2.5 text-pink-500 mb-0.5" />
+                <span className="text-[9px] uppercase">{isLargeFont ? '大' : 'A'}</span>
+              </button>
+
+              <button
+                {...bindTouchTap(() => setShowChangelog(true))}
+                className="w-11 h-11 bg-slate-50 border border-gray-200 hover:border-indigo-400 text-indigo-650 rounded-xl flex items-center justify-center transition cursor-pointer active:scale-95"
+                title={t('aboutTitle')}
+              >
+                <span className="text-[10px] uppercase font-bold text-indigo-500">v1.4</span>
+              </button>
+            </div>
+          </div>
+
+          {/* B. COLLAPSIBLE FUNCTIONAL CONTENT PANEL */}
+          <div
+            className={`flex flex-col justify-between bg-slate-50/10 transition-all duration-300 ease-in-out overflow-hidden h-full ${
+              isSidebarCollapsed ? 'w-0 border-r-0' : 'w-[280px]'
+            }`}
+          >
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin flex flex-col min-h-0">
+              {/* Header brand name */}
+              <div className="flex items-center space-x-2.5 border-b border-gray-150 pb-4">
                 <div className="h-7 w-7 rounded-xl bg-slate-900 flex items-center justify-center text-white">
                   <FileText className="w-4.5 h-4.5" />
                 </div>
                 <div>
                   <span className="font-black tracking-tight text-sm text-slate-900 uppercase">SovereignNote</span>
-                  <span className="block text-[8.5px] font-bold text-gray-400 -mt-0.5 uppercase tracking-widest">{lang === 'zh' ? '主权双语笔记' : 'Sovereign UI'}</span>
+                  <span className="block text-[8.5px] font-bold text-gray-400 -mt-0.5 uppercase tracking-widest leading-none">
+                    {lang === 'zh' ? '主权双语笔记' : 'Sovereign UI'}
+                  </span>
                 </div>
               </div>
 
-              {/* Language Selector & Big Font Accessibility Button bar */}
-              <div className="flex items-center space-x-1.5">
-                <button
-                  {...bindTouchTap(() => setLang(lang === 'en' ? 'zh' : 'en'))}
-                  className="px-1.5 hover:bg-slate-150 border border-gray-200 hover:border-slate-400 bg-slate-50 text-slate-700 font-extrabold text-[10px] uppercase rounded-xl transition duration-150 flex flex-col items-center justify-center shadow-xs cursor-pointer min-h-[44px] min-w-[42px]"
-                  title={lang === 'en' ? '切换为中文版' : 'Switch to English Context'}
-                >
-                  <Sparkles className="w-3 h-3 text-indigo-500 mb-0.5" />
-                  <span>{lang === 'en' ? '中文' : 'EN'}</span>
-                </button>
-
-                <button
-                  {...bindTouchTap(() => {
-                    const nextLargeVal = !isLargeFont;
-                    setIsLargeFont(nextLargeVal);
-                    localStorage.setItem('sovereign_large_font', String(nextLargeVal));
-                  })}
-                  className={`px-1.5 border rounded-xl font-black text-[10px] uppercase transition duration-150 flex flex-col items-center justify-center shadow-xs cursor-pointer min-h-[44px] min-w-[42px] ${
-                    isLargeFont 
-                      ? 'bg-rose-600 border-rose-650 text-white shadow-sm' 
-                      : 'bg-slate-50 border-gray-250 text-slate-700 hover:bg-slate-100 hover:border-slate-350'
-                  }`}
-                  title={lang === 'zh' ? '一键开启整体系统高对比度大字体' : 'Toggle Large Font accessibility Scale'}
-                >
-                  <BookOpen className="w-3 h-3 text-pink-500 mb-0.5" />
-                  <span>{isLargeFont ? '大' : 'A'}</span>
-                </button>
+              {/* Dynamic Selective views block */}
+              <div className="flex-1 min-h-0">
+                <FolderTagHierarchy
+                  folders={folders}
+                  tags={tags}
+                  notes={notes}
+                  selectedFolderId={selectedFolderId}
+                  selectedTagId={selectedTagId}
+                  onSelectFolder={(id) => {
+                    setSelectedDate(null);
+                    setSelectedFolderId(id);
+                    setActivePanel('list');
+                  }}
+                  onSelectTag={(id) => {
+                    setSelectedDate(null);
+                    setSelectedTagId(id);
+                    setActivePanel('list');
+                  }}
+                  onCreateFolder={handleCreateFolder}
+                  onCreateTag={handleCreateTag}
+                  onDeleteFolder={handleDeleteFolder}
+                  onDeleteTag={handleDeleteTag}
+                  lang={lang}
+                  t={t}
+                  mode={activeSidebarTab}
+                />
               </div>
+
+              {/* Search bar inside content panel */}
+              <div className="relative mt-2">
+                <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder={t('searchPlaceholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-xs font-sans focus:outline-none focus:ring-1 focus:ring-slate-900 bg-slate-50 text-slate-700"
+                />
+              </div>
+
+              {/* Interactive Date mini calendar */}
+              <CalendarPanel
+                notes={notes}
+                events={events}
+                selectedDate={selectedDate}
+                onSelectDate={(date) => {
+                  setSelectedFolderId(null);
+                  setSelectedTagId(null);
+                  setSelectedDate(date);
+                  setActivePanel('list');
+                }}
+                onSaveEvent={handleSaveEvent}
+                onDeleteEvent={handleDeleteEvent}
+                lang={lang}
+                t={t}
+              />
             </div>
 
-            {/* Return to notes button if in settings, otherwise Sync Settings button */}
-            {mainView === 'settings' ? (
+            {/* Local database status sync string */}
+            <div className="border-t border-gray-150 p-4 bg-slate-50/50 flex justify-between items-center text-xs">
+              <div className="flex items-center space-x-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  {t('localSovereignDB')}
+                </span>
+              </div>
               <button
-                {...bindTouchTap(() => {
-                  setMainView('notes');
-                  setActivePanel('list');
-                })}
-                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between space-x-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
-                title={lang === 'zh' ? '返回笔记' : 'Back to Notes'}
+                {...bindTouchTap(() => setShowChangelog(true))}
+                className="text-[9.5px] font-mono font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer transition-all outline-none"
               >
-                <div className="flex items-center space-x-2 text-xs">
-                  <FileText className="w-4 h-4 text-slate-800" />
-                  <span>{lang === 'zh' ? '返回笔记' : 'Back to Notes'}</span>
-                </div>
+                {t('versionString')}
               </button>
-            ) : (
-              <button
-                {...bindTouchTap(() => {
-                  setMainView('settings');
-                  setActivePanel('workspace');
-                })}
-                className="w-full py-2.5 px-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-700 hover:text-slate-950 transition flex items-center justify-between space-x-1.5 cursor-pointer font-bold transition-all min-h-[44px]"
-                title={t('syncCenter')}
-              >
-                <div className="flex items-center space-x-2 text-xs">
-                  <Sliders className="w-4 h-4 text-slate-800" />
-                  <span>{t('syncCenter')}</span>
-                </div>
-                <span className="text-[9px] bg-slate-900 text-slate-200 py-0.5 px-2 rounded-full uppercase tracking-wider font-extrabold">{lang === 'zh' ? '开启同步' : 'Online'}</span>
-              </button>
-            )}
+            </div>
           </div>
-
-          {/* Column Category Separation Bar */}
-          <div className="flex border-b border-gray-150 pb-3.5 mb-2 gap-1.5 shrink-0 select-none">
-            <button
-              {...bindTouchTap(() => {
-                setSelectedTypeFilter('all');
-                setActivePanel('list');
-              })}
-              className={`flex-1 text-center py-2 px-1 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition duration-150 cursor-pointer min-h-[44px] flex items-center justify-center space-x-1 border ${
-                selectedTypeFilter === 'all'
-                  ? 'bg-slate-900 border-slate-950 text-white shadow-sm'
-                  : 'bg-slate-50 border-gray-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
-              }`}
-            >
-              <span>📂 {lang === 'zh' ? '综合文库' : 'Library'}</span>
-            </button>
-            <button
-              {...bindTouchTap(() => {
-                setSelectedTypeFilter('whiteboard');
-                setActivePanel('list');
-              })}
-              className={`flex-1 text-center py-2 px-1 rounded-xl text-[10.5px] font-black uppercase tracking-wider transition duration-150 cursor-pointer min-h-[44px] flex items-center justify-center space-x-1 border ${
-                selectedTypeFilter === 'whiteboard'
-                  ? 'bg-purple-600 border-purple-705 text-white shadow-sm'
-                  : 'bg-slate-50 border-gray-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
-              }`}
-            >
-              <span>🎨 {lang === 'zh' ? '独立画板' : 'Canvas'}</span>
-            </button>
-          </div>
-
-          {/* Categories and 6 Level Tags */}
-          <FolderTagHierarchy
-            folders={folders}
-            tags={tags}
-            notes={notes}
-            selectedFolderId={selectedFolderId}
-            selectedTagId={selectedTagId}
-            onSelectFolder={(id) => {
-              setSelectedDate(null);
-              setSelectedFolderId(id);
-              setActivePanel('list');
-            }}
-            onSelectTag={(id) => {
-              setSelectedDate(null);
-              setSelectedTagId(id);
-              setActivePanel('list');
-            }}
-            onCreateFolder={handleCreateFolder}
-            onCreateTag={handleCreateTag}
-            onDeleteFolder={handleDeleteFolder}
-            onDeleteTag={handleDeleteTag}
-            lang={lang}
-            t={t}
-          />
-
-          {/* Search bar */}
-          <div className="relative mt-2">
-            <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder={t('searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-xs font-sans focus:outline-none focus:ring-1 focus:ring-slate-900 bg-slate-50 text-slate-700"
-            />
-          </div>
-
-          {/* Interactive Date calendar */}
-          <CalendarPanel
-            notes={notes}
-            events={events}
-            selectedDate={selectedDate}
-            onSelectDate={(date) => {
-              setSelectedFolderId(null);
-              setSelectedTagId(null);
-              setSelectedDate(date);
-              setActivePanel('list');
-            }}
-            onSaveEvent={handleSaveEvent}
-            onDeleteEvent={handleDeleteEvent}
-            lang={lang}
-            t={t}
-          />
-        </div>
-
-        {/* Sync panel indicator */}
-        <div className="border-t border-gray-150 p-4 bg-slate-50/50 flex justify-between items-center text-xs">
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('localSovereignDB')}</span>
-          </div>
-          <button
-            {...bindTouchTap(() => setShowChangelog(true))}
-            className="text-[9.5px] font-mono font-bold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer active:scale-95 transition-all outline-none py-1 px-2 hover:bg-indigo-55/60 rounded-lg min-h-[32px] flex items-center justify-center font-extrabold"
-            title={t('aboutTitle')}
-          >
-            {t('versionString')}
-          </button>
-        </div>
-      </aside>
+        </aside>
 
       {/* Conditionally render List + Workspace OR Settings Workspace */}
       {mainView === 'notes' ? (

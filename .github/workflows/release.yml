@@ -108,11 +108,17 @@ jobs:
           # 资源定位与转存
           mkdir -p app
           cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html app/SovereignNote-PWA-SingleFile.html
-          # 执行免 Wine 的高性能 Windows 离线包编译
+           # 执行免 Wine 的高性能 Windows 离线包编译，同时构建 32 位 (ia32) 与 64 位 (x64) 架构，彻底支持 32 位 Windows 设备
           npm install --legacy-peer-deps
-          npx electron-builder --win portable
+          npx electron-builder --win portable --ia32 --x64
           # 将最终产出的 Windows 标准绿化便携可执行程序同步到总成果区
-          cp dist/SovereignNote*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe
+          ls -la dist/
+          # 针对 32 位 (ia32) 构建的处理与转存
+          cp dist/*ia32*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-ia32.exe || cp dist/*x86*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-ia32.exe || true
+          # 针对 64 位 (x64) 构建的处理与转存
+          cp dist/*x64*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-x64.exe || true
+          # 提供通用默认二进制文件，兼容历史版本
+          cp dist/*x64*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe || cp dist/SovereignNote*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe || true
           cd ..
 
       # ==================== STEP 3: 编译 Android 5.0 触控真机原生 APK ====================
@@ -273,11 +279,13 @@ jobs:
             1. **`1-pwa/` (通用离线单网页版)**
                * **`SovereignNote-PWA-SingleFile.html`**：纯单文件应用，可在所有电脑、Pad 浏览器中无网络直接拖拽运行，支持 100% 离线 IndexedDB 特性。
             2. **`2-windows/` (原生桌面 EXE 绿色版)**
-               * **`SovereignNote-Windows-Portable.exe`**：利用高性能 Electron 原生 WebView 封装构建的免安装、双击直接独立窗口运行的 Windows 真机 Portable EXE，彻底摆脱外部浏览器的约束！
+               * **`SovereignNote-Windows-Portable.exe`**（64位系统专包）。同时提供 SovereignNote-Windows-Portable-ia32.exe（针对 32位 Windows (Win32) 兼容优化，完美绕过“需要64位Windows系统”报错），彻底摆脱外部浏览器的约束！
             3. **`3-android/` (安卓5.0+ 经典平板原生 APK 版)**
                * **`SovereignNote-Android5.0-Tablet.apk`**：专为经典旧版安卓平板（Android 5.0+ / 5.1 / 6.0 等）转译优化的原生 Cordova WebView 封装 APK，免证书、免 https 强制校验，完美抵消 300ms 点击判定延迟，性能非凡。
           files: |
             dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html
+            dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-x64.exe
+            dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-ia32.exe
             dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe
             dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk
         env:
