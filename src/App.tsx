@@ -1262,9 +1262,9 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                         ? 'bg-slate-900 border-slate-950 text-white shadow-xs'
                         : 'bg-white border-gray-200 text-slate-600 hover:bg-slate-50'
                     }`}
-                    title={lang === 'zh' ? '折叠/展开关联分类和标签' : 'Collapse/Expand details'}
+                    title={lang === 'zh' ? '折叠/展开关联分类、标签与笔记操作' : 'Collapse/Expand Properties & Actions'}
                   >
-                    <span>{lang === 'zh' ? '🏷️ 关联属性' : '🏷️ Properties'}</span>
+                    <span>{lang === 'zh' ? '⚙️ 属性与操作' : '⚙️ Properties & Actions'}</span>
                     <span className="text-[9.5px] font-bold opacity-70">
                       {isMetaCollapsed ? '▼' : '▲'}
                     </span>
@@ -1273,9 +1273,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 
                 {/* Categorization Dropdowns (Strict Flex Wrap Avoids Overlapping - Collapsible!) */}
                 {!isMetaCollapsed && (
-                  <div className="flex flex-wrap items-center gap-2 mt-2 text-[10.5px] text-gray-500 font-bold font-sans animate-fade-in border-t border-gray-150/60 pt-2 w-full">
+                  <div className="flex flex-wrap items-center gap-3.5 mt-2.5 text-[10.5px] text-gray-550 font-bold font-sans animate-fade-in border-t border-gray-150 pt-2.5 w-full">
+                    {/* 所属分类 (Category) */}
                     <div className="flex items-center space-x-1.5 flex-shrink-0">
-                      <span>{t('inCategory')}</span>
+                      <span className="text-slate-500">{t('inCategory')}</span>
                       <select
                         value={noteFolderId || ''}
                         onChange={(e) => {
@@ -1283,7 +1284,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                           setNoteFolderId(val);
                           triggerLocalSave({ folderId: val });
                         }}
-                        className="bg-transparent border border-gray-250 hover:border-slate-450 text-gray-650 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-white focus:outline-none text-[10px] font-bold min-h-[38px]"
+                        className="bg-transparent border border-gray-250 hover:border-slate-450 text-gray-750 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-white focus:outline-none text-[10px] font-bold min-h-[36px]"
                       >
                         <option value="">{t('uncategorized')}</option>
                         {folders.filter(f => !f.isDeleted).map(f => (
@@ -1292,16 +1293,17 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                       </select>
                     </div>
 
-                    <span className="mx-1 text-gray-300 hidden sm:inline">|</span>
+                    <span className="text-gray-300 hidden md:inline select-none">|</span>
                     
+                    {/* 关联标签 (Tags) */}
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="flex-shrink-0">{t('tagsLabel')}</span>
+                      <span className="text-slate-500">{t('tagsLabel')}</span>
                       <div className="flex flex-wrap items-center gap-1.5">
                         {noteTagIds.map((tid) => {
                           const tInstance = tags.find(tag => tag.id === tid && !tag.isDeleted);
                           if (!tInstance) return null;
                           return (
-                            <span key={tid} className="bg-slate-100 border border-gray-200 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center space-x-1 uppercase min-h-[30px] leading-tight">
+                            <span key={tid} className="bg-slate-100 border border-gray-250 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center space-x-1 uppercase min-h-[28px] leading-tight">
                               {tInstance.name}
                               <button
                                 {...bindTouchTap(() => {
@@ -1309,7 +1311,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                                   setNoteTagIds(remaining);
                                   triggerLocalSave({ tagIds: remaining });
                                 })}
-                                className="hover:text-red-500 font-bold text-[9px] w-4.5 h-4.5 flex items-center justify-center cursor-pointer"
+                                className="hover:text-red-500 font-bold text-[9px] w-4 h-4 flex items-center justify-center cursor-pointer"
                               >
                                 ✕
                               </button>
@@ -1327,7 +1329,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                               triggerLocalSave({ tagIds: updated });
                             }
                           }}
-                          className="bg-transparent border border-none text-indigo-600 hover:text-indigo-850 py-1.5 px-2.5 cursor-pointer focus:outline-none text-[10px] font-black uppercase min-h-[38px]"
+                          className="bg-transparent border border-none text-indigo-600 hover:text-indigo-850 py-1 px-2 cursor-pointer focus:outline-none text-[10px] font-black uppercase min-h-[28px]"
                         >
                           <option value="">{t('addTagBtn')}</option>
                           {tags.filter(tInst => !tInst.isDeleted && !noteTagIds.includes(tInst.id)).map(tInst => (
@@ -1336,6 +1338,47 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                         </select>
                       </div>
                     </div>
+
+                    <span className="text-gray-300 hidden md:inline select-none">|</span>
+
+                    {/* Grouped Actions: Import, Export, Trash */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        onChange={(e) => {
+                          const val = e.target.value as any;
+                          if (val) {
+                            handleExportCurrentNote(val);
+                            e.target.value = ''; // Clean selection
+                          }
+                        }}
+                        className="bg-transparent border border-gray-250 text-gray-750 px-2.5 py-1.5 rounded-xl hover:bg-white focus:outline-none text-[10.5px] font-extrabold cursor-pointer min-h-[36px]"
+                      >
+                        <option value="">📥 {t('exportNote')}</option>
+                        <option value="md">Markdown (.md)</option>
+                        <option value="txt">Plain Text (.txt)</option>
+                        <option value="html">HTML web sheet (.html)</option>
+                        {activeNoteType === 'mindmap' && <option value="json">Map Data File (.json)</option>}
+                      </select>
+
+                      <label className="border border-gray-250 rounded-xl px-2.5 py-1.5 text-[10.5px] font-extrabold hover:bg-white cursor-pointer transition min-h-[36px] flex items-center justify-center bg-transparent text-gray-700">
+                        <input
+                          type="file"
+                          accept=".md,.txt,.html,.json,.csv"
+                          onChange={handleImportNoteFile}
+                          className="hidden"
+                        />
+                        <span>📤 {t('importBtn')}</span>
+                      </label>
+
+                      <button
+                        {...bindTouchTap(() => handleDeleteNote(activeSelectedNoteInstance.id))}
+                        className="px-2.5 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition cursor-pointer text-[10.5px] font-extrabold min-h-[36px] flex items-center justify-center bg-transparent"
+                        title={t('trashBtn')}
+                      >
+                        🗑️ {t('trashBtn')}
+                      </button>
+                    </div>
+
                   </div>
                 )}
               </div>
@@ -1400,46 +1443,6 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                     {t('interactiveMindmapBoard')}
                   </div>
                 )}
-
-                {/* Import and export action dropdown buttons per-note */}
-                <div className="h-5 w-px bg-gray-200"></div>
-                
-                <div className="flex items-center space-x-1.5 text-xs text-gray-550">
-                  <select
-                    onChange={(e) => {
-                      const val = e.target.value as any;
-                      if (val) {
-                        handleExportCurrentNote(val);
-                        e.target.value = ''; // Clean selection
-                      }
-                    }}
-                    className="bg-transparent border border-gray-250 text-gray-650 px-2.5 py-1.5 rounded-xl hover:bg-white focus:outline-none text-[10.5px] font-extrabold cursor-pointer min-h-[38px]"
-                  >
-                    <option value="">{t('exportNote')}</option>
-                    <option value="md">Markdown (.md)</option>
-                    <option value="txt">Plain Text (.txt)</option>
-                    <option value="html">HTML web sheet (.html)</option>
-                    {activeNoteType === 'mindmap' && <option value="json">Map Data File (.json)</option>}
-                  </select>
-
-                  <label className="border border-gray-255 rounded-xl px-3 py-2 text-[10.5px] font-black hover:bg-white cursor-pointer transition min-h-[38px] flex items-center justify-center">
-                    <input
-                      type="file"
-                      accept=".md,.txt,.html,.json,.csv"
-                      onChange={handleImportNoteFile}
-                      className="hidden"
-                    />
-                    {t('importBtn')}
-                  </label>
-
-                  <button
-                    {...bindTouchTap(() => handleDeleteNote(activeSelectedNoteInstance.id))}
-                    className="p-2 border border-red-150 text-red-550 hover:bg-red-50 hover:text-red-700 rounded-xl transition cursor-pointer text-[10px] font-extrabold min-h-[38px] flex items-center justify-center uppercase"
-                    title={t('trashBtn')}
-                  >
-                    🗑️ {t('trashBtn')}
-                  </button>
-                </div>
               </div>
             </div>
 
