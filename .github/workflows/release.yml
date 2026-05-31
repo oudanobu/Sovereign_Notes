@@ -72,6 +72,9 @@ jobs:
               "win": {
                 "target": "portable"
               },
+              "portable": {
+                "artifactName": "SovereignNote-Windows-Portable-${arch}.${ext}"
+              },
               "directories": {
                 "output": "dist"
               }
@@ -116,8 +119,8 @@ jobs:
           npx electron-builder --win portable --x64
 
           # 将最终产出的 Windows 64位便携程序同步移动到成果区目录
-          cp dist/*x64*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-x64.exe || true
-          cp dist/*x64*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe || cp dist/SovereignNote*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe || true
+          cp dist/SovereignNote-Windows-Portable-x64.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-x64.exe || true
+          cp dist/SovereignNote-Windows-Portable-x64.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable.exe || true
 
           # 彻底清除临时编译成果，保障 32 位（ia32）编译过程没有旧文件干扰
           rm -rf dist/*
@@ -127,7 +130,7 @@ jobs:
           npx electron-builder --win portable --ia32
 
           # 将最终产出的 Windows 32位（ia32/x86）便携程序转存到成果区目录
-          cp dist/*ia32*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-ia32.exe || cp dist/*x86*.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-ia32.exe || true
+          cp dist/SovereignNote-Windows-Portable-ia32.exe ../dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-ia32.exe || true
 
           cd ..
 

@@ -24,7 +24,9 @@ import {
   X,
   FolderOpen,
   Tag as TagIcon,
-  Palette
+  Palette,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
 import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent } from './db';
@@ -102,6 +104,16 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
     return localStorage.getItem('sovereign_sidebar_collapsed') === 'true';
   });
+
+  const [isNoteListCollapsed, setIsNoteListCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('sovereign_notelist_collapsed') === 'true';
+  });
+
+  const handleToggleNoteList = () => {
+    const nextVal = !isNoteListCollapsed;
+    setIsNoteListCollapsed(nextVal);
+    localStorage.setItem('sovereign_notelist_collapsed', String(nextVal));
+  };
 
   const [activeSidebarTab, setActiveSidebarTab] = useState<'folders' | 'tags' | 'calendar'>(() => {
     return (localStorage.getItem('sovereign_active_sidebar_tab') as 'folders' | 'tags' | 'calendar') || 'folders';
@@ -1050,21 +1062,30 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       {mainView === 'notes' ? (
         <>
           {/* 2. CENTER LIST BLOCK */}
-          <section className={`w-full lg:w-[390px] border-r border-gray-200 bg-slate-50/50 flex flex-col h-full flex-shrink-0 ${
+          <section className={`transition-all duration-300 ease-in-out border-r border-gray-200 bg-slate-50/50 flex flex-col h-full flex-shrink-0 ${
             activePanel === 'list' ? 'flex' : 'hidden lg:flex'
+          } ${
+            isNoteListCollapsed ? 'lg:w-0 lg:border-r-0 overflow-hidden' : 'w-full lg:w-[390px]'
           }`}>
-        <div className="px-4 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
+        <div className="px-4 py-4 border-b border-gray-200 flex justify-between items-center bg-white flex-shrink-0">
           <div className="flex items-center space-x-2">
             <button
               {...bindTouchTap(() => setActivePanel('sidebar'))}
-              className="lg:hidden p-2 text-slate-700 bg-slate-50/85 hover:text-slate-950 hover:bg-slate-100 border border-gray-200 rounded-xl transition cursor-pointer min-h-[38px] flex items-center justify-center font-bold text-xs"
+              className="lg:hidden p-2 text-slate-700 bg-slate-50/85 hover:text-slate-955 hover:bg-slate-100 border border-gray-200 rounded-xl transition cursor-pointer min-h-[38px] flex items-center justify-center font-bold text-xs"
               title={t('backToFilters')}
             >
               <span>{t('backToFilters')}</span>
             </button>
-            <div>
-              <h2 className="text-xs font-black uppercase tracking-widest text-slate-450">{t('notebooks')}</h2>
-              <p className="text-[10px] text-gray-500 font-extrabold uppercase mt-0.5 tracking-wider">{filteredNotesList.length} {t('filteredItems')}</p>
+            <button
+              {...bindTouchTap(handleToggleNoteList)}
+              className="hidden lg:flex p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-850 rounded-xl transition cursor-pointer min-h-[30px] min-w-[30px] items-center justify-center border border-gray-150"
+              title={lang === 'zh' ? '收起笔记本列表' : 'Collapse notebook pane'}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="min-w-0">
+              <h2 className="text-xs font-black uppercase tracking-widest text-slate-450 truncate">{t('notebooks')}</h2>
+              <p className="text-[10px] text-gray-550 font-extrabold uppercase mt-0.5 tracking-wider truncate">{filteredNotesList.length} {t('filteredItems')}</p>
             </div>
           </div>
 
@@ -1241,6 +1262,22 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                       title={t('backToList')}
                     >
                       <span>{t('backToList')}</span>
+                    </button>
+
+                    {/* PC Note List Collapse/Uncollapse Switch Button */}
+                    <button
+                      {...bindTouchTap(handleToggleNoteList)}
+                      className="hidden lg:flex px-2.5 py-1.5 text-slate-700 bg-white border border-gray-200 hover:text-slate-955 hover:bg-slate-100 rounded-xl transition cursor-pointer min-h-[36px] items-center justify-center font-extrabold text-[11px] space-x-1.5 flex-shrink-0"
+                      title={isNoteListCollapsed ? (lang === 'zh' ? '展开笔记本列表' : 'Expand note list') : (lang === 'zh' ? '收起笔记本列表' : 'Collapse note list')}
+                    >
+                      {isNoteListCollapsed ? (
+                        <>
+                          <ChevronRight className="w-4 h-4 text-indigo-600 animate-pulse" />
+                          <span className="text-indigo-600 text-[10px] uppercase font-black tracking-wider">{lang === 'zh' ? '📁 展开笔记本' : '📁 Open Notebooks'}</span>
+                        </>
+                      ) : (
+                        <ChevronLeft className="w-4 h-4 text-slate-600" />
+                      )}
                     </button>
                     <input
                       type="text"
