@@ -210,9 +210,8 @@ export function FolderTagHierarchy({
                 {...bindTouchTap((e) => {
                   e.stopPropagation();
                   const confirmMsg = t('deleteTagConfirm').replace('{name}', tag.name);
-                  if (confirm(confirmMsg)) {
-                    onDeleteTag(tag.id);
-                  }
+                  // Bypassed confirm for Android WebView
+                  onDeleteTag(tag.id);
                 })}
                 className={`p-2 rounded-xl min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer ${
                   isSelected ? 'hover:bg-slate-800 text-red-300' : 'hover:bg-red-50 text-red-500'
@@ -304,9 +303,8 @@ export function FolderTagHierarchy({
                     {...bindTouchTap((e) => {
                       e.stopPropagation();
                       const confirmMsg = t('deleteCategoryConfirm').replace('{name}', folder.name);
-                      if (confirm(confirmMsg)) {
-                        onDeleteFolder(folder.id);
-                      }
+                      // Bypassed confirm for Android WebView
+                      onDeleteFolder(folder.id);
                     })}
                     className={`p-2 rounded-xl min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer ${
                       isSelected ? 'hover:bg-slate-800 text-red-300' : 'hover:bg-red-50 text-red-500'

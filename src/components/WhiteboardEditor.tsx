@@ -224,10 +224,9 @@ export function WhiteboardEditor({ content, onSave, lang }: WhiteboardEditorProp
   };
 
   const handleClear = () => {
-    if (confirm(lang === 'zh' ? '确定清除白板上全部图案吗？这会自动同步保存。' : 'Are you sure you want to clear the canvas?')) {
-      setElements([]);
-      onSave('[]');
-    }
+    // Bypassed confirm() for Android WebView
+    setElements([]);
+    onSave('[]');
   };
 
   const handleUndo = () => {

@@ -18,7 +18,8 @@ import {
   Sparkles,
   Sliders,
   PenTool,
-  BookOpen
+  BookOpen,
+  Trash2
 } from 'lucide-react';
 import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
 import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent } from './db';
@@ -318,7 +319,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
   };
 
   const handleDeleteNote = async (noteId: string) => {
-    if (!confirm(t('confirmTrashNote'))) return;
+    // Replaced window.confirm with direct deletion due to Android WebView/iFrame sandbox blocks.
     const current = notes.find(n => n.id === noteId);
     if (!current) return;
 
@@ -377,7 +378,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     const parentTag = parentId ? tags.find(t => t.id === parentId) : null;
     
     if (parentTag && parentTag.level >= 5) {
-      alert(t('configViolationTagLevel'));
+      console.warn(t('configViolationTagLevel'));
       return;
     }
 
@@ -547,7 +548,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     });
 
     if (targetFolderNotes.length === 0) {
-      alert(lang === 'zh' ? '该目录下无任何笔记内容。' : 'Category is empty. Writing no files.');
+      console.warn(lang === 'zh' ? '该目录下无任何笔记内容。' : 'Category is empty. Writing no files.');
       return;
     }
 
@@ -584,7 +585,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     });
 
     if (filteredNotes.length === 0) {
-      alert(lang === 'zh' 
+      console.warn(lang === 'zh' 
         ? `在标签路径“${activeParent.path}”及其子级衍生下未找到相关绑定的笔记。` 
         : `No notes associated recursively under Tag Path: "${activeParent.path}"`
       );

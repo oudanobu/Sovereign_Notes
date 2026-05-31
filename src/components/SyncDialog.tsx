@@ -178,8 +178,11 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
   };
 
   // Additional helper: Copy complete backup to clipboard
+  const [rawBackupDisplay, setRawBackupDisplay] = useState<string | null>(null);
+
   const handleCopySnapshotToClipboard = async () => {
     try {
+      setSuccessMessage(lang === 'zh' ? '正在生成全量序列化包裹...请稍候' : 'Generating payload...');
       const dbJson = await exportDatabaseSnapshot();
       
       // Try modern clipboard API first
@@ -197,7 +200,6 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
       if (!success) {
         const textArea = document.createElement('textarea');
         textArea.value = dbJson;
-        // Avoid scrolling to bottom
         textArea.style.top = '0';
         textArea.style.left = '0';
         textArea.style.position = 'fixed';
@@ -209,7 +211,10 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
           if (!successful) throw new Error('execCommand copy failed');
         } catch (err) {
           document.body.removeChild(textArea);
-          throw new Error('Clipboard access denied or unsupported in this browser.');
+          // If EVERYTHING fails, show the raw string!
+          setRawBackupDisplay(dbJson);
+          setErrorMessage(lang === 'zh' ? '剪切板被系统拦截！我们为您生成了最原始的文本框，请手动长按全选并复制下方内容。' : 'Clipboard access denied. Please manually select all and copy the text below.');
+          return;
         }
         document.body.removeChild(textArea);
       }
@@ -228,14 +233,7 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const warnMsg = lang === 'zh'
-      ? '【警告】：导入一个完整数据库快照文件将会完全覆盖您目前所有的本地笔记、分类、思维导图以及标签层级树！此过程无法撤销。您确定要执行全量还原吗？'
-      : 'WARNING: Importing a complete database snapshot file will overwrite all current notebooks and tags and clear existing local states. Do you wish to continue?';
-
-    if (!confirm(warnMsg)) {
-      return;
-    }
-
+    // Skipped window.confirm to avoid freezing in Android WebView or Sandboxed iFrames
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
@@ -590,7 +588,7 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                     </p>
                   </div>
 
-                  <div className="pt-1.5">
+                  <div className="pt-1.5 flex flex-col space-y-2">
                     <button
                       type="button"
                       {...bindTouchTap(handleCopySnapshotToClipboard)}
@@ -599,6 +597,26 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                       <Copy className="w-4 h-4 text-indigo-600" />
                       <span>{lang === 'zh' ? '📋 立即复制全量主权备份至剪切板' : 'Copy Full Snapshot to Clipboard'}</span>
                     </button>
+                    {rawBackupDisplay && (
+                      <div className="mt-3 bg-white rounded-xl border border-rose-200 p-2 shadow-xs transition-all flex flex-col">
+                         <div className="flex justify-between items-center px-1 pb-2">
+                           <span className="text-[10px] font-black text-rose-600 uppercase tracking-wider">{lang === 'zh' ? '系统剪切板被禁用: 原始包裹提取槽' : 'Clipboard Blocked: Raw Payload'}</span>
+                           <button 
+                             {...bindTouchTap(() => setRawBackupDisplay(null))}
+                             className="text-gray-400 hover:text-gray-700 text-[10px] font-bold p-1 cursor-pointer"
+                           >
+                             {lang === 'zh' ? '清空关闭' : 'Close'}
+                           </button>
+                         </div>
+                         <textarea
+                           className="w-full h-32 bg-slate-50 border border-slate-200 rounded-lg p-2 text-[9px] font-mono text-slate-600 resize-y focus:outline-none focus:border-indigo-400"
+                           value={rawBackupDisplay}
+                           readOnly
+                           onFocus={(e) => e.target.select()}
+                         />
+                         <p className="text-[9.5px] text-gray-500 font-bold mt-1.5 px-1">{lang === 'zh' ? '👉 请点击上方数据区长按【全选 -> 复制】，并粘贴至你的手机文本便签中进行保存。' : '👉 Please long press the box above, Select All, and copy to save manually.'}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
