@@ -6,7 +6,7 @@
 import { Note, Tag, Folder, CalendarEvent } from './types';
 
 const DB_NAME = 'LocalSovereignNotesDB';
-const DB_VERSION = 2;
+const DB_VERSION = 4;
 
 export function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
