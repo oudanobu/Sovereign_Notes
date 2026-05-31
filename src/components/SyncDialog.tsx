@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Shield, Server, Cloud, Download, Upload, AlertTriangle, Check, RefreshCw, Plus, Copy, Share2 } from 'lucide-react';
+import { Shield, Server, Cloud, Download, Upload, AlertTriangle, Check, RefreshCw, Plus, Copy, Share2, Sliders } from 'lucide-react';
 import { Tag, Folder, Note } from '../types';
 import { exportDatabaseSnapshot, importDatabaseSnapshot, getNotes, getTags, getFolders, bulkInsertNotes, bulkInsertTags, bulkInsertFolders } from '../db';
 import { Language } from '../utils/i18n';
@@ -19,10 +19,23 @@ interface SyncDialogProps {
   lang: Language;
   t: (key: any) => string;
   isInline?: boolean;
+  platformProfile?: 'win' | 'tablet' | 'android13' | 'android5';
+  setPlatformProfile?: (profile: 'win' | 'tablet' | 'android13' | 'android5') => void;
 }
 
-export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = () => {}, lang, t, isInline = false }: SyncDialogProps) {
-  const [activeTab, setActiveTab] = useState<'backup' | 'lan' | 'webdav' | 'tags'>('backup');
+export function SyncDialog({
+  notes,
+  tags,
+  folders,
+  onSyncCompleted,
+  onClose = () => {},
+  lang,
+  t,
+  isInline = false,
+  platformProfile = 'win',
+  setPlatformProfile
+}: SyncDialogProps) {
+  const [activeTab, setActiveTab] = useState<'backup' | 'lan' | 'webdav' | 'tags' | 'display'>('backup');
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -572,6 +585,17 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
             <Plus className="w-4 h-4" />
             {lang === 'zh' ? '标签派生导入导出' : 'Tags Export/Import'}
           </button>
+          <button
+            {...bindTouchTap(() => setActiveTab('display'))}
+            className={`w-full flex items-center gap-2.5 px-3 py-3 text-xs font-bold rounded-xl text-left transition duration-150 min-h-[44px] cursor-pointer ${
+              activeTab === 'display'
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-gray-650 hover:bg-slate-100 hover:text-slate-901'
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            {lang === 'zh' ? '设备显示模式优化' : 'Device UI Optimizer'}
+          </button>
         </div>
 
         {/* Active Tab View */}
@@ -861,6 +885,93 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                     <span className="text-xs font-extrabold text-slate-850">{lang === 'zh' ? '导入并合并新层级标签' : 'Import Tags & Merge'}</span>
                     <span className="text-[10px] text-gray-450 mt-1 text-center font-bold">{lang === 'zh' ? '合并外部标签并补全缺漏层级' : 'Integrates tags & respects 6 levels'}</span>
                   </label>
+                </div>
+              </div>
+            )}
+
+            {/* TAB DISPLAY PROFILE: Optimisation for Win/Tablet/Android13/Android5 */}
+            {activeTab === 'display' && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 font-sans">
+                    {lang === 'zh' ? '设备专属显示适配器与 CSS 优化' : 'Device Layout CSS Optimisation Profile'}
+                  </h3>
+                  <p className="text-[11.5px] text-gray-500 font-extrabold leading-relaxed font-sans">
+                    {lang === 'zh' 
+                      ? '针对您的当前物理设备切换最完美的 UI 渲染机制与 CSS 样式。这将自适应调整触控热区、行高、堆叠顺序以及低配设备性能过滤。' 
+                      : 'Choose the most optimal style sheets and layout mechanisms for your target environment to boost performance and prevent element wrapping or overlaps.'}
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 pt-2 max-h-[380px] overflow-y-auto scrollbar-thin pr-1">
+                  {[
+                    {
+                      id: 'win',
+                      icon: '💻',
+                      titleZh: '1. Windows / 键鼠高精细模式',
+                      titleEn: '1. Windows Desktop / Mouse Optimizer',
+                      descZh: '极致高信息密度展示。原生微细滚动条，小紧凑间距，充分激活极致悬浮(Hover)提示。推荐在 Surface 外接键盘/鼠标或普通 Win 电脑上使用。',
+                      descEn: 'Default compact styling. Optimized for precision screens, mouse scrollbars, hover annotations, and dense multi-panel displays.'
+                    },
+                    {
+                      id: 'tablet',
+                      icon: '📟',
+                      titleZh: '2. Windows 平板 / 智能触控大字版 (防重叠)',
+                      titleEn: '2. Tablet Touch Mode (Anti-Collision Layout)',
+                      descZh: '触控优化大热区（46px+），防误触。彻底重塑顶部工具栏，将文件夹、标签、编辑和预览按钮进行多行重排与堆叠展示，防止在 PWA 狭窄宽度下发生任何重叠与冲突！',
+                      descEn: 'Fat-finger touch-friendly targets (46px+). Automatically transforms the top header into a stacked multi-row layout to prevent overlapping on narrower screens.'
+                    },
+                    {
+                      id: 'android13',
+                      icon: '📱',
+                      titleZh: '3. 安卓 13+ / 现代全面屏全面优化版',
+                      titleEn: '3. Android 13+ Modern Full-Screen',
+                      descZh: 'PWA 全面屏手势安全区适配，大圆角卡片布局。优化触控滚动物理阻尼。适用于配备全面屏、打孔屏的现代中高配安卓系统，滑动顺滑。',
+                      descEn: 'Sleek modern rounded layout with notch and gesture bar safe-area support. Fluid inertial scroll behaviors for high-refresh modern phones.'
+                    },
+                    {
+                      id: 'android5',
+                      icon: '📻',
+                      titleZh: '4. 安卓 4.4 - 5.0 / 老旧复古兼容极速版',
+                      titleEn: '4. Android 5.0 Retro Safe Layout',
+                      descZh: '极致平面化（完全剔除阴影、毛玻璃与渐变，减负CPU）。禁用一切重负载重绘动效。自动补正 Flex Gap 为传统 Margin 间距以消除老版 WebView 排版拉伸偏离。',
+                      descEn: 'Flat components with shadows and backdrop blurs disabled to save fragile CPU cores. Strict transition suppression and margin offsets fallback.'
+                    }
+                  ].map((profileItem) => {
+                    const isSelected = platformProfile === profileItem.id;
+                    return (
+                      <button
+                        key={profileItem.id}
+                        {...bindTouchTap(() => {
+                          if (setPlatformProfile) {
+                            setPlatformProfile(profileItem.id as any);
+                          }
+                        })}
+                        className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex items-start space-x-3 cursor-pointer ${
+                          isSelected
+                            ? 'bg-indigo-50/40 border-indigo-600 text-indigo-950 font-black ring-2 ring-indigo-600/10'
+                            : 'bg-white border-gray-200 text-slate-800 hover:border-slate-350'
+                        }`}
+                      >
+                        <span className="text-xl mt-1 select-none">{profileItem.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-black leading-snug">
+                              {lang === 'zh' ? profileItem.titleZh : profileItem.titleEn}
+                            </span>
+                            {isSelected && (
+                              <span className="text-[9.5px] bg-indigo-600 text-white font-extrabold uppercase px-2 py-0.5 rounded-lg select-none leading-none">
+                                {lang === 'zh' ? '当前激活' : 'Active'}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-gray-500 font-extrabold mt-1 leading-relaxed break-words">
+                            {lang === 'zh' ? profileItem.descZh : profileItem.descEn}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

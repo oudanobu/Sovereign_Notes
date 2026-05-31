@@ -21,7 +21,10 @@ import {
   BookOpen,
   Trash2,
   Menu,
-  X
+  X,
+  FolderOpen,
+  Tag as TagIcon,
+  Palette
 } from 'lucide-react';
 import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
 import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent } from './db';
@@ -66,6 +69,29 @@ export default function App() {
   // New accessibility states
   const [isLargeFont, setIsLargeFont] = useState<boolean>(() => localStorage.getItem('sovereign_large_font') === 'true');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<'all' | 'whiteboard'>('all');
+
+  // Platform device CSS profile state
+  const [platformProfile, setPlatformProfile] = useState<'win' | 'tablet' | 'android13' | 'android5'>(() => {
+    const saved = localStorage.getItem('sovereign_platform_profile');
+    if (saved === 'win' || saved === 'tablet' || saved === 'android13' || saved === 'android5') {
+      return saved;
+    }
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = ua.includes('android');
+    if (isAndroid) {
+      const match = ua.match(/android\s+([0-9.]+)/);
+      if (match) {
+        const version = parseFloat(match[1]);
+        if (version < 6.0) return 'android5';
+      }
+      return 'android13';
+    }
+    const isTablet = /ipad|tablet|playbook|silk/i.test(ua) || 
+                     (isAndroid && !/mobile/i.test(ua)) ||
+                     (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /macintosh|intel/i.test(ua));
+    if (isTablet) return 'tablet';
+    return 'win';
+  });
 
   // Navigation state
   const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
@@ -706,7 +732,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
   const activeSelectedNoteInstance = notes.find(n => n.id === selectedNoteId && !n.isDeleted);
 
   return (
-    <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased ${isLargeFont ? 'large-font-mode' : ''}`}>
+    <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased profile-${platformProfile} ${isLargeFont ? 'large-font-mode' : ''}`}>
       
       {/* Columns Container Wrapper */}
       <div className="flex-1 flex overflow-hidden relative min-h-0">
@@ -761,7 +787,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 }`}
                 title={lang === 'zh' ? '分类目录' : 'Categories'}
               >
-                <span className="text-xs">📂</span>
+                <FolderOpen className="w-4.5 h-4.5" />
               </button>
 
               {/* Tags select */}
@@ -784,7 +810,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 }`}
                 title={lang === 'zh' ? '标签大纲' : 'Tag Tree'}
               >
-                <span className="text-xs">🏷️</span>
+                <TagIcon className="w-4.5 h-4.5" />
               </button>
 
               {/* Canvas selector */}
@@ -800,7 +826,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 }`}
                 title={lang === 'zh' ? '画板筛选' : 'Canvas Whiteboard'}
               >
-                <span className="text-xs">🎨</span>
+                <Palette className="w-4.5 h-4.5" />
               </button>
 
               {/* Sync settings */}
@@ -1143,8 +1169,8 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             
             {/* WORKSPACE TOPBAR CONTROL BOARD */}
-            <div className="px-5 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center space-y-4 sm:space-y-0 flex-shrink-0 bg-slate-50 relative z-10">
-              <div className="flex-1 w-full sm:w-auto min-w-0 mr-0 sm:mr-4">
+            <div className="workspace-topbar px-5 py-3 border-b border-gray-200 flex flex-col xl:flex-row xl:justify-between items-start xl:items-center gap-3.5 flex-shrink-0 bg-slate-50 relative z-10">
+              <div className="workspace-topbar-left flex-1 w-full xl:w-auto min-w-0 mr-0 xl:mr-4">
                 <div className="flex items-center space-x-2">
                   {/* Back button to list on mobile/tablet screen */}
                   <button
@@ -1166,70 +1192,75 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   />
                 </div>
                 
-                {/* Categorization Dropdowns */}
-                <div className="flex items-center space-x-2 mt-2 text-[10.5px] text-gray-500 font-bold font-sans">
-                  <span>{t('inCategory')}</span>
-                  <select
-                    value={noteFolderId || ''}
-                    onChange={(e) => {
-                      const val = e.target.value || null;
-                      setNoteFolderId(val);
-                      triggerLocalSave({ folderId: val });
-                    }}
-                    className="bg-transparent border border-gray-250 hover:border-slate-450 text-gray-650 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-white focus:outline-none text-[10px] font-bold min-h-[38px]"
-                  >
-                    <option value="">{t('uncategorized')}</option>
-                    {folders.filter(f => !f.isDeleted).map(f => (
-                      <option key={f.id} value={f.id}>{f.name}</option>
-                    ))}
-                  </select>
-
-                  <span className="mx-1 text-gray-300">|</span>
-                  <span>{t('tagsLabel')}</span>
-                  <div className="flex flex-wrap items-center -ml-1.5 -mt-1.5">
-                    {noteTagIds.map((tid) => {
-                      const tInstance = tags.find(tag => tag.id === tid && !tag.isDeleted);
-                      if (!tInstance) return null;
-                      return (
-                        <span key={tid} className="bg-slate-100 border border-gray-200 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center space-x-1 uppercase min-h-[30px] ml-1.5 mt-1.5">
-                          {tInstance.name}
-                          <button
-                            {...bindTouchTap(() => {
-                              const remaining = noteTagIds.filter(id => id !== tid);
-                              setNoteTagIds(remaining);
-                              triggerLocalSave({ tagIds: remaining });
-                            })}
-                            className="hover:text-red-500 font-bold text-[9px] w-4.5 h-4.5 flex items-center justify-center cursor-pointer"
-                          >
-                            ✕
-                          </button>
-                        </span>
-                      );
-                    })}
-
+                {/* Categorization Dropdowns (Strict Flex Wrap Avoids Overlapping) */}
+                <div className="flex flex-wrap items-center gap-2 mt-2 text-[10.5px] text-gray-500 font-bold font-sans">
+                  <div className="flex items-center space-x-1.5 flex-shrink-0">
+                    <span>{t('inCategory')}</span>
                     <select
-                      value=""
+                      value={noteFolderId || ''}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        if (val && !noteTagIds.includes(val)) {
-                          const updated = [...noteTagIds, val];
-                          setNoteTagIds(updated);
-                          triggerLocalSave({ tagIds: updated });
-                        }
+                        const val = e.target.value || null;
+                        setNoteFolderId(val);
+                        triggerLocalSave({ folderId: val });
                       }}
-                      className="bg-transparent border border-none text-slate-500 py-1.5 px-2.5 cursor-pointer focus:outline-none text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-850 min-h-[38px] ml-1.5 mt-1.5"
+                      className="bg-transparent border border-gray-250 hover:border-slate-450 text-gray-650 px-2.5 py-1.5 rounded-xl cursor-pointer hover:bg-white focus:outline-none text-[10px] font-bold min-h-[38px]"
                     >
-                      <option value="">{t('addTagBtn')}</option>
-                      {tags.filter(tInst => !tInst.isDeleted && !noteTagIds.includes(tInst.id)).map(tInst => (
-                        <option key={tInst.id} value={tInst.id}>{tInst.path}</option>
+                      <option value="">{t('uncategorized')}</option>
+                      {folders.filter(f => !f.isDeleted).map(f => (
+                        <option key={f.id} value={f.id}>{f.name}</option>
                       ))}
                     </select>
+                  </div>
+
+                  <span className="mx-1 text-gray-300 hidden sm:inline">|</span>
+                  
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="flex-shrink-0">{t('tagsLabel')}</span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {noteTagIds.map((tid) => {
+                        const tInstance = tags.find(tag => tag.id === tid && !tag.isDeleted);
+                        if (!tInstance) return null;
+                        return (
+                          <span key={tid} className="bg-slate-100 border border-gray-200 text-slate-700 font-extrabold px-2 py-1 rounded-xl text-[9.5px] flex items-center space-x-1 uppercase min-h-[30px] leading-tight">
+                            {tInstance.name}
+                            <button
+                              {...bindTouchTap(() => {
+                                const remaining = noteTagIds.filter(id => id !== tid);
+                                setNoteTagIds(remaining);
+                                triggerLocalSave({ tagIds: remaining });
+                              })}
+                              className="hover:text-red-500 font-bold text-[9px] w-4.5 h-4.5 flex items-center justify-center cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        );
+                      })}
+
+                      <select
+                        value=""
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val && !noteTagIds.includes(val)) {
+                            const updated = [...noteTagIds, val];
+                            setNoteTagIds(updated);
+                            triggerLocalSave({ tagIds: updated });
+                          }
+                        }}
+                        className="bg-transparent border border-none text-slate-500 py-1.5 px-2.5 cursor-pointer focus:outline-none text-[10px] font-black uppercase text-indigo-600 hover:text-indigo-850 min-h-[38px]"
+                      >
+                        <option value="">{t('addTagBtn')}</option>
+                        {tags.filter(tInst => !tInst.isDeleted && !noteTagIds.includes(tInst.id)).map(tInst => (
+                          <option key={tInst.id} value={tInst.id}>{tInst.path}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* EDITOR VIEW SWITCHES */}
-              <div className="flex items-center flex-wrap space-x-3 flex-shrink-0 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-200">
+              <div className="workspace-topbar-right flex items-center flex-wrap gap-3 flex-shrink-0 w-full xl:w-auto pt-2 xl:pt-0 border-t xl:border-t-0 border-gray-200">
                 {activeNoteType === 'markdown' ? (
                   <div className="bg-gray-150/70 p-1 rounded-xl flex items-center border border-gray-200 shadow-xs">
                     <button
@@ -1456,6 +1487,11 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             lang={lang}
             t={t}
             isInline={true}
+            platformProfile={platformProfile}
+            setPlatformProfile={(profile) => {
+              setPlatformProfile(profile);
+              localStorage.setItem('sovereign_platform_profile', profile);
+            }}
           />
         </div>
       )}

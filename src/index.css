@@ -138,3 +138,275 @@ textarea,
   .flex.flex-col.gap-4 > * + * { margin-top: 1rem !important; margin-left: 0 !important; }
 }
 
+/* =============================================================================
+ * PWA 专属四套设备适配级 CSS 样式系统 (1. Win , 2. 平板 , 3. 安卓13 , 4. 安卓5.0)
+ * ============================================================================= */
+
+/* -------------------------------------------------------------
+ * PROFILE 1: WINDOWS 桌面系统 (profile-win) - 高密度高精细
+ * ------------------------------------------------------------- */
+.profile-win {
+  --sidebar-width: 348px;
+}
+/* 独享原生极细滚动条设计 */
+.profile-win *::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+.profile-win *::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.profile-win *::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.3) !important;
+  border-radius: 9999px !important;
+}
+.profile-win *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.55) !important;
+}
+/* 鼠标悬浮提示与微妙移动过渡 */
+@media (hover: hover) {
+  .profile-win .hover\:scale-102:hover {
+    transform: scale(1.02);
+  }
+}
+
+/* -------------------------------------------------------------
+ * PROFILE 2: TABLET/SURFACE 平板触控系统 (profile-tablet) - 宽松无重叠布局
+ * ------------------------------------------------------------- */
+.profile-tablet {
+  /* 适度调高文本基础大小，确保阅读不费力 */
+  font-size: 13px !important;
+}
+/* 平板触控黄金热区放大，解决 Windows Tablet 触指时太小的问题 */
+.profile-tablet button,
+.profile-tablet select,
+.profile-tablet label,
+.profile-tablet input,
+.profile-tablet textarea {
+  min-height: 48px !important;
+  font-size: 13px !important;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+}
+/* 标签与分类高度独立 */
+.profile-tablet .tag-toggle-icon {
+  padding: 14px !important;
+  margin: -14px !important;
+}
+/* 强行隔离并堆叠顶部控制面板，杜绝任何重叠! */
+.profile-tablet .workspace-topbar {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+.profile-tablet .workspace-topbar-left {
+  width: 100% !important;
+  margin-right: 0 !important;
+}
+.profile-tablet .workspace-topbar-right {
+  width: 100% !important;
+  padding-top: 12px !important;
+  border-top: 1.5px solid rgba(226, 232, 240, 0.9) !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-left: 0 !important;
+  justify-content: flex-start !important;
+}
+.profile-tablet .workspace-topbar-right > * {
+  margin: 0 !important;
+}
+
+/* -------------------------------------------------------------
+ * PROFILE 3: ANDROID 13+ 现代全面屏智能手机 (profile-android13) - 极流畅弹性手感 & 高对比度保底
+ * ------------------------------------------------------------- */
+.profile-android13 {
+  overscroll-behavior-y: none !important;
+  background-color: #f8fafc !important; /* solid fallback */
+  color: #0f172a !important;
+}
+/* 大圆角配合现代 Android 13 Material Design 3 风格 */
+.profile-android13 button,
+.profile-android13 select,
+.profile-android13 label {
+  border-radius: 14px !important;
+  min-height: 48px !important;
+  font-size: 13.5px !important;
+}
+.profile-android13 .note-list-item {
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  padding: 14px !important;
+}
+/* Android 13+ 底部全面屏手势虚拟键安全区 */
+.profile-android13 .pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px) !important;
+}
+/* 物理动力滚动滑动手感 */
+.profile-android13 .overflow-y-auto {
+  scroll-behavior: smooth !important;
+}
+
+/* Force light high-contrast colors in all modern and retro Android profiles to prevent layout/text color collisions */
+.profile-android13 h1,
+.profile-android13 h2,
+.profile-android13 h3,
+.profile-android13 h4,
+.profile-android13 p,
+.profile-android13 span,
+.profile-android13 div {
+  color: #0f172a !important; /* Force readable text */
+}
+.profile-android13 .text-slate-400,
+.profile-android13 .text-slate-500,
+.profile-android13 .text-gray-500 {
+  color: #475569 !important; /* Dark Slate readable secondary */
+}
+
+/* Ensure main backgrounds are fully opaque */
+.profile-android13 main,
+.profile-android13 section,
+.profile-android13 aside,
+.profile-android13 .bg-white,
+.profile-android13 .bg-slate-50,
+.profile-android13 .bg-slate-50\/40,
+.profile-android13 .bg-slate-50\/50,
+.profile-android13 .bg-gray-150\/70,
+.profile-android13 .bg-white\/80 {
+  background-color: #ffffff !important;
+}
+
+/* -------------------------------------------------------------
+ * PROFILE 4: ANDROID 5.0 / 4.4 历史老旧 WebView (profile-android5) - 零渲染开销 & 绝对色域保底
+ * ------------------------------------------------------------- */
+/* 完全剔除占用 GPU/CPU 重绘缓存的属性（阴影、滤镜、动效模糊、3D过渡），确保平稳单页运行 */
+.profile-android5,
+.profile-android5 * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+  transition: none !important;
+  text-rendering: speed !important; /* 加速渲染 */
+}
+
+/* Force Light-mode coloring inside ancient Android WebViews to bypass forced-dark overlay overlaps */
+.profile-android5 {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+.profile-android5 main,
+.profile-android5 section,
+.profile-android5 aside {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+.profile-android5 aside > div:first-child {
+  background-color: #ffffff !important;
+  border-right: 1.5px solid #cbd5e1 !important;
+}
+.profile-android5 aside > div:last-child {
+  background-color: #f1f5f9 !important;
+}
+.profile-android5 .note-list-item {
+  background-color: #ffffff !important;
+  border-bottom: 1.5px solid #e1e8f0 !important;
+}
+
+/* Force standard high-contrast light labels for ancient WebView */
+.profile-android5 h1,
+.profile-android5 h2,
+.profile-android5 h3,
+.profile-android5 h4,
+.profile-android5 p,
+.profile-android5 span,
+.profile-android5 div,
+.profile-android5 text {
+  color: #0f172a !important;
+}
+.profile-android5 .text-slate-400,
+.profile-android5 .text-slate-500,
+.profile-android5 .text-gray-500,
+.profile-android5 .text-slate-450 {
+  color: #475569 !important; /* Strong secondary gray */
+}
+
+/* 强力回归实体直角或简易微圆角 */
+.profile-android5 button,
+.profile-android5 select,
+.profile-android5 label,
+.profile-android5 div,
+.profile-android5 span {
+  border-radius: 4px !important;
+  border-width: 1px !important;
+}
+
+/* Solid background fallbacks */
+.profile-android5 .bg-slate-50\/40,
+.profile-android5 .bg-slate-50\/50,
+.profile-android5 .bg-gray-150\/70,
+.profile-android5 .bg-white\/80 {
+  background-color: #f1f5f9 !important; /* solid gray slate-100 */
+}
+
+/* Fixed color boxes under active themes */
+.profile-android5 .bg-slate-900,
+.profile-android13 .bg-slate-900 {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+.profile-android5 .bg-purple-650,
+.profile-android13 .bg-purple-650 {
+  background-color: #6d28d9 !important;
+  color: #ffffff !important;
+}
+.profile-android5 .bg-amber-500,
+.profile-android13 .bg-amber-500 {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+}
+.profile-android5 .bg-indigo-650,
+.profile-android13 .bg-indigo-650 {
+  background-color: #4338ca !important;
+  color: #ffffff !important;
+}
+
+/* Make toggled active icon buttons text pure white */
+.profile-android5 .text-white,
+.profile-android13 .text-white {
+  color: #ffffff !important;
+}
+
+/* 屏蔽不兼容的外部字体下载延迟，强制极简化Roboto或内置网页无衬线字体 */
+.profile-android5,
+.profile-android5 text,
+.profile-android5 select,
+.profile-android5 input,
+.profile-android5 textarea {
+  font-family: Roboto, sans-serif, sans-serif-condensed !important;
+  -webkit-font-smoothing: initial !important;
+}
+/* 针对古老 Chrome 37 内核 WebView 中 flex 弹性盒 gap 缺失的 margin 防塌陷补偿 */
+.profile-android5 .flex.gap-1.5 > * {
+  margin-right: 6px !important;
+}
+.profile-android5 .flex.gap-2.5 > * {
+  margin-right: 10px !important;
+}
+.profile-android5 .flex.gap-3.5 > * {
+  margin-right: 14px !important;
+  margin-bottom: 6px !important;
+}
+.profile-android5 .flex.gap-3 > * {
+  margin-right: 12px !important;
+  margin-bottom: 4px !important;
+}
+.profile-android5 .flex.flex-wrap {
+  margin-bottom: -6px !important;
+}
+
+
