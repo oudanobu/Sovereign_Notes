@@ -84,7 +84,7 @@ export default function App() {
       const match = ua.match(/android\s+([0-9.]+)/);
       if (match) {
         const version = parseFloat(match[1]);
-        if (version < 6.0) return 'android5';
+        if (version < 11.0) return 'android5';
       }
       return 'android13';
     }

@@ -776,6 +776,81 @@ export function SyncDialog({
                     </p>
                   </div>
                 </div>
+
+                {/* Visual Quick Start Help Panel */}
+                <div className="bg-indigo-50/50 border border-indigo-150 rounded-2xl p-4 text-xs text-slate-700 space-y-3.5 animate-fade-in">
+                  <div className="flex items-center space-x-2 text-indigo-900 border-b border-indigo-100/60 pb-2">
+                    <span className="text-sm">💡</span>
+                    <h4 className="text-xs font-black uppercase tracking-wider">
+                      {lang === 'zh' ? '⚙️ 双向 LWW 局域同步配置与使用指南' : '⚙️ Double LWW Local Sync Configuration & Help'}
+                    </h4>
+                  </div>
+                  
+                  <div className="space-y-3.5 leading-relaxed text-[11px] font-semibold text-slate-600">
+                    <div className="space-y-1.5">
+                      <p className="text-indigo-950 font-black flex items-center space-x-1.5 text-xs">
+                        <span className="bg-indigo-600 text-white w-4.5 h-4.5 rounded-full flex items-center justify-center text-[10px] flex-shrink-0">1</span>
+                        <span>{lang === 'zh' ? '当前浏览器/多标签沙盒模拟环境同步 (零配置)' : 'Current Multi-tab Sandbox Sync (Zero Config)'}</span>
+                      </p>
+                      <ul className="list-disc list-inside pl-1 space-y-1 text-slate-650">
+                        <li>
+                          {lang === 'zh' 
+                            ? `直接保持默认值（自动填写的当前网页域名/本地地址）即可。` 
+                            : `Keep the default value (the auto-filled URL you see in the box).`}
+                        </li>
+                        <li>
+                          {lang === 'zh' 
+                            ? '如果您在另一个标签页、隐私窗口、或者通过 AI Studio 的预览区开启了多份本笔记，它们具有独立的 IndexedDB。' 
+                            : 'If you open another browser tab, private window, or a coworker accesses this sandbox, they have isolated storage.'}
+                        </li>
+                        <li>
+                          {lang === 'zh' 
+                            ? '在任意一个浏览器上修改笔记后，在另一个浏览器上打开同步并点击【开始拉取对齐】，极速通过 LWW 算法在服务器完成对齐并把最新结果实时合并回本地！' 
+                            : 'Modify a note elsewhere, then click "Align State" inside any other tab. Decentralized updates automatically merge!'}
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <p className="text-indigo-950 font-black flex items-center space-x-1.5 text-xs">
+                        <span className="bg-indigo-600 text-white w-4.5 h-4.5 rounded-full flex items-center justify-center text-[10px] flex-shrink-0">2</span>
+                        <span>{lang === 'zh' ? '物理家庭/办公局域化同步 (多物理设备联机)' : 'Physical Local Area Network Sync (Multi-Device Connecting)'}</span>
+                      </p>
+                      <ul className="list-disc list-inside pl-1 space-y-1 text-slate-650">
+                        <li>
+                          <strong>{lang === 'zh' ? '获取主机局域网 IP：' : 'Get Host LAN IP: '}</strong>
+                          {lang === 'zh' 
+                            ? '假设在您的 Windows PC 上启动了本地版的 SovereignNote 双端服务。在电脑命令行输入 ipconfig，找到诸如 192.168.1.100 或 10.0.0.10 的 IPv4 地址。' 
+                            : 'Suppose you run the SovereignNote daemon server on your local PC. Open terminal and run ipconfig or ifconfig to find your PC IPv4 address (e.g. 192.168.1.100).'}
+                        </li>
+                        <li>
+                          <strong>{lang === 'zh' ? '打通同一 WiFi 环境：' : 'Connect to same Wifi: '}</strong>
+                          {lang === 'zh' 
+                            ? '将您的安卓（Android）手机或者平板设备连接至相同的 WiFi 无线，确保手机可以 ping 通电脑。' 
+                            : 'Ensure your smart devices (like Android cellphones or tablets) are connected to the same wireless hotspot.'}
+                        </li>
+                        <li>
+                          <strong>{lang === 'zh' ? '输入与对齐：' : 'Configure & Align: '}</strong>
+                          {lang === 'zh' 
+                            ? '在安卓手机的主权同步页面中，将默认域名输入框修改为电脑端对等机服务的真实 IP 地址及端口号（例如：http://192.168.1.100:3000）。点击【开始拉取对齐】，安卓端的增量笔记、分类和您在电脑上输入的笔记，就会立即通过 LWW 时间戳算法完美合并并共享。' 
+                            : 'In the sync settings of your Android build, type http://192.168.1.100:3000 (replacing with your real host PC IP) and tap "Align State". Note versions seamlessly merge!'}
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <p className="text-indigo-950 font-black flex items-center space-x-1.5 text-xs">
+                        <span className="bg-indigo-600 text-white w-4.5 h-4.5 rounded-full flex items-center justify-center text-[10px] flex-shrink-0">3</span>
+                        <span>{lang === 'zh' ? '关于去中心化 LWW (Last-Write-Wins) 技术' : 'What is the LWW offline reconciliation philosophy?'}</span>
+                      </p>
+                      <p className="pl-1 text-slate-650 leading-relaxed text-[10.5px]">
+                        {lang === 'zh' 
+                          ? '主权笔记秉持“数据主权归于个人，不记录用户行为，本地无网络亦完美可用”理念。由于不依赖一个持续的互联网中转站随时同步，冲突将退化。LWW 是一种无冲突复制数据类型 (CRDT)，它给每一篇笔记的每一次修改都附带一份毫秒级高精度物理时间印记。两台设备相互合并时，谁的时间戳最新谁就在本轮获胜。两边各自离线大刀阔斧地修改，在联机时无需人工繁琐的一篇篇决定，几毫秒内两端都会演变成内容最完整、最新的对端/本地对等状态。' 
+                          : 'Every change is tagged with millisecond precision. When devices combine, the latest version takes preference (LWW Winner). This yields robust offline-first synchronization without heavy databases or central authorities.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
