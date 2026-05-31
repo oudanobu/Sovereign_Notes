@@ -284,3 +284,17 @@ export async function saveEvent(event: CalendarEvent): Promise<void> {
   });
 }
 
+export async function bulkInsertEvents(events: CalendarEvent[]): Promise<void> {
+  if (events.length === 0) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('events', 'readwrite');
+    const store = tx.objectStore('events');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    events.forEach((event) => {
+      store.put(event);
+    });
+  });
+}
+

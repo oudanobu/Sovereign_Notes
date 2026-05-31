@@ -86,3 +86,13 @@ export interface CalendarEvent {
   isDeleted: boolean;
 }
 
+export interface AssetItem {
+  id: string;          // e.g. 'img_123456'
+  noteId: string;      // The note this image belongs to
+  fileName: string;    // Original file name
+  mimeType: string;    // e.g. 'image/jpeg', 'image/png'
+  data: ArrayBuffer | Blob; // Directly store binary format
+  createdAt: number;
+}
+
+

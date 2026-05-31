@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Plus, Trash2, Clock, Upload, Download } from 'lucide-react';
 // @ts-ignore
 import solarLunar from 'solarlunar';
 import { Note, CalendarEvent } from '../types';
@@ -18,6 +18,7 @@ interface CalendarPanelProps {
   onSelectDate: (date: Date | null) => void;
   onSaveEvent: (event: CalendarEvent) => void;
   onDeleteEvent: (id: string) => void;
+  onImportEvents?: (events: CalendarEvent[]) => void;
   lang: Language;
   t: (key: any) => string;
 }
@@ -29,6 +30,7 @@ export function CalendarPanel({
   onSelectDate,
   onSaveEvent,
   onDeleteEvent,
+  onImportEvents,
   lang,
   t
 }: CalendarPanelProps) {
@@ -200,6 +202,48 @@ export function CalendarPanel({
     setNewEventTitle('');
   };
 
+  const handleExportEvents = () => {
+    const activeEvents = events.filter(e => !e.isDeleted);
+    const blob = new Blob([JSON.stringify(activeEvents, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calendar-events-${formatDateStyle(new Date())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const handleImportEvents = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const content = evt.target?.result as string;
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed) && onImportEvents) {
+          // simple validation
+          const validEvents = parsed.filter(item => item.id && item.date && item.title);
+          // deduplicate or just insert anew (overwrite by ID)
+          if (validEvents.length > 0) {
+            onImportEvents(validEvents);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to parse calendar events file', err);
+      } finally {
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const colorMap: Record<string, { bg: string, text: string, border: string, dot: string }> = {
     indigo: { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', dot: 'bg-indigo-500' },
     rose: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', dot: 'bg-rose-500' },
@@ -209,6 +253,13 @@ export function CalendarPanel({
 
   return (
     <div className="space-y-4 font-sans">
+      <input 
+        type="file" 
+        accept=".json" 
+        className="hidden" 
+        ref={fileInputRef}
+        onChange={handleImportEvents} 
+      />
       {/* 1. CALENDAR VIEW BLOCK */}
       <div className="bg-white rounded-2xl border border-gray-150 p-4 shadow-xs">
         <div className="flex justify-between items-center mb-3">
@@ -218,14 +269,30 @@ export function CalendarPanel({
               {lang === 'zh' ? '主权智能日历' : t('calendarHeader')}
             </h3>
           </div>
-          {selectedDate && (
+          <div className="flex items-center space-x-2">
             <button
-              {...bindTouchTap(() => onSelectDate(null))}
-              className="text-[9.5px] uppercase font-black bg-slate-50 text-slate-600 px-2.5 py-1.5 rounded-xl border border-gray-200 hover:text-slate-900 hover:bg-slate-150 transition duration-150 cursor-pointer flex items-center space-x-1"
+              {...bindTouchTap(handleExportEvents)}
+              className="text-gray-400 hover:text-slate-700 p-1 rounded transition flex items-center justify-center cursor-pointer"
+              title={lang === 'zh' ? '导出纪念日' : 'Export Events'}
             >
-              <span>{lang === 'zh' ? '清除筛选' : t('clearFilter')}</span>
+              <Download className="w-4 h-4" />
             </button>
-          )}
+            <button
+              {...bindTouchTap(() => fileInputRef.current?.click())}
+              className="text-gray-400 hover:text-slate-700 p-1 rounded transition flex items-center justify-center cursor-pointer"
+              title={lang === 'zh' ? '导入纪念日' : 'Import Events'}
+            >
+              <Upload className="w-4 h-4" />
+            </button>
+            {selectedDate && (
+              <button
+                {...bindTouchTap(() => onSelectDate(null))}
+                className="text-[9.5px] uppercase font-black bg-slate-50 text-slate-600 px-2.5 py-1.5 rounded-xl border border-gray-200 hover:text-slate-900 hover:bg-slate-150 transition duration-150 cursor-pointer flex items-center space-x-1 ml-2"
+              >
+                <span>{lang === 'zh' ? '清除筛选' : t('clearFilter')}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-between items-center mb-3 px-1">

@@ -5,6 +5,7 @@
 
 import express from 'express';
 import path from 'path';
+import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
 import { Note, Tag, Folder } from './src/types';
 
@@ -28,6 +29,11 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PROPFIND', 'MKCOL'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Depth']
+  }));
   app.use(express.json({ limit: '50mb' }));
 
   // API 1: LAN Sync Hub Endpoint

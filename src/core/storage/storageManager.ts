@@ -1,8 +1,9 @@
 import { openDB, IDBPDatabase } from 'idb';
-import { Note, Tag, Folder } from '../../types';
+import { Note, Tag, Folder, AssetItem } from '../../types';
 
 const DB_NAME = 'LocalSovereignNotesDB';
-const DB_VERSION = 2; // Matched for consistent migration
+const DB_VERSION = 3; // Upgraded to v3 for asset storage integration
+
 
 // Types for Migration Shim & Backup
 export interface StorageSnapshot {
@@ -49,6 +50,10 @@ class StorageManager {
           const eventStore = db.createObjectStore('events', { keyPath: 'id' });
           eventStore.createIndex('date', 'date', { unique: false });
           eventStore.createIndex('isDeleted', 'isDeleted', { unique: false });
+        }
+        if (!db.objectStoreNames.contains('assets')) {
+          const assetStore = db.createObjectStore('assets', { keyPath: 'id' });
+          assetStore.createIndex('noteId', 'noteId', { unique: false });
         }
       },
     });
@@ -131,6 +136,85 @@ class StorageManager {
     const db = await this.dbPromise;
     await db.put('folders', folder);
     return folder.id;
+  }
+
+  // --- Asset Storage Operations (For Local Images & Attachments) ---
+  private isAndroidBelow11(): boolean {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent.toLowerCase();
+    const match = ua.match(/android\s+([0-9.]+)/);
+    if (match) {
+      const version = parseFloat(match[1]);
+      return version < 11.0;
+    }
+    return false;
+  }
+
+  private blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result instanceof ArrayBuffer) {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert Blob to ArrayBuffer.'));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(blob);
+    });
+  }
+
+  async saveAsset(asset: AssetItem): Promise<string> {
+    const db = await this.dbPromise;
+    let dataToSave = asset.data;
+    if (this.isAndroidBelow11() && asset.data instanceof Blob) {
+      try {
+        dataToSave = await this.blobToArrayBuffer(asset.data);
+      } catch (err) {
+        console.error('Android < 11 asset fallback pre-convert failed:', err);
+      }
+    }
+    await db.put('assets', {
+      ...asset,
+      data: dataToSave
+    });
+    return asset.id;
+  }
+
+  async getAsset(id: string): Promise<AssetItem | null> {
+    const db = await this.dbPromise;
+    const raw = await db.get('assets', id);
+    if (!raw) return null;
+
+    let finalData = raw.data;
+    if (finalData instanceof ArrayBuffer) {
+      finalData = new Blob([finalData], { type: raw.mimeType });
+    }
+    return {
+      ...raw,
+      data: finalData
+    };
+  }
+
+  async getAssetsByNote(noteId: string): Promise<AssetItem[]> {
+    const db = await this.dbPromise;
+    const all = await db.getAllFromIndex('assets', 'noteId', noteId);
+    return all.map(raw => {
+      let finalData = raw.data;
+      if (finalData instanceof ArrayBuffer) {
+        finalData = new Blob([finalData], { type: raw.mimeType });
+      }
+      return {
+        ...raw,
+        data: finalData
+      };
+    });
+  }
+
+  async deleteAsset(id: string): Promise<void> {
+    const db = await this.dbPromise;
+    await db.delete('assets', id);
   }
 
   // --- Snapshot Exports for Backup ---

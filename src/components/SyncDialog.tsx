@@ -44,6 +44,7 @@ export function SyncDialog({
   // Sync state values
   const [lanServerUrl, setLanServerUrl] = useState(window.location.origin);
   const [webdavUrl, setWebdavUrl] = useState(`${window.location.origin}/api/webdav-sim`);
+  const [webdavPort, setWebdavPort] = useState('');
   const [webdavUser, setWebdavUser] = useState('sovereign_user');
   const [webdavPass, setWebdavPass] = useState('demo-password');
   const [webdavPath, setWebdavPath] = useState('SovereignNotesBackup');
@@ -344,8 +345,8 @@ export function SyncDialog({
         : `Sending database state: ${currentNotes.length} notes, ${currentTags.length} tags, ${currentFolders.length} categories.`
       );
 
-      // POST to sync server
-      const response = await fetch(`${lanServerUrl}/api/lan-sync`, {
+      let finalLanUrl = lanServerUrl.replace(/\/+$/, "");
+      const response = await fetch(`${finalLanUrl}/api/lan-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -390,7 +391,19 @@ export function SyncDialog({
     addLog(`Initiating WebDAV ${direction} sequence ...`);
 
     try {
-      const targetBackupUrl = `${webdavUrl}/${webdavPath}/sovereign_sync.json`;
+      let finalWebdavUrl = webdavUrl.replace(/\/$/, ""); // remove trailing slash
+      if (webdavPort) {
+        try {
+          const urlObj = new URL(finalWebdavUrl);
+          urlObj.port = webdavPort;
+          finalWebdavUrl = urlObj.toString().replace(/\/$/, "");
+        } catch (e) {
+          finalWebdavUrl = `${finalWebdavUrl}:${webdavPort}`;
+        }
+      }
+      
+      const cleanPath = webdavPath.replace(/^\/+/, "").replace(/\/+$/, "");
+      const targetBackupUrl = `${finalWebdavUrl}/${cleanPath ? cleanPath + '/' : ''}sovereign_sync.json`;
       addLog(`Target Endpoint: ${targetBackupUrl}`);
 
       // Basic Authentication Headers
@@ -865,25 +878,37 @@ export function SyncDialog({
                 </div>
 
                 <div className="bg-slate-50 rounded-2xl p-4.5 border border-gray-150 text-xs space-y-4 shadow-sm">
-                  <div className="grid grid-cols-2 gap-3.5">
-                    <div>
+                  <div className="grid grid-cols-12 gap-3.5">
+                    <div className="col-span-8">
                       <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">{t('webdavUrl')}</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold bg-white min-h-[40px]"
                         value={webdavUrl}
                         onChange={(e) => setWebdavUrl(e.target.value)}
+                        placeholder="http://192.168.x.x"
                       />
                     </div>
-                    <div>
-                      <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">{t('remotePath')}</label>
+                    <div className="col-span-4">
+                      <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">{lang === 'zh' ? '端口 (PORT)' : 'Port'}</label>
                       <input
                         type="text"
                         className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold bg-white min-h-[40px]"
-                        value={webdavPath}
-                        onChange={(e) => setWebdavPath(e.target.value)}
+                        value={webdavPort}
+                        onChange={(e) => setWebdavPort(e.target.value)}
+                        placeholder="e.g. 5244"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">{t('remotePath')}</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold bg-white min-h-[40px]"
+                      value={webdavPath}
+                      onChange={(e) => setWebdavPath(e.target.value)}
+                      placeholder="/dav/SovereignNotesBackup"
+                    />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3.5">

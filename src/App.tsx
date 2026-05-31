@@ -29,7 +29,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
-import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent } from './db';
+import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent, bulkInsertEvents } from './db';
 import { MarkdownRenderer } from './components/MarkdownRenderer';
 import { MindMapEditor } from './components/MindMapEditor';
 import { CalendarPanel } from './components/CalendarPanel';
@@ -69,7 +69,11 @@ export default function App() {
   const [mindmapData, setMindmapData] = useState<MindMapData | undefined>(undefined);
 
   // New accessibility states
-  const [isLargeFont, setIsLargeFont] = useState<boolean>(() => localStorage.getItem('sovereign_large_font') === 'true');
+  const [fontLevel, setFontLevel] = useState<number>(() => {
+    const savedLevel = localStorage.getItem('sovereign_font_level');
+    if (savedLevel) return parseInt(savedLevel, 10);
+    return localStorage.getItem('sovereign_large_font') === 'true' ? 1 : 0;
+  });
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<'all' | 'whiteboard'>('all');
 
   // Platform device CSS profile state
@@ -306,6 +310,16 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     const deletedEvent = { ...current, isDeleted: true };
     await saveEvent(deletedEvent);
     setEvents(prev => prev.map(e => e.id === eventId ? deletedEvent : e));
+  };
+
+  const handleBulkSaveEvents = async (newEvents: CalendarEvent[]) => {
+    try {
+      await bulkInsertEvents(newEvents);
+      const allEvents = await getEvents();
+      setEvents(allEvents);
+    } catch (err) {
+      console.error('Bulk insert events failed:', err);
+    }
   };
 
   const handleSelectNote = (note: Note) => {
@@ -745,7 +759,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
   const activeSelectedNoteInstance = notes.find(n => n.id === selectedNoteId && !n.isDeleted);
 
   return (
-    <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased profile-${platformProfile} ${isLargeFont ? 'large-font-mode' : ''}`}>
+    <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased profile-${platformProfile} ${fontLevel > 0 ? `font-scale-${fontLevel}` : ''}`}>
       
       {/* Columns Container Wrapper */}
       <div className="flex-1 flex overflow-hidden relative min-h-0">
@@ -900,19 +914,22 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
               <button
                 {...bindTouchTap(() => {
-                  const nextLargeVal = !isLargeFont;
-                  setIsLargeFont(nextLargeVal);
-                  localStorage.setItem('sovereign_large_font', String(nextLargeVal));
+                  const nextLevel = (fontLevel + 1) % 4; // 0, 1, 2, 3
+                  setFontLevel(nextLevel);
+                  localStorage.setItem('sovereign_font_level', String(nextLevel));
+                  localStorage.setItem('sovereign_large_font', String(nextLevel > 0)); 
                 })}
                 className={`w-11 h-11 border rounded-xl font-black text-[10px] transition duration-150 flex flex-col items-center justify-center shadow-xs cursor-pointer ${
-                  isLargeFont 
+                  fontLevel > 0 
                     ? 'bg-rose-600 border-rose-650 text-white shadow-sm' 
                     : 'bg-slate-50 border-gray-250 text-slate-700 hover:bg-slate-100 hover:border-slate-350'
                 }`}
-                title={lang === 'zh' ? '大字体模式' : 'Toggle Large Font'}
+                title={lang === 'zh' ? '字体大小' : 'Font Size'}
               >
                 <BookOpen className="w-2.5 h-2.5 text-pink-500 mb-0.5" />
-                <span className="text-[9px] uppercase">{isLargeFont ? '大' : 'A'}</span>
+                <span className="text-[9px] uppercase">
+                  {fontLevel === 0 ? 'A' : fontLevel === 1 ? (lang === 'zh' ? '大' : 'L') : fontLevel === 2 ? (lang === 'zh' ? '特大' : 'XL') : (lang === 'zh' ? '巨大' : 'MAX')}
+                </span>
               </button>
 
               <button
@@ -1033,6 +1050,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                     }}
                     onSaveEvent={handleSaveEvent}
                     onDeleteEvent={handleDeleteEvent}
+                    onImportEvents={handleBulkSaveEvents}
                     lang={lang}
                     t={t}
                   />
@@ -1549,6 +1567,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                       triggerLocalSave({ content: updatedMarkdown });
                     }}
                     lang={lang}
+                    noteId={selectedNoteId || undefined}
                   />
                 </div>
               )}

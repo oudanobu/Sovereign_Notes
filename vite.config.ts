@@ -10,9 +10,8 @@ export default defineConfig(() => {
     plugins: [
       react(),
       tailwindcss(),
-      viteSingleFile(),
       legacy({
-        targets: ['chrome >= 37', 'android >= 5.0', 'ie >= 11'],
+        targets: ['chrome >= 30', 'android >= 4.4', 'ios >= 9'],
         additionalLegacyPolyfills: ['regenerator-runtime/runtime']
       })
     ],
@@ -22,8 +21,8 @@ export default defineConfig(() => {
       },
     },
     build: {
-      target: 'es2015',
-      cssTarget: 'chrome37'
+      target: ['chrome60', 'safari11'],
+      cssTarget: 'chrome30'
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
