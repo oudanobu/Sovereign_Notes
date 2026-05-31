@@ -404,123 +404,135 @@ textarea,
   -webkit-font-smoothing: initial !important;
 }
 /* Universal fallback for modern CSS inset property to support Webscout / WebViews older than Chrome 87 (e.g. Android 5, Android 9, older iOS, older smart TVs) */
-.inset-0, .profile-android5 .inset-0, .profile-android13 .inset-0 {
+html.profile-android5 .inset-0, 
+body.profile-android5 [class*="inset-0"],
+html.profile-android13 .inset-0, 
+body.profile-android13 [class*="inset-0"] {
   top: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
   left: 0 !important;
+  position: absolute !important;
 }
-.inset-y-0, .profile-android5 .inset-y-0, .profile-android13 .inset-y-0 {
+html.profile-android5 .inset-y-0, 
+body.profile-android5 [class*="inset-y-0"],
+html.profile-android13 .inset-y-0, 
+body.profile-android13 [class*="inset-y-0"] {
   top: 0 !important;
   bottom: 0 !important;
+  position: absolute !important;
 }
-.inset-x-0, .profile-android5 .inset-x-0, .profile-android13 .inset-x-0 {
+html.profile-android5 .inset-x-0, 
+body.profile-android5 [class*="inset-x-0"],
+html.profile-android13 .inset-x-0, 
+body.profile-android13 [class*="inset-x-0"] {
   left: 0 !important;
   right: 0 !important;
+  position: absolute !important;
 }
 
 /* 针对古老 Chrome 37 到 83 内核 (Android 5-10) WebView 中 flex 弹性盒 gap 缺失的 sibling margin 精准补偿 */
-.profile-android5 .flex.gap-0\.5 > * + *,
-.profile-android5 .flex.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-0\.5 > * + *,
+html.profile-android5 .flex.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 2px !important;
 }
-.profile-android5 .flex.flex-col.gap-0\.5 > * + *,
-.profile-android5 .flex.flex-col.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-0\.5 > * + *,
+html.profile-android5 .flex.flex-col.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 2px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-1 > * + *,
-.profile-android5 .flex.gap-1 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-1 > * + *,
+html.profile-android5 .flex.gap-1 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 4px !important;
 }
-.profile-android5 .flex.flex-col.gap-1 > * + *,
-.profile-android5 .flex.flex-col.gap-1 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-1 > * + *,
+html.profile-android5 .flex.flex-col.gap-1 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 4px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-1\.5 > * + *,
-.profile-android5 .flex.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-1\.5 > * + *,
+html.profile-android5 .flex.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 6px !important;
 }
-.profile-android5 .flex.flex-col.gap-1\.5 > * + *,
-.profile-android5 .flex.flex-col.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-1\.5 > * + *,
+html.profile-android5 .flex.flex-col.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 6px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-2 > * + *,
-.profile-android5 .flex.gap-2 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-2 > * + *,
+html.profile-android5 .flex.gap-2 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 8px !important;
 }
-.profile-android5 .flex.flex-col.gap-2 > * + *,
-.profile-android5 .flex.flex-col.gap-2 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-2 > * + *,
+html.profile-android5 .flex.flex-col.gap-2 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 8px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-2\.5 > * + *,
-.profile-android5 .flex.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-2\.5 > * + *,
+html.profile-android5 .flex.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 10px !important;
 }
-.profile-android5 .flex.flex-col.gap-2\.5 > * + *,
-.profile-android5 .flex.flex-col.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-2\.5 > * + *,
+html.profile-android5 .flex.flex-col.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 10px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-3 > * + *,
-.profile-android5 .flex.gap-3 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-3 > * + *,
+html.profile-android5 .flex.gap-3 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 12px !important;
 }
-.profile-android5 .flex.flex-col.gap-3 > * + *,
-.profile-android5 .flex.flex-col.gap-3 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-3 > * + *,
+html.profile-android5 .flex.flex-col.gap-3 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 12px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-3\.5 > * + *,
-.profile-android5 .flex.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-3\.5 > * + *,
+html.profile-android5 .flex.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 14px !important;
 }
-.profile-android5 .flex.flex-col.gap-3\.5 > * + *,
-.profile-android5 .flex.flex-col.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-3\.5 > * + *,
+html.profile-android5 .flex.flex-col.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 14px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-4 > * + *,
-.profile-android5 .flex.gap-4 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-4 > * + *,
+html.profile-android5 .flex.gap-4 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 16px !important;
 }
-.profile-android5 .flex.flex-col.gap-4 > * + *,
-.profile-android5 .flex.flex-col.gap-4 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-4 > * + *,
+html.profile-android5 .flex.flex-col.gap-4 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 16px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-5 > * + *,
-.profile-android5 .flex.gap-5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-5 > * + *,
+html.profile-android5 .flex.gap-5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 20px !important;
 }
-.profile-android5 .flex.flex-col.gap-5 > * + *,
-.profile-android5 .flex.flex-col.gap-5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-5 > * + *,
+html.profile-android5 .flex.flex-col.gap-5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 20px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.gap-6 > * + *,
-.profile-android5 .flex.gap-6 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.gap-6 > * + *,
+html.profile-android5 .flex.gap-6 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 24px !important;
 }
-.profile-android5 .flex.flex-col.gap-6 > * + *,
-.profile-android5 .flex.flex-col.gap-6 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android5 .flex.flex-col.gap-6 > * + *,
+html.profile-android5 .flex.flex-col.gap-6 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 24px !important;
   margin-left: 0 !important;
 }
 
-.profile-android5 .flex.flex-wrap {
+html.profile-android5 .flex.flex-wrap {
   margin-bottom: -6px !important;
 }
 

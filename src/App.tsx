@@ -83,21 +83,59 @@ export default function App() {
       return saved;
     }
     const ua = navigator.userAgent.toLowerCase();
-    const isAndroid = ua.includes('android');
-    if (isAndroid) {
-      const match = ua.match(/android\s+([0-9.]+)/);
-      if (match) {
-        const version = parseFloat(match[1]);
-        if (version < 11.0) return 'android5';
+    
+    // Check Chrome version
+    let isOldChrome = false;
+    const chromeMatch = ua.match(/chrome\/([0-9.]+)/);
+    if (chromeMatch) {
+      const chromeVer = parseFloat(chromeMatch[1]);
+      if (chromeVer < 84.0) {
+        isOldChrome = true;
       }
-      return 'android13';
     }
+
+    const isAndroid = ua.includes('android');
+    // Return android5 if version is < 11.0, explicit Android 9/5, or old chrome kernel
+    if (isAndroid || ua.includes('linux')) {
+      const androidMatch = ua.match(/android\s+([0-9.]+)/);
+      if (androidMatch) {
+        const version = parseFloat(androidMatch[1]);
+        if (version < 11.0 || version === 9.0 || version === 5.0) {
+          return 'android5';
+        }
+      }
+      if (
+        ua.includes('android 9') || 
+        ua.includes('android 5') || 
+        ua.includes('android 6') || 
+        ua.includes('android 7') || 
+        ua.includes('android 8') || 
+        isOldChrome
+      ) {
+        return 'android5';
+      }
+      if (isAndroid) {
+        return 'android13';
+      }
+    }
+
+    if (isOldChrome) {
+      return 'android5';
+    }
+
     const isTablet = /ipad|tablet|playbook|silk/i.test(ua) || 
                      (isAndroid && !/mobile/i.test(ua)) ||
                      (navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && /macintosh|intel/i.test(ua));
     if (isTablet) return 'tablet';
     return 'win';
   });
+
+  // Sync class profile directly to <html> element
+  useEffect(() => {
+    const htmlEl = document.documentElement;
+    htmlEl.classList.remove('profile-win', 'profile-tablet', 'profile-android13', 'profile-android5');
+    htmlEl.classList.add(`profile-${platformProfile}`);
+  }, [platformProfile]);
 
   // Navigation state
   const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
