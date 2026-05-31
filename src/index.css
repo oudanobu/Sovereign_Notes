@@ -23,8 +23,6 @@ textarea,
 .folder-row {
   touch-action: manipulation; /* 禁用系统双击缩放，彻底消除 Win/Android 平板 300ms 点击延迟 */
   user-select: none;         /* 防止平板和手机上手指长按误触发系统文本选择蓝块 */
-  min-height: 44px;           /* 确保物理触控高度不小于 44px 黄金尺寸 */
-  min-width: 44px;
 }
 
 /* 针对多级子孙标签树的展开折叠图标，人为扩大其物理触控点击热区 */
@@ -177,16 +175,13 @@ textarea,
   /* 适度调高文本基础大小，确保阅读不费力 */
   font-size: 13px !important;
 }
-/* 平板触控黄金热区放大，解决 Windows Tablet 触指时太小的问题 */
+/* 让平板触控交互适当更易点击，不进行全局高度覆盖 */
 .profile-tablet button,
 .profile-tablet select,
 .profile-tablet label,
 .profile-tablet input,
 .profile-tablet textarea {
-  min-height: 48px !important;
-  font-size: 13px !important;
-  padding-top: 0.25rem !important;
-  padding-bottom: 0.25rem !important;
+  font-size: 13px;
 }
 /* 标签与分类高度独立 */
 .profile-tablet .tag-toggle-icon {
@@ -226,13 +221,12 @@ textarea,
   background-color: #f8fafc !important; /* solid fallback */
   color: #0f172a !important;
 }
-/* 大圆角配合现代 Android 13 Material Design 3 风格 */
+/* 大圆角配合现代 Android 13 Material Design 3 风格，取消暴力绝对高度 */
 .profile-android13 button,
 .profile-android13 select,
 .profile-android13 label {
-  border-radius: 14px !important;
-  min-height: 48px !important;
-  font-size: 13.5px !important;
+  border-radius: 14px;
+  font-size: 13.5px;
 }
 .profile-android13 .note-list-item {
   margin-top: 4px !important;
@@ -331,14 +325,11 @@ textarea,
   color: #475569 !important; /* Strong secondary gray */
 }
 
-/* 强力回归实体直角或简易微圆角 */
+/* 强力回归实体直角或简易微圆角，绝不起用 border-width：这会给所有层叠 div/span 加上冗余怪异的实线黑框毁掉 UI */
 .profile-android5 button,
 .profile-android5 select,
-.profile-android5 label,
-.profile-android5 div,
-.profile-android5 span {
-  border-radius: 4px !important;
-  border-width: 1px !important;
+.profile-android5 label {
+  border-radius: 4px;
 }
 
 /* Solid background fallbacks */
