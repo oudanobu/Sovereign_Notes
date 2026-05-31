@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Shield, Server, Cloud, Download, Upload, AlertTriangle, Check, RefreshCw, Plus, Copy } from 'lucide-react';
+import { Shield, Server, Cloud, Download, Upload, AlertTriangle, Check, RefreshCw, Plus, Copy, Share2 } from 'lucide-react';
 import { Tag, Folder, Note } from '../types';
 import { exportDatabaseSnapshot, importDatabaseSnapshot, getNotes, getTags, getFolders, bulkInsertNotes, bulkInsertTags, bulkInsertFolders } from '../db';
 import { Language } from '../utils/i18n';
@@ -174,6 +174,68 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
       );
     } catch (err: any) {
       setErrorMessage(`Export failed: ${err.message}`);
+    }
+  };
+
+  const handleShareSnapshot = async (shareType: 'file' | 'text') => {
+    try {
+      setSuccessMessage(null);
+      setErrorMessage(null);
+      const dbJson = await exportDatabaseSnapshot();
+      const fileName = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+
+      if (typeof navigator === 'undefined' || !navigator.share) {
+        throw new Error(
+          lang === 'zh'
+            ? '您的浏览器或设备环境不支持系统原生分享 API，请升级浏览器或使用下方复制功能。'
+            : 'Web Share API is not supported in this browser environment.'
+        );
+      }
+
+      if (shareType === 'file') {
+        const blob = new Blob([dbJson], { type: 'application/json' });
+        const file = new File([blob], fileName, { type: 'application/json' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: lang === 'zh' ? 'SovereignNote 数据备份文件' : 'SovereignNote File Backup',
+            text: lang === 'zh' ? '全量 JSON 系统备份文件' : 'SovereignNote complete system database snapshot'
+          });
+          setSuccessMessage(
+            lang === 'zh'
+              ? '🎉 备份文件已成功递送系统分享！您可以选择发送至文件管理器、微信、云盘等。'
+              : 'Backup file sent to systems share dialog successfully!'
+          );
+        } else {
+          throw new Error(
+            lang === 'zh'
+              ? '当前设备不支持直接分享【文件实体】（可能由于系统安全限制），建议尝试下方的【分享为文本格式】或使用复制剪贴板功能！'
+              : 'Sharing files is restricted or unsupported by this OS build. Try text sharing instead.'
+          );
+        }
+      } else {
+        // Share as plain text payload
+        await navigator.share({
+          title: lang === 'zh' ? 'SovereignNote 数据备份文本' : 'SovereignNote Plain Text Sync',
+          text: dbJson
+        });
+        setSuccessMessage(
+          lang === 'zh'
+            ? '🎉 备选文本已成功拉起系统分享！您可以直接发至文件管理、便签、微信传输助手等。'
+            : 'Backup text payload sent to systems share dialog successfully!'
+        );
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        // User cancelled, ignore
+        return;
+      }
+      setErrorMessage(
+        lang === 'zh'
+          ? `分享通道调用失败: ${err.message}`
+          : `Share failed: ${err.message}`
+      );
     }
   };
 
@@ -597,6 +659,40 @@ export function SyncDialog({ notes, tags, folders, onSyncCompleted, onClose = ()
                       <Copy className="w-4 h-4 text-indigo-600" />
                       <span>{lang === 'zh' ? '📋 立即复制全量主权备份至剪切板' : 'Copy Full Snapshot to Clipboard'}</span>
                     </button>
+
+                    {/* Smart OS Share Channel */}
+                    <div className="border-t border-slate-200/60 pt-3 mt-1.5 space-y-2">
+                      <div className="flex items-center space-x-1.5 mb-1">
+                        <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{lang === 'zh' ? '📱 智能系统原生分享 (绕过沙盒直接存盘)' : 'Native System Share Channel'}</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          {...bindTouchTap(() => handleShareSnapshot('file'))}
+                          className="py-2 px-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 font-extrabold text-[11px] rounded-xl flex items-center justify-center space-x-1.5 transition cursor-pointer active:scale-98 min-h-[40px]"
+                        >
+                          <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{lang === 'zh' ? '📂 分享为【文件】' : 'Share File'}</span>
+                        </button>
+                        
+                        <button
+                          type="button"
+                          {...bindTouchTap(() => handleShareSnapshot('text'))}
+                          className="py-2 px-2 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-800 font-extrabold text-[11px] rounded-xl flex items-center justify-center space-x-1.5 transition cursor-pointer active:scale-98 min-h-[40px]"
+                        >
+                          <Share2 className="w-3.5 h-3.5 text-sky-600" />
+                          <span>{lang === 'zh' ? '📝 分享为【纯文本】' : 'Share Text'}</span>
+                        </button>
+                      </div>
+                      <p className="text-[9px] text-gray-400 font-bold leading-normal">
+                        {lang === 'zh' 
+                          ? '💡 核心推荐：若您的浏览器没有弹出下载框，可以点击「分享为文件」直接发送至“文件管理器、微信、云盘”等保存到本地。' 
+                          : '💡 Direct workaround: Clicking "Share File" routes around standard web download limits into local Storage explorers.'}
+                      </p>
+                    </div>
+
                     {rawBackupDisplay && (
                       <div className="mt-3 bg-white rounded-xl border border-rose-200 p-2 shadow-xs transition-all flex flex-col">
                          <div className="flex justify-between items-center px-1 pb-2">
