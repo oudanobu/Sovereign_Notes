@@ -97,7 +97,7 @@ jobs:
               }
             });
             Menu.setApplicationMenu(null); // 去除顶部默认不美观的系统栏
-            win.loadFile(path.join(__dirname, 'app/SovereignNote-PWA-SingleFile.html'));
+            win.loadFile(path.join(__dirname, 'app/index.html'));
           }
           
           app.whenReady().then(createWindow);
@@ -110,7 +110,7 @@ jobs:
           EOF
           # 资源定位与转存
           mkdir -p app
-          cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html app/SovereignNote-PWA-SingleFile.html
+          cp -r ../dist/* app/
            # 执行免 Wine 的高性能 Windows 离线包编译，独立分步构建 64 位 (x64) 与 32 位 (ia32) 架构，彻底消除缓存冲突或物理资源锁定
           npm install --legacy-peer-deps
 
@@ -197,7 +197,7 @@ jobs:
           
           # 3. 将高兼容性离线主程序同步到宿主 Android 的 www 文件夹下
           rm -rf www/*
-          cp ../dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html www/index.html
+          cp -r ../dist/* www/
           
           # 4. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
           sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n    <preference name="android-minSdkVersion" value="21" />\n    <preference name="android-targetSdkVersion" value="33" />\n    <preference name="android-architecture" value="multi" />\n    <preference name="GradleVersion" value="7.4.2" />\n</widget>|' config.xml

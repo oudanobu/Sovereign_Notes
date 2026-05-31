@@ -14,7 +14,8 @@ export default defineConfig(() => {
       legacy({
         targets: ['chrome >= 30', 'android >= 4.4', 'ios >= 9'],
         additionalLegacyPolyfills: ['regenerator-runtime/runtime']
-      })
+      }),
+      viteSingleFile({ useRecommendedBuildConfig: false })
     ],
     resolve: {
       alias: {
@@ -23,7 +24,16 @@ export default defineConfig(() => {
     },
     build: {
       target: ['chrome60', 'safari11'],
-      cssTarget: 'chrome30'
+      cssTarget: 'chrome30',
+      assetsInlineLimit: 100000000,
+      chunkSizeWarningLimit: 100000000,
+      cssCodeSplit: false,
+      rollupOptions: {
+        inlineDynamicImports: true,
+        output: {
+          manualChunks: undefined,
+        },
+      },
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
