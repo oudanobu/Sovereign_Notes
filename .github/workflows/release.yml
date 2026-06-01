@@ -191,23 +191,29 @@ jobs:
 
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
         run: |
-          # 0.5 绝对防御机制：配置全局 Gradle 依赖嗅探重定向逻辑，将由于 Bintray JCenter 彻底闭域停服导致的所有 com.g00fy2:versioncompare 等硬编码依赖拉取失败重定向到稳定的 mavenCentral() 中！
+          # 0.5 绝对防御机制：配置全局 Gradle 依赖嗅探重定向逻辑，将由于 Bintray JCenter 彻底闭域停服导致的所有 com.g00fy2:versioncompare 等硬编码依赖拉取失败，重定向到稳定的阿里云 Maven Public 镜像（内含 JCenter 终极归档缓存）中！
           mkdir -p ~/.gradle
           cat << 'EOF' > ~/.gradle/init.gradle
           allprojects {
               buildscript {
                   repositories {
                       all { repo ->
-                          if (repo.hasProperty('url') && repo.url.toString().contains("jcenter.bintray.com")) {
-                              repo.url = java.net.URI.create("https://repo1.maven.org/maven2/")
+                          if (repo.hasProperty('url')) {
+                              def url = repo.url.toString()
+                              if (url.contains("jcenter.bintray.com")) {
+                                  repo.url = java.net.URI.create("https://maven.aliyun.com/repository/public")
+                              }
                           }
                       }
                   }
               }
               repositories {
                   all { repo ->
-                      if (repo.hasProperty('url') && repo.url.toString().contains("jcenter.bintray.com")) {
-                          repo.url = java.net.URI.create("https://repo1.maven.org/maven2/")
+                      if (repo.hasProperty('url')) {
+                          def url = repo.url.toString()
+                          if (url.contains("jcenter.bintray.com")) {
+                              repo.url = java.net.URI.create("https://maven.aliyun.com/repository/public")
+                          }
                       }
                   }
               }
