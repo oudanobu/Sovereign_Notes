@@ -191,8 +191,9 @@ jobs:
 
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
         run: |
-          # 1. 部署 Cordova 跨平台原生打包编译引擎
-          sudo npm install -g cordova
+          # 1. 部署 Cordova 跨平台原生打包编译引擎 以及老旧插件需要的并被 Cordova 移除的 q 慢速 Promise 引擎
+          sudo npm install -g cordova q
+          export NODE_PATH=$(npm root -g)
           
           # 1.5 强力修补 Cordova CLI 中非 `cordova` 模块导致 `requireCordovaModule` 拒绝加载的漏洞 (支持 Crosswalk Plugin 完美安装)
           sudo node -e '
@@ -214,11 +215,28 @@ jobs:
                     let content = fs.readFileSync(fullPath, "utf8");
                     if (content.includes("requireCordovaModule")) {
                       content += "\n\n// Overriding hook to satisfy Crosswalk plugins needing standard require\n" +
+                                 "const patchRequire = function (modulePath) {\n" +
+                                 "  if (modulePath === \"q\") {\n" +
+                                 "    try { return require(modulePath); } catch (e) {\n" +
+                                 "      return {\n" +
+                                 "        defer: function() {\n" +
+                                 "          let resolve, reject;\n" +
+                                 "          const promise = new Promise((res, rej) => { resolve = res; reject = rej; });\n" +
+                                 "          return { resolve, reject, promise };\n" +
+                                 "        },\n" +
+                                 "        all: Promise.all.bind(Promise),\n" +
+                                 "        resolve: Promise.resolve.bind(Promise),\n" +
+                                 "        reject: Promise.reject.bind(Promise)\n" +
+                                 "      };\n" +
+                                 "    }\n" +
+                                 "  }\n" +
+                                 "  return require(modulePath);\n" +
+                                 "};\n" +
                                  "if (typeof Context !== \"undefined\" && Context.prototype) {\n" +
-                                 "  Context.prototype.requireCordovaModule = function (modulePath) { return require(modulePath); };\n" +
+                                 "  Context.prototype.requireCordovaModule = patchRequire;\n" +
                                  "}\n" +
                                  "if (module.exports && module.exports.prototype) {\n" +
-                                 "  module.exports.prototype.requireCordovaModule = function (modulePath) { return require(modulePath); };\n" +
+                                 "  module.exports.prototype.requireCordovaModule = patchRequire;\n" +
                                  "}\n";
                       fs.writeFileSync(fullPath, content, "utf8");
                       console.log("👉 Patch successfully injected into Context.js!");
