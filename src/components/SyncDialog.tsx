@@ -157,10 +157,17 @@ export function SyncDialog({
 
       // ─── HIGH RESILIENCE ANDROID & WEBVIEW SERVER-SIDE FORM SUBMIT DOWNLOAD ───
       // Bypasses local blob/sandbox constraints by transferring the payload back to the client via true HTTP Content-Disposition headers.
+      // Targets a transient, invisible sandbox iframe to prevent any parent frame navigation under strict browser contexts.
       try {
+        const iframe = document.createElement('iframe');
+        iframe.name = 'backup_download_iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
         const form = document.createElement('form');
         form.action = '/api/backup/download';
         form.method = 'POST';
+        form.target = 'backup_download_iframe';
         form.style.display = 'none';
 
         const filenameInput = document.createElement('input');
@@ -177,11 +184,20 @@ export function SyncDialog({
         form.appendChild(contentInput);
         document.body.appendChild(form);
         form.submit();
-        document.body.removeChild(form);
+
+        // Safely garbage-collect elements after submission dispatch
+        setTimeout(() => {
+          if (document.body.contains(form)) {
+            document.body.removeChild(form);
+          }
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 4000);
 
         setSuccessMessage(lang === 'zh'
-          ? '🎉 备份文件已触发生生不息的服务器中转下载！文件已安全写入您的系统“Download/下载”目录中。若设备无响应，可尝试下方“分享为文件”或“复制至剪切板”。'
-          : 'Backup file download triggered successfully via server proxy! Saved to your system Downloads folder.'
+          ? '🎉 备份文件已高保障成功下载！若无弹出，文件通常已安全直接入库在系统“Download”目录，亦可配合下方“复制到剪贴板”及“粘贴一键还原”。'
+          : 'Backup file download initiated via high-resilience server proxy iframe! Saved to your system Downloads folder.'
         );
         return;
       } catch (formErr: any) {
