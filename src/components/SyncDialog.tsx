@@ -21,6 +21,8 @@ interface SyncDialogProps {
   isInline?: boolean;
   platformProfile?: 'win' | 'tablet' | 'android13' | 'android5';
   setPlatformProfile?: (profile: 'win' | 'tablet' | 'android13' | 'android5') => void;
+  androidWebViewEngine?: 'bundled' | 'system';
+  setAndroidWebViewEngine?: (engine: 'bundled' | 'system') => void;
 }
 
 export function SyncDialog({
@@ -33,7 +35,9 @@ export function SyncDialog({
   t,
   isInline = false,
   platformProfile = 'win',
-  setPlatformProfile
+  setPlatformProfile,
+  androidWebViewEngine = 'bundled',
+  setAndroidWebViewEngine
 }: SyncDialogProps) {
   const [activeTab, setActiveTab] = useState<'backup' | 'lan' | 'webdav' | 'tags' | 'display'>('backup');
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
@@ -1207,6 +1211,83 @@ export function SyncDialog({
                       </button>
                     );
                   })}
+                </div>
+
+                {/* ─── NEW: ANDROID HYBRID WEBVIEW RUNTIME CORE ENGINE SWITCH ─── */}
+                <div className="border-t border-slate-200/60 pt-4.5 mt-4">
+                  <div className="flex items-center space-x-2 mb-1.5">
+                    <span className="text-sm">🤖</span>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans">
+                      {lang === 'zh' ? '安卓 WebView 混合封装内核引擎配置' : 'Android WebView Packaging Runtime Engine'}
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-gray-500 font-extrabold leading-relaxed mb-3 font-sans">
+                    {lang === 'zh' 
+                      ? '针对安卓 App 离线运行容器，选择加载高版本预置内置内核或调用底层设备自带的系统内核。默认首选使用软件自带的高性能稳定内核。' 
+                      : 'For custom Android APK wrappers and PWA runs. Configure whether to boot a bundled high-performance engine or fallback directly to system WebView.'}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* OPTION 1: BUNDLED (Default) */}
+                    <button
+                      type="button"
+                      {...bindTouchTap(() => {
+                        if (setAndroidWebViewEngine) {
+                          setAndroidWebViewEngine('bundled');
+                        }
+                      })}
+                      className={`text-left p-4 rounded-2xl border-2 transition-all flex flex-col justify-between cursor-pointer min-h-[110px] ${
+                        androidWebViewEngine === 'bundled'
+                          ? 'bg-indigo-50/40 border-indigo-600 text-indigo-950 font-black ring-2 ring-indigo-600/10'
+                          : 'bg-white border-gray-200 text-slate-800 hover:border-slate-350'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-xs font-black flex items-center space-x-1.5">
+                          <span>📦</span>
+                          <span>{lang === 'zh' ? '软件自带 WebView 内核 (推荐)' : 'Software Bundled WebView (Rec)'}</span>
+                        </span>
+                        {androidWebViewEngine === 'bundled' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping"></span>
+                        )}
+                      </div>
+                      <p className="text-[10px] leading-relaxed text-gray-500 font-extrabold mt-2">
+                        {lang === 'zh' 
+                          ? '【默认内核】内置高相配、高可靠 XWalk 或现代 Chromium 运行核。绝缘硬件碎片化，支持安卓 5.0，大幅缩减老旧 WebView 加载阻尼。' 
+                          : 'Pre-bundled custom layout core. Isolates fragmentation, supports Android 5.0+, and completely removes latency on vintage devices.'}
+                      </p>
+                    </button>
+
+                    {/* OPTION 2: SYSTEM */}
+                    <button
+                      type="button"
+                      {...bindTouchTap(() => {
+                        if (setAndroidWebViewEngine) {
+                          setAndroidWebViewEngine('system');
+                        }
+                      })}
+                      className={`text-left p-4 rounded-2xl border-2 transition-all flex flex-col justify-between cursor-pointer min-h-[110px] ${
+                        androidWebViewEngine === 'system'
+                          ? 'bg-indigo-50/40 border-indigo-600 text-indigo-950 font-black ring-2 ring-indigo-600/10'
+                          : 'bg-white border-gray-200 text-slate-800 hover:border-slate-350'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-xs font-black flex items-center space-x-1.5">
+                          <span>⚙️</span>
+                          <span>{lang === 'zh' ? '调用系统自带 WebView 元件' : 'System Native WebView'}</span>
+                        </span>
+                        {androidWebViewEngine === 'system' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping"></span>
+                        )}
+                      </div>
+                      <p className="text-[10px] leading-relaxed text-gray-500 font-extrabold mt-2">
+                        {lang === 'zh' 
+                          ? '直接调用当前设备系统的自带 Android System WebView。减小独立封包体积，但若底层安卓系统内核过旧，排版可能发生一定拉伸。' 
+                          : 'Delegates compilation and layouts to the local system WebView component. Saves system RAM but layout quality matches system version.'}
+                      </p>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

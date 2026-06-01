@@ -130,12 +130,19 @@ export default function App() {
     return 'win';
   });
 
+  // Android WebView custom core engine state (default is 'bundled' as requested)
+  const [androidWebViewEngine, setAndroidWebViewEngine] = useState<'bundled' | 'system'>(() => {
+    const saved = localStorage.getItem('sovereign_android_webview');
+    return saved === 'system' ? 'system' : 'bundled';
+  });
+
   // Sync class profile directly to <html> element
   useEffect(() => {
     const htmlEl = document.documentElement;
     htmlEl.classList.remove('profile-win', 'profile-tablet', 'profile-android13', 'profile-android5');
     htmlEl.classList.add(`profile-${platformProfile}`);
-  }, [platformProfile]);
+    htmlEl.setAttribute('data-android-webview', androidWebViewEngine);
+  }, [platformProfile, androidWebViewEngine]);
 
   // Navigation state
   const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
@@ -1669,6 +1676,11 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             setPlatformProfile={(profile) => {
               setPlatformProfile(profile);
               localStorage.setItem('sovereign_platform_profile', profile);
+            }}
+            androidWebViewEngine={androidWebViewEngine}
+            setAndroidWebViewEngine={(engine) => {
+              setAndroidWebViewEngine(engine);
+              localStorage.setItem('sovereign_android_webview', engine);
             }}
           />
         </div>
