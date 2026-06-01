@@ -1,0 +1,9 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.SovereignNote" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Theme colors -->
+        <item name="colorPrimary">#2C3E50</item>
+        <item name="colorPrimaryDark">#1A252F</item>
+        <item name="colorAccent">#18BC9C</item>
+    </style>
+</resources>
