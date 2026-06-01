@@ -431,6 +431,14 @@ body.profile-android13 [class*="inset-x-0"] {
   position: absolute !important;
 }
 
+/* Ensure elements explicitely styled with fixed classes never get overwritten by absolute layout rules */
+html.profile-android5 [class*="fixed"],
+body.profile-android5 [class*="fixed"],
+html.profile-android13 [class*="fixed"],
+body.profile-android13 [class*="fixed"] {
+  position: fixed !important;
+}
+
 /* 针对古老 Chrome 37 到 83 内核 (Android 5-10) WebView 中 flex 弹性盒 gap 缺失的 sibling margin 精准补偿 */
 html.profile-android5 .flex.gap-0\.5 > * + *,
 html.profile-android5 .flex.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {

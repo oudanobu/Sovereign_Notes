@@ -41,6 +41,10 @@ export function SyncDialog({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // States for manual text backup restore (Bypassing WebView File Sandbox limitations)
+  const [importText, setImportText] = useState('');
+  const [showTextImport, setShowTextImport] = useState(false);
+
   // Sync state values
   const [lanServerUrl, setLanServerUrl] = useState(window.location.origin);
   const [webdavUrl, setWebdavUrl] = useState(`${window.location.origin}/api/webdav-sim`);
@@ -118,15 +122,17 @@ export function SyncDialog({
   // 1. Database snapshot backup (Export & Import)
   const handleExportSnapshot = async () => {
     try {
+      setSuccessMessage(null);
+      setErrorMessage(null);
       const dbJson = await exportDatabaseSnapshot();
+      const fileName = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
 
       // Check for advanced HTML5 File System Access API (supports folder & file picker)
       if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
         try {
-          const defaultName = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
           // @ts-ignore
           const fileHandle = await window.showSaveFilePicker({
-            suggestedName: defaultName,
+            suggestedName: fileName,
             types: [{
               description: 'Sovereign Note JSON Backup',
               accept: { 'application/json': ['.json'] }
@@ -149,8 +155,40 @@ export function SyncDialog({
         }
       }
 
+      // ─── HIGH RESILIENCE ANDROID & WEBVIEW SERVER-SIDE FORM SUBMIT DOWNLOAD ───
+      // Bypasses local blob/sandbox constraints by transferring the payload back to the client via true HTTP Content-Disposition headers.
+      try {
+        const form = document.createElement('form');
+        form.action = '/api/backup/download';
+        form.method = 'POST';
+        form.style.display = 'none';
+
+        const filenameInput = document.createElement('input');
+        filenameInput.type = 'hidden';
+        filenameInput.name = 'filename';
+        filenameInput.value = fileName;
+
+        const contentInput = document.createElement('input');
+        contentInput.type = 'hidden';
+        contentInput.name = 'content';
+        contentInput.value = dbJson;
+
+        form.appendChild(filenameInput);
+        form.appendChild(contentInput);
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+
+        setSuccessMessage(lang === 'zh'
+          ? '🎉 备份文件已触发生生不息的服务器中转下载！文件已安全写入您的系统“Download/下载”目录中。若设备无响应，可尝试下方“分享为文件”或“复制至剪切板”。'
+          : 'Backup file download triggered successfully via server proxy! Saved to your system Downloads folder.'
+        );
+        return;
+      } catch (formErr: any) {
+        console.warn('Server-side form submit backup failed, continuing to other fallbacks:', formErr);
+      }
+
       // Traditional standard web sandbox download fallback
-      const fileName = t('snapshotExportName') || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
       const blob = new Blob([dbJson], { type: 'application/json' });
       
       // Try Web Share API with File (Excellent for Mobile Devices/Android)
@@ -324,6 +362,29 @@ export function SyncDialog({
       reader.readAsText(file);
     } catch (err: any) {
       setErrorMessage(`Import failed: Ensure the JSON backup file is valid. Error: ${err.message}`);
+    }
+  };
+
+  const handleImportSnapshotFromText = async () => {
+    if (!importText.trim()) {
+      setErrorMessage(lang === 'zh' ? '请先粘贴全量备份的文本内容！' : 'Please paste the backup text content first!');
+      return;
+    }
+    try {
+      setSuccessMessage(lang === 'zh' ? '正在校验并安全导入主权文本数据...' : 'Verifying and safely importing database backup from text...');
+      const res = await importDatabaseSnapshot(importText.trim());
+      setSuccessMessage(lang === 'zh'
+        ? `🎉 数据文本还原成功！共导入笔记 ${res.notesCount} 篇，标签结构 ${res.tagsCount} 条，分类文件夹 ${res.foldersCount} 个。`
+        : `Database restored successfully from text! Imported ${res.notesCount} notes, ${res.tagsCount} tags, and ${res.foldersCount} categories.`
+      );
+      setImportText('');
+      setShowTextImport(false);
+      onSyncCompleted();
+    } catch (err: any) {
+      setErrorMessage(lang === 'zh'
+        ? `备份数据校验未通过：文本格式不正确或已被截断，请务必确保复制了完整备份！错误: ${err.message}`
+        : `Database restore failed: Make sure you copied the complete backup string. Error: ${err.message}`
+      );
     }
   };
 
@@ -551,62 +612,62 @@ export function SyncDialog({
       </div>
 
       {/* Sync Center Content */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
         {/* Tabs Menu Sidebar */}
-        <div className="w-52 bg-slate-50/50 border-r border-gray-150 p-3 space-y-1">
+        <div className="w-full md:w-[220px] bg-slate-50/50 border-b md:border-b-0 md:border-r border-gray-150 p-2 md:p-3 flex md:flex-col gap-1 md:gap-0 md:space-y-1 overflow-x-auto md:overflow-x-visible md:overflow-y-auto shrink-0 scrollbar-none">
           <button
             {...bindTouchTap(() => setActiveTab('backup'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-3 text-xs font-bold rounded-xl text-left transition duration-150 min-h-[44px] cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 md:py-3 text-[11px] md:text-xs font-bold rounded-xl text-left transition duration-150 min-h-[38px] md:min-h-[44px] cursor-pointer whitespace-nowrap shrink-0 w-auto md:w-full ${
               activeTab === 'backup'
                 ? 'bg-slate-900 text-white shadow-sm'
                 : 'text-gray-650 hover:bg-slate-100 hover:text-slate-905'
             }`}
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
             {t('localSnapshotTab')}
           </button>
           <button
             {...bindTouchTap(() => setActiveTab('lan'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-3 text-xs font-bold rounded-xl text-left transition duration-150 min-h-[44px] cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 md:py-3 text-[11px] md:text-xs font-bold rounded-xl text-left transition duration-150 min-h-[38px] md:min-h-[44px] cursor-pointer whitespace-nowrap shrink-0 w-auto md:w-full ${
               activeTab === 'lan'
                 ? 'bg-slate-900 text-white shadow-sm'
                 : 'text-gray-650 hover:bg-slate-100 hover:text-slate-901'
             }`}
           >
-            <Server className="w-4 h-4" />
+            <Server className="w-3.5 h-3.5 md:w-4 md:h-4" />
             {t('lanServerUrl') ? t('lanServerUrl') : (lang === 'zh' ? '局域链 LWW 同步' : 'LAN Sync Core')}
           </button>
           <button
             {...bindTouchTap(() => setActiveTab('webdav'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-3 text-xs font-bold rounded-xl text-left transition duration-150 min-h-[44px] cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 md:py-3 text-[11px] md:text-xs font-bold rounded-xl text-left transition duration-150 min-h-[38px] md:min-h-[44px] cursor-pointer whitespace-nowrap shrink-0 w-auto md:w-full ${
               activeTab === 'webdav'
                 ? 'bg-slate-900 text-white shadow-sm'
                 : 'text-gray-650 hover:bg-slate-100 hover:text-slate-901'
             }`}
           >
-            <Cloud className="w-4 h-4" />
+            <Cloud className="w-3.5 h-3.5 md:w-4 md:h-4" />
             {t('webdavTab')}
           </button>
           <button
             {...bindTouchTap(() => setActiveTab('tags'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-3 text-xs font-bold rounded-xl text-left transition duration-150 min-h-[44px] cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 md:py-3 text-[11px] md:text-xs font-bold rounded-xl text-left transition duration-150 min-h-[38px] md:min-h-[44px] cursor-pointer whitespace-nowrap shrink-0 w-auto md:w-full ${
               activeTab === 'tags'
                 ? 'bg-slate-900 text-white shadow-sm'
                 : 'text-gray-650 hover:bg-slate-100 hover:text-slate-901'
             }`}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
             {lang === 'zh' ? '标签派生导入导出' : 'Tags Export/Import'}
           </button>
           <button
             {...bindTouchTap(() => setActiveTab('display'))}
-            className={`w-full flex items-center gap-2.5 px-3 py-3 text-xs font-bold rounded-xl text-left transition duration-150 min-h-[44px] cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 md:py-3 text-[11px] md:text-xs font-bold rounded-xl text-left transition duration-150 min-h-[38px] md:min-h-[44px] cursor-pointer whitespace-nowrap shrink-0 w-auto md:w-full ${
               activeTab === 'display'
                 ? 'bg-slate-900 text-white shadow-sm'
                 : 'text-gray-650 hover:bg-slate-100 hover:text-slate-901'
             }`}
           >
-            <Sliders className="w-4 h-4" />
+            <Sliders className="w-3.5 h-3.5 md:w-4 md:h-4" />
             {lang === 'zh' ? '设备显示模式优化' : 'Device UI Optimizer'}
           </button>
         </div>
@@ -750,6 +811,64 @@ export function SyncDialog({
                          <p className="text-[9.5px] text-gray-500 font-bold mt-1.5 px-1">{lang === 'zh' ? '👉 请点击上方数据区长按【全选 -> 复制】，并粘贴至你的手机文本便签中进行保存。' : '👉 Please long press the box above, Select All, and copy to save manually.'}</p>
                       </div>
                     )}
+
+                    {/* Safe Text Paste Restore Option */}
+                    <div className="border-t border-slate-200/60 pt-3.5 mt-2.5">
+                      <button
+                        type="button"
+                        {...bindTouchTap(() => {
+                          setShowTextImport(!showTextImport);
+                          if (!showTextImport) {
+                            setImportText('');
+                          }
+                        })}
+                        className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 border border-slate-205 text-slate-700 font-extrabold text-[11px] rounded-xl flex items-center justify-center space-x-2 transition cursor-pointer active:scale-98 min-h-[40px]"
+                      >
+                        <Upload className="w-4 h-4 text-indigo-600 animate-pulse" />
+                        <span>{lang === 'zh' ? '📋 粘贴备份文本一键导入恢复' : 'Paste Backup Text to Restore'}</span>
+                      </button>
+
+                      {showTextImport && (
+                        <div className="mt-3 bg-white rounded-xl border-2 border-indigo-550/40 p-4 shadow-md space-y-3.5 animate-in slide-in-from-top-1.5 duration-150">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[11px] font-black text-indigo-650 uppercase tracking-widest">
+                              {lang === 'zh' ? '🔑 粘贴备份文本还原数据库' : 'Restore from Backed up Text string'}
+                            </span>
+                            <button
+                              type="button"
+                              {...bindTouchTap(() => {
+                                setShowTextImport(false);
+                                setImportText('');
+                              })}
+                              className="text-gray-400 hover:text-gray-700 text-[10px] font-black cursor-pointer"
+                            >
+                              {lang === 'zh' ? '取销' : 'Cancel'}
+                            </button>
+                          </div>
+                          <textarea
+                            className="w-full h-36 bg-slate-50 border border-slate-200 rounded-xl p-3 text-[10px] font-mono text-slate-700 resize-y focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder={lang === 'zh' 
+                              ? "请在这里粘贴您之前复制的完整主权备份 JSON 文本内容（确保包含大括号 ...）" 
+                              : "Paste your raw copied JSON backup content string here..."}
+                            value={importText}
+                            onChange={(e) => setImportText(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            {...bindTouchTap(handleImportSnapshotFromText)}
+                            className="w-full py-2.5 px-3 bg-indigo-650 hover:bg-indigo-700 text-white font-black text-xs rounded-xl flex items-center justify-center space-x-2 transition cursor-pointer active:scale-98 min-h-[44px]"
+                          >
+                            <Check className="w-4 h-4 text-white" />
+                            <span>{lang === 'zh' ? '🚀 验证并执行快照强制覆盖还原' : 'Verify & Perform Hard Overwrite Restore'}</span>
+                          </button>
+                          <p className="text-[9.5px] text-amber-600 font-bold leading-normal">
+                            {lang === 'zh' 
+                              ? '⚠️ 警告：导入还原操作将完全覆盖当前 IndexedDB 所有本地数据。请确保粘贴的数据完整无缺！' 
+                              : '⚠️ Warning: This will overwrite your existing local database completely. Keep pasted string complete!'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

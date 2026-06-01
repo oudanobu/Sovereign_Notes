@@ -811,8 +811,8 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
         )}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-205 flex h-full flex-shrink-0 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
-            activePanel === 'sidebar' ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-205 h-full flex-shrink-0 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+            activePanel === 'sidebar' ? 'flex translate-x-0' : 'hidden lg:flex -translate-x-full lg:translate-x-0'
           } ${
             isSidebarCollapsed ? 'w-[68px]' : 'w-[348px]'
           }`}

@@ -35,6 +35,22 @@ async function startServer() {
     allowedHeaders: ['Content-Type', 'Authorization', 'Depth']
   }));
   app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+  // API 3: Universal Gateway Proxy for Raw Local Backup File Export (Bypasses Android WebView / Sandbox Download Blockage)
+  app.post('/api/backup/download', (req, res) => {
+    try {
+      const { filename, content } = req.body;
+      const fileContent = content || '';
+      const safeFilename = filename || `Sovereign_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+
+      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(safeFilename)}"`);
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.send(fileContent);
+    } catch (err: any) {
+      res.status(500).send(`Server-side file export failed: ${err.message}`);
+    }
+  });
 
   // API 1: LAN Sync Hub Endpoint
   // Integrates client data and server data using LWW (Last-Write-Wins)

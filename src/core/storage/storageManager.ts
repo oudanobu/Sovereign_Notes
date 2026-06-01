@@ -1,11 +1,17 @@
-import { openDB, IDBPDatabase } from 'idb';
+import { 
+  openDB, 
+  getNotes, 
+  getTags, 
+  getFolders, 
+  saveNote, 
+  saveFolder, 
+  saveTag,
+  bulkInsertNotes,
+  bulkInsertTags,
+  bulkInsertFolders
+} from '../../db';
 import { Note, Tag, Folder, AssetItem } from '../../types';
 
-const DB_NAME = 'LocalSovereignNotesDB';
-const DB_VERSION = 4; // Upgraded to v4 for compatibility with pure driver
-
-
-// Types for Migration Shim & Backup
 export interface StorageSnapshot {
   notes: Note[];
   tags: Tag[];
@@ -15,55 +21,10 @@ export interface StorageSnapshot {
 }
 
 class StorageManager {
-  private dbPromise: Promise<IDBPDatabase>;
-
-  constructor() {
-    this.dbPromise = this.initDB();
-  }
-
-  private initDB(): Promise<IDBPDatabase> {
-    return openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion, newVersion, transaction) {
-        if (!db.objectStoreNames.contains('notes')) {
-          const noteStore = db.createObjectStore('notes', { keyPath: 'id' });
-          noteStore.createIndex('updatedAt', 'updatedAt', { unique: false });
-          noteStore.createIndex('folderId', 'folderId', { unique: false });
-          noteStore.createIndex('isDeleted', 'isDeleted', { unique: false });
-        }
-        if (!db.objectStoreNames.contains('tags')) {
-          const tagStore = db.createObjectStore('tags', { keyPath: 'id' });
-          tagStore.createIndex('parentId', 'parentId', { unique: false });
-          tagStore.createIndex('path', 'path', { unique: false });
-          tagStore.createIndex('updatedAt', 'updatedAt', { unique: false });
-          tagStore.createIndex('isDeleted', 'isDeleted', { unique: false });
-        }
-        if (!db.objectStoreNames.contains('folders')) {
-          const folderStore = db.createObjectStore('folders', { keyPath: 'id' });
-          folderStore.createIndex('parentId', 'parentId', { unique: false });
-          folderStore.createIndex('updatedAt', 'updatedAt', { unique: false });
-          folderStore.createIndex('isDeleted', 'isDeleted', { unique: false });
-        }
-        if (!db.objectStoreNames.contains('sync_meta')) {
-          db.createObjectStore('sync_meta', { keyPath: 'key' });
-        }
-        if (!db.objectStoreNames.contains('events')) {
-          const eventStore = db.createObjectStore('events', { keyPath: 'id' });
-          eventStore.createIndex('date', 'date', { unique: false });
-          eventStore.createIndex('isDeleted', 'isDeleted', { unique: false });
-        }
-        if (!db.objectStoreNames.contains('assets')) {
-          const assetStore = db.createObjectStore('assets', { keyPath: 'id' });
-          assetStore.createIndex('noteId', 'noteId', { unique: false });
-        }
-      },
-    });
-  }
-
-  // --- Migration Shim: Defensive Data Filling ---
+  // Shims for legacy/missing property safety
   private shimNote(rawNote: any): Note {
     return {
       ...rawNote,
-      // Fallbacks for critical properties missing in old versions
       type: rawNote.type || 'markdown',
       title: rawNote.title || 'Untitled',
       content: rawNote.content || '',
@@ -72,7 +33,6 @@ class StorageManager {
       createdAt: rawNote.createdAt || Date.now(),
       updatedAt: rawNote.updatedAt || Date.now(),
       isDeleted: !!rawNote.isDeleted,
-      // For Mindmap / Whiteboard, ensure minimum data
       mindmapData: rawNote.type === 'mindmap' && rawNote.mindmapData ? rawNote.mindmapData : (rawNote.mindmapData || undefined),
     };
   }
@@ -95,50 +55,45 @@ class StorageManager {
     };
   }
 
-  // --- Core CRUD ---
   async getNotes(): Promise<Note[]> {
-    const db = await this.dbPromise;
-    const rawNotes = await db.getAll('notes');
-    return rawNotes.map(this.shimNote);
+    return getNotes();
   }
 
   async saveNote(note: Note): Promise<string> {
-    const db = await this.dbPromise;
-    await db.put('notes', note);
+    await saveNote(note);
     return note.id;
   }
 
   async deleteNote(id: string): Promise<void> {
-    // We prefer soft deletes, but here is physical delete if needed
-    const db = await this.dbPromise;
-    await db.delete('notes', id);
+    return openDB().then((db) => {
+      return new Promise<void>((resolve, reject) => {
+        const transaction = db.transaction('notes', 'readwrite');
+        const store = transaction.objectStore('notes');
+        const request = store.delete(id);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    });
   }
 
   async getTags(): Promise<Tag[]> {
-    const db = await this.dbPromise;
-    const rawTags = await db.getAll('tags');
-    return rawTags.map(this.shimTag);
+    return getTags();
   }
 
   async saveTag(tag: Tag): Promise<string> {
-    const db = await this.dbPromise;
-    await db.put('tags', tag);
+    await saveTag(tag);
     return tag.id;
   }
 
   async getFolders(): Promise<Folder[]> {
-    const db = await this.dbPromise;
-    const rawFolders = await db.getAll('folders');
-    return rawFolders.map(this.shimFolder);
+    return getFolders();
   }
 
   async saveFolder(folder: Folder): Promise<string> {
-    const db = await this.dbPromise;
-    await db.put('folders', folder);
+    await saveFolder(folder);
     return folder.id;
   }
 
-  // --- Asset Storage Operations (For Local Images & Attachments) ---
   private isAndroidBelow11(): boolean {
     if (typeof navigator === 'undefined') return false;
     const ua = navigator.userAgent.toLowerCase();
@@ -166,7 +121,6 @@ class StorageManager {
   }
 
   async saveAsset(asset: AssetItem): Promise<string> {
-    const db = await this.dbPromise;
     let dataToSave = asset.data;
     if (this.isAndroidBelow11() && asset.data instanceof Blob) {
       try {
@@ -175,49 +129,84 @@ class StorageManager {
         console.error('Android < 11 asset fallback pre-convert failed:', err);
       }
     }
-    await db.put('assets', {
-      ...asset,
-      data: dataToSave
+    
+    return openDB().then((db) => {
+      return new Promise<string>((resolve, reject) => {
+        const transaction = db.transaction('assets', 'readwrite');
+        const store = transaction.objectStore('assets');
+        const request = store.put({
+          ...asset,
+          data: dataToSave
+        });
+        request.onsuccess = () => resolve(asset.id);
+        request.onerror = () => reject(request.error);
+      });
     });
-    return asset.id;
   }
 
   async getAsset(id: string): Promise<AssetItem | null> {
-    const db = await this.dbPromise;
-    const raw = await db.get('assets', id);
-    if (!raw) return null;
-
-    let finalData = raw.data;
-    if (finalData instanceof ArrayBuffer) {
-      finalData = new Blob([finalData], { type: raw.mimeType });
-    }
-    return {
-      ...raw,
-      data: finalData
-    };
+    return openDB().then((db) => {
+      return new Promise<AssetItem | null>((resolve, reject) => {
+        const transaction = db.transaction('assets', 'readonly');
+        const store = transaction.objectStore('assets');
+        const request = store.get(id);
+        request.onsuccess = () => {
+          const raw = request.result;
+          if (!raw) {
+            resolve(null);
+            return;
+          }
+          let finalData = raw.data;
+          if (finalData instanceof ArrayBuffer) {
+            finalData = new Blob([finalData], { type: raw.mimeType });
+          }
+          resolve({
+            ...raw,
+            data: finalData
+          });
+        };
+        request.onerror = () => reject(request.error);
+      });
+    });
   }
 
   async getAssetsByNote(noteId: string): Promise<AssetItem[]> {
-    const db = await this.dbPromise;
-    const all = await db.getAllFromIndex('assets', 'noteId', noteId);
-    return all.map(raw => {
-      let finalData = raw.data;
-      if (finalData instanceof ArrayBuffer) {
-        finalData = new Blob([finalData], { type: raw.mimeType });
-      }
-      return {
-        ...raw,
-        data: finalData
-      };
+    return openDB().then((db) => {
+      return new Promise<AssetItem[]>((resolve, reject) => {
+        const transaction = db.transaction('assets', 'readonly');
+        const store = transaction.objectStore('assets');
+        const index = store.index('noteId');
+        const request = index.getAll(noteId);
+        request.onsuccess = () => {
+          const all = request.result || [];
+          resolve(all.map(raw => {
+            let finalData = raw.data;
+            if (finalData instanceof ArrayBuffer) {
+              finalData = new Blob([finalData], { type: raw.mimeType });
+            }
+            return {
+              ...raw,
+              data: finalData
+            };
+          }));
+        };
+        request.onerror = () => reject(request.error);
+      });
     });
   }
 
   async deleteAsset(id: string): Promise<void> {
-    const db = await this.dbPromise;
-    await db.delete('assets', id);
+    return openDB().then((db) => {
+      return new Promise<void>((resolve, reject) => {
+        const transaction = db.transaction('assets', 'readwrite');
+        const store = transaction.objectStore('assets');
+        const request = store.delete(id);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    });
   }
 
-  // --- Snapshot Exports for Backup ---
   async generateSnapshot(): Promise<string> {
     const [notes, tags, folders] = await Promise.all([
       this.getNotes(),
@@ -229,7 +218,7 @@ class StorageManager {
       notes,
       tags,
       folders,
-      version: DB_VERSION,
+      version: 4,
       timestamp: new Date().toISOString()
     };
 
@@ -238,18 +227,25 @@ class StorageManager {
 
   async restoreSnapshot(snapshotJson: string): Promise<void> {
     const snapshot: StorageSnapshot = JSON.parse(snapshotJson);
-    const db = await this.dbPromise;
-    const tx = db.transaction(['notes', 'tags', 'folders'], 'readwrite');
-    
-    await tx.objectStore('notes').clear();
-    await tx.objectStore('tags').clear();
-    await tx.objectStore('folders').clear();
+    return openDB().then((db) => {
+      return new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(['notes', 'tags', 'folders'], 'readwrite');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
 
-    for (const note of snapshot.notes) tx.objectStore('notes').put(this.shimNote(note));
-    for (const tag of snapshot.tags) tx.objectStore('tags').put(this.shimTag(tag));
-    for (const folder of snapshot.folders) tx.objectStore('folders').put(this.shimFolder(folder));
-    
-    await tx.done;
+        const notesStore = tx.objectStore('notes');
+        const tagsStore = tx.objectStore('tags');
+        const foldersStore = tx.objectStore('folders');
+
+        notesStore.clear();
+        tagsStore.clear();
+        foldersStore.clear();
+
+        for (const note of snapshot.notes) notesStore.put(this.shimNote(note));
+        for (const tag of snapshot.tags) tagsStore.put(this.shimTag(tag));
+        for (const folder of snapshot.folders) foldersStore.put(this.shimFolder(folder));
+      });
+    });
   }
 }
 
