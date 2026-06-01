@@ -144,10 +144,10 @@ jobs:
           distribution: 'zulu'
           java-version: '11' # 配合 config.xml 里的降级规范，锁死 JDK 11
 
-      - name: Setup Gradle 7.4.2 Override
+      - name: Setup Gradle 6.5 Override
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '7.4.2' # 降级 Gradle 内核，给老项目提供 XmlParser 支持
+          gradle-version: '6.5' # 配合 cordova-android 9.1.0 锁定 gradle 6.5 更稳健，避免 XML 以及 Class 格式兼容问题
 
       # 🌟【核心修复】临时借用系统预装的 Java 17 来喂给 sdkmanager，避开 ClassVersion 冲突
       # 🌟【终极暴力通关】彻底抛弃傲娇的 sdkmanager，用纯 Linux 原生网络流强行灌注依赖包
@@ -194,47 +194,43 @@ jobs:
           # 1. 部署 Cordova 跨平台原生打包编译引擎
           sudo npm install -g cordova
           
-          # 2. 在动作容器内瞬间生成全新 Android 工程结构
-          cordova create android-project com.sovereignnote.app SovereignNote
-          cd android-project
+          # 2. 我们利用已拉取仓库里现存的自定义 `cordova/` 目录。
+          # 首先清理残留、添加并重新构建以避免缓存或构建不一致。
+          cd cordova
+          rm -rf www platforms plugins
+          mkdir -p www
           
-          # 3. 将高兼容性离线主程序同步到宿主 Android 的 www 文件夹下
-          rm -rf www/*
+          # 3. 将前面已经完美构建好的 React/TypeScript Web 端 production 代码成果，完美同步打包到 cordova www 中
           cp -r ../dist/* www/
           
-          # 4. 配置 Cordova 在旧版 Android 平板中的流畅触控和全屏渲染设置
-          sed -i 's|</widget>|    <preference name="DisallowOverscroll" value="true" />\n    <preference name="Fullscreen" value="false" />\n    <preference name="BackgroundColor" value="#0f172a" />\n    <preference name="android-minSdkVersion" value="21" />\n    <preference name="android-targetSdkVersion" value="33" />\n    <preference name="android-architecture" value="multi" />\n    <preference name="GradleVersion" value="7.4.2" />\n</widget>|' config.xml
+          # 4. 在 index.html 中强势注入 <script src="cordova.js"></script> 以完成 Cordova 物理桥接与 Crosswalk 加载
+          sed -i 's/<\/head>/<script src="cordova.js"><\/script><\/head>/g' www/index.html
           
-          # 🌟【降维打击补丁】在根目录下直接给 Cordova 塞入一个最高优先级的构建配置文件
-          # 明确规定：不管是 release 还是 debug，必须采用传统纯正的 apk 打包格式，坚决封杀现代 AAB 的干扰！
+          # 5. 向 Cordova 明确安装安卓 SDK V9 (即 cordova-android@9.1.0 稳定版)，支持 Crosswalk 动态编译
+          cordova platform add android@9.1.0 --save
+          
+          # 6. 为避免 cordova-android 自带旧配置干扰，强制添加 Crosswalk 混合 WebView 包装插件（2.4.0 黄金版本）
+          cordova plugin add cordova-plugin-crosswalk-webview@2.4.0 --save
+          
+          # 7. 强烈覆盖并写入 build.json 以在 release 编译时百分百产出传统 apk 文件（拒绝 AAB 干扰）
           echo '{"android": {"release": {"packageType": "apk"}}}' > build.json
           
-          # 5. 安装 Android 构建底座并在 GitHub Actions 中载入 Android 模块
-          cordova platform add android@10.1.2 --save
-          
-          # 🌟 暴力人肉重写底层模板偷渡的 minSdkVersion 24，强行按回 21 (Android 5.0)
-          find platforms/android/ -name "build.gradle" -exec sed -i 's/minSdkVersion 24/minSdkVersion 21/g' {} + || true
-          find platforms/android/ -name "build.gradle" -exec sed -i 's/defaultMinSdkVersion=24/defaultMinSdkVersion=21/g' {} + || true
-
-          # 🌟 注入 NDK 跨架构联合打包命令（合并 ARM 与 Intel X86 资产）
+          # 8. 注入 NDK 跨架构联合打包命令以及不生成多个 architecture 分片 APK，保证整合为单包 (ARM + Intel x86 独家结合) 
           echo "android.useDeprecatedNdk=true" >> platforms/android/gradle.properties
           echo "cdvBuildMultipleApks=false" >> platforms/android/gradle.properties
-
-          # 6. 配置底层 Android 工程使其强制兼容 Java 8
-          echo "android { compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 } }" > platforms/android/app/build-extras.gradle
           
-          # 7. 让 Cordova 自己处理 Gradle 的下载与初始化并进行编译
-          export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-7.4.2-all.zip"
+          # 9. 强制使 Gradle 6.5-all.zip 作为 Cordova 的下载 and 运行源，匹配 sdkmanager 与 build-tools
+          export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-6.5-all.zip"
           export JAVA_HOME=$JAVA_HOME_11_X64
           
-          # 启动编译，此时有了 build.json 的保护，它会乖乖吐出正宗的 APK 文件
+          # 10. 启动包含 XWalk 浏览器内核编译的完全离线 APK 构建
           cordova build android --release --verbose
           
-          # 8. 成果物全盘捕获与数字签名归档
+          # 11. 成果物全盘捕获与数字签名归档
           echo "正在搜寻 Cordova 编译完毕的成果物..."
           
-          # 终极多重搜寻防线（通杀所有可能的命名与路径变体）
-          FINAL_SRC=$(find platforms/android/app/build/outputs/ -name "*-release-unsigned.apk" -o -name "*-release.apk" -o -name "*.apk" | head -n 1)
+          # 寻找编译后的 Release APK (Crosswalk 通常会在 output/apk/release 里生成 android-release-unsigned.apk)
+          FINAL_SRC=$(find platforms/android/app/build/outputs/ -name "*release-unsigned.apk" -o -name "*-release.apk" -o -name "*.apk" | head -n 1)
           
           if [ -z "$FINAL_SRC" ]; then
             echo "❌ 严重错误：未能发现任何 APK 产出物！"
@@ -270,7 +266,7 @@ jobs:
 
           mkdir -p "$GITHUB_WORKSPACE/dist-release-artifacts/3-android"
           cp signed.apk "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk"
-          echo "✨ 恭喜！具备全平台高维对齐、安全自签名（V1/V2/V3方案全开）的 APK 物理资产包已成功归档，保证能在安卓 6.0 和 13 设备上瞬时完成无阻碍安装！"
+          echo "✨ 恭喜！具备全平台高维对齐、安全自签名具有独立 Crosswalk 高能内核的 APK 设备包已完美归档！"
 
       # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts (保持极佳的目录结构) ====================
       - name: Upload Workspace Compiled Artifacts

@@ -58,7 +58,7 @@ if command -v cordova &> /dev/null; then
     # Check if platform is already prepared
     if [ ! -d "platforms/android" ]; then
         echo -e "${BLUE}Adding Android platform with Crosswalk pre-bundled configurations...${NC}"
-        cordova platform add android@8.1.0 --save
+        cordova platform add android@9.1.0 --save
     fi
     
     echo -e "${YELLOW}================================================================${NC}"
@@ -71,7 +71,7 @@ else
     echo -e "1. Install Node.js & Android SDK locally"
     echo -e "2. Install Cordova globally: ${GREEN}npm install -g cordova${NC}"
     echo -e "3. Under the ${BLUE}cordova/${NC} folder, execute: "
-    echo -e "   ${GREEN}cordova platform add android@8.1.0${NC}"
+    echo -e "   ${GREEN}cordova platform add android@9.1.0${NC}"
     echo -e "   ${GREEN}cordova build android${NC}"
     echo -e "The compiler will auto-fetch high-compat Xwalk Chromium binaries and output a ~23MB ultra-fast APK to build/outputs/apk/.${NC}"
 fi
