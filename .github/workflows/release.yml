@@ -191,6 +191,29 @@ jobs:
 
       - name: Fast Compiling of Native Android APK for 旧平板 (Cordova)
         run: |
+          # 0.5 绝对防御机制：配置全局 Gradle 依赖嗅探重定向逻辑，将由于 Bintray JCenter 彻底闭域停服导致的所有 com.g00fy2:versioncompare 等硬编码依赖拉取失败重定向到稳定的 mavenCentral() 中！
+          mkdir -p ~/.gradle
+          cat << 'EOF' > ~/.gradle/init.gradle
+          allprojects {
+              buildscript {
+                  repositories {
+                      all { repo ->
+                          if (repo.hasProperty('url') && repo.url.toString().contains("jcenter.bintray.com")) {
+                              repo.url = java.net.URI.create("https://repo1.maven.org/maven2/")
+                          }
+                      }
+                  }
+              }
+              repositories {
+                  all { repo ->
+                      if (repo.hasProperty('url') && repo.url.toString().contains("jcenter.bintray.com")) {
+                          repo.url = java.net.URI.create("https://repo1.maven.org/maven2/")
+                      }
+                  }
+              }
+          }
+          EOF
+
           # 1. 部署 Cordova 跨平台原生打包编译引擎 以及老旧插件需要的并被 Cordova 移除的 q 慢速 Promise 引擎
           sudo npm install -g cordova q
           export NODE_PATH=$(npm root -g)
@@ -274,6 +297,10 @@ jobs:
           # 8. 注入 NDK 跨架构联合打包命令以及不生成多个 architecture 分片 APK，保证整合为单包 (ARM + Intel x86 独家结合) 
           echo "android.useDeprecatedNdk=true" >> platforms/android/gradle.properties
           echo "cdvBuildMultipleApks=false" >> platforms/android/gradle.properties
+          
+          # 8.5 解决 JCenter 停用/死链导致的依赖拉取失败问题 (例如 com.g00fy2:versioncompare:1.3.4 等库无法获取)
+          # 将所有生成的 build.gradle 中的 jcenter() 替换为官方长期稳定的 mavenCentral()
+          find platforms/android/ -name "*.gradle" -exec sed -i 's/jcenter()/mavenCentral()/g' {} +
           
           # 9. 强制使 Gradle 6.5-all.zip 作为 Cordova 的下载 and 运行源，匹配 sdkmanager 与 build-tools
           export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-6.5-all.zip"
