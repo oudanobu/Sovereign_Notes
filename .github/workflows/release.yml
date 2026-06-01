@@ -200,8 +200,10 @@ jobs:
                       all { repo ->
                           if (repo.hasProperty('url')) {
                               def url = repo.url.toString()
-                              if (url.contains("jcenter.bintray.com")) {
+                              if (url.contains("jcenter.bintray.com") || url.contains("repo1.maven.org") || url.contains("repo.maven.apache.org")) {
                                   repo.url = java.net.URI.create("https://maven.aliyun.com/repository/public")
+                              } else if (url.contains("maven.google.com") || url.contains("dl.google.com")) {
+                                  repo.url = java.net.URI.create("https://maven.aliyun.com/repository/google")
                               }
                           }
                       }
@@ -211,8 +213,10 @@ jobs:
                   all { repo ->
                       if (repo.hasProperty('url')) {
                           def url = repo.url.toString()
-                          if (url.contains("jcenter.bintray.com")) {
+                          if (url.contains("jcenter.bintray.com") || url.contains("repo1.maven.org") || url.contains("repo.maven.apache.org")) {
                               repo.url = java.net.URI.create("https://maven.aliyun.com/repository/public")
+                          } else if (url.contains("maven.google.com") || url.contains("dl.google.com")) {
+                              repo.url = java.net.URI.create("https://maven.aliyun.com/repository/google")
                           }
                       }
                   }
