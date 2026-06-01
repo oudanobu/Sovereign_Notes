@@ -310,7 +310,7 @@ export function MindMapEditor({ data, onChange, lang, t }: MindMapEditorProps) {
         </svg>
 
         {/* DOM interactive overlay components for easy editing inputs & tooltips */}
-        <div className="absolute inset-0" style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, pointerEvents: 'none' }}>
+        <div className="absolute inset-0" style={{ width: `${CANVAS_WIDTH}px`, height: `${CANVAS_HEIGHT}px`, pointerEvents: 'none' }}>
           {renderNodesList.map(({ node, x, y, direction }) => {
             const isEditing = editingNodeId === node.id;
             const isRoot = node.id === 'root';
@@ -319,7 +319,7 @@ export function MindMapEditor({ data, onChange, lang, t }: MindMapEditorProps) {
               <div
                 key={`node-ui-${node.id}`}
                 className="absolute flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 group pointer-events-auto transition-all duration-200"
-                style={{ left: x, top: y }}
+                style={{ left: `${x}px`, top: `${y}px` }}
               >
                 {isEditing ? (
                   <div className="bg-white border-2 border-emerald-500 rounded-xl p-1.5 shadow-2xl flex items-center space-x-1.5 z-30">

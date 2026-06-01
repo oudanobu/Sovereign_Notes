@@ -412,7 +412,6 @@ body.profile-android13 [class*="inset-0"] {
   right: 0 !important;
   bottom: 0 !important;
   left: 0 !important;
-  position: absolute !important;
 }
 html.profile-android5 .inset-y-0, 
 body.profile-android5 [class*="inset-y-0"],
@@ -420,7 +419,6 @@ html.profile-android13 .inset-y-0,
 body.profile-android13 [class*="inset-y-0"] {
   top: 0 !important;
   bottom: 0 !important;
-  position: absolute !important;
 }
 html.profile-android5 .inset-x-0, 
 body.profile-android5 [class*="inset-x-0"],
@@ -428,7 +426,23 @@ html.profile-android13 .inset-x-0,
 body.profile-android13 [class*="inset-x-0"] {
   left: 0 !important;
   right: 0 !important;
-  position: absolute !important;
+}
+
+@supports not (inset: 0) {
+  .inset-0, [class*="inset-0"] {
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+  }
+  .inset-y-0, [class*="inset-y-0"] {
+    top: 0 !important;
+    bottom: 0 !important;
+  }
+  .inset-x-0, [class*="inset-x-0"] {
+    left: 0 !important;
+    right: 0 !important;
+  }
 }
 
 /* Ensure elements explicitely styled with fixed classes never get overwritten by absolute layout rules */
