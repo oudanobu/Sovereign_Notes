@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.sovereignnote.core" version="1.4.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>SovereignNote Core</name>
+    <description>Offline-First Sovereign Bilingual Note Application</description>
+    <author email="n16234637@gmail.com" href="https://ai.studio">SovereignNote Team</author>
+    <content src="index.html" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-navigation href="http://localhost/*" />
+    <allow-navigation href="http://127.0.0.1/*" />
+    <preference name="ScrollEnabled" value="true" />
+    <preference name="android-minSdkVersion" value="21" /> <!-- Android 5.0 -->
+    <preference name="android-targetSdkVersion" value="28" /> <!-- Android 9.0 -->
+    
+    <!-- Crosswalk Plugin Configurations for maximum layout compatibility & CPU optimizations -->
+    <plugin name="cordova-plugin-crosswalk-webview" spec="^2.4.0">
+        <variable name="XWALK_VERSION" value="23+" />
+        <variable name="XWALK_LITEVERSION" value="" />
+        <variable name="XWALK_COMMANDLINE" value="--disable-pull-to-refresh-effect --ignore-gpu-blacklist" />
+        <variable name="XWALK_MODE" value="embedded" />
+        <variable name="XWALK_MULTIPLEAPK" value="false" />
+    </plugin>
+</widget>

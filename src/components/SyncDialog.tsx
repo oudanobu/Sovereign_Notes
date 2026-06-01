@@ -50,8 +50,20 @@ export function SyncDialog({
   const [showTextImport, setShowTextImport] = useState(false);
 
   // Sync state values
-  const [lanServerUrl, setLanServerUrl] = useState(window.location.origin);
-  const [webdavUrl, setWebdavUrl] = useState(`${window.location.origin}/api/webdav-sim`);
+  const [lanServerUrl, setLanServerUrl] = useState(() => {
+    const origin = window.location?.origin;
+    if (!origin || origin.startsWith('file://') || origin === 'null') {
+      return 'http://localhost:3000';
+    }
+    return origin;
+  });
+  const [webdavUrl, setWebdavUrl] = useState(() => {
+    const origin = window.location?.origin;
+    if (!origin || origin.startsWith('file://') || origin === 'null') {
+      return 'http://localhost:3000/api/webdav-sim';
+    }
+    return `${origin}/api/webdav-sim`;
+  });
   const [webdavPort, setWebdavPort] = useState('');
   const [webdavUser, setWebdavUser] = useState('sovereign_user');
   const [webdavPass, setWebdavPass] = useState('demo-password');
