@@ -194,6 +194,44 @@ jobs:
           # 1. 部署 Cordova 跨平台原生打包编译引擎
           sudo npm install -g cordova
           
+          # 1.5 强力修补 Cordova CLI 中非 `cordova` 模块导致 `requireCordovaModule` 拒绝加载的漏洞 (支持 Crosswalk Plugin 完美安装)
+          sudo node -e '
+            const fs = require("fs");
+            const path = require("path");
+            function findAndPatch(dir) {
+              try {
+                const files = fs.readdirSync(dir);
+                for (const file of files) {
+                  const fullPath = path.join(dir, file);
+                  let stat;
+                  try { stat = fs.statSync(fullPath); } catch (e) { continue; }
+                  if (stat.isDirectory()) {
+                    if (file !== "node_modules" || dir.includes("cordova")) {
+                      findAndPatch(fullPath);
+                    }
+                  } else if (file === "Context.js" && fullPath.includes("cordova-lib")) {
+                    console.log("Found Context.js targeted at:", fullPath);
+                    let content = fs.readFileSync(fullPath, "utf8");
+                    if (content.includes("requireCordovaModule")) {
+                      content += "\n\n// Overriding hook to satisfy Crosswalk plugins needing standard require\n" +
+                                 "if (typeof Context !== \"undefined\" && Context.prototype) {\n" +
+                                 "  Context.prototype.requireCordovaModule = function (modulePath) { return require(modulePath); };\n" +
+                                 "}\n" +
+                                 "if (module.exports && module.exports.prototype) {\n" +
+                                 "  module.exports.prototype.requireCordovaModule = function (modulePath) { return require(modulePath); };\n" +
+                                 "}\n";
+                      fs.writeFileSync(fullPath, content, "utf8");
+                      console.log("👉 Patch successfully injected into Context.js!");
+                    }
+                  }
+                }
+              } catch (err) {
+                console.error("Patch scanning error:", err);
+              }
+            }
+            findAndPatch("/usr/local/lib/node_modules");
+          '
+          
           # 2. 我们利用已拉取仓库里现存的自定义 `cordova/` 目录。
           # 首先清理残留、添加并重新构建以避免缓存或构建不一致。
           cd cordova
