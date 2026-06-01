@@ -311,6 +311,11 @@ jobs:
           # 8.5 解决 JCenter 停用/死链导致的依赖拉取失败问题 (例如 com.g00fy2:versioncompare:1.3.4 等库无法获取)
           # 将所有生成的 build.gradle 中的 jcenter() 替换为官方长期稳定的 mavenCentral()
           find platforms/android/ -name "*.gradle" -exec sed -i 's/jcenter()/mavenCentral()/g' {} +
+
+          # 8.6 绝地重定向：因为 com.g00fy2:versioncompare 只在 JCenter 归档，并已在 Maven Central 迁移为 io.github.g00fy2 域名！
+          echo "=== 正在对 Cordova build 遗存 com.g00fy2:versioncompare 古董依赖进行全新 Maven 域名及 1.4.0 版本重定向修补 ==="
+          find platforms/android/ -type f \( -name "*.gradle" -o -name "*.java" \) -exec sed -i 's/com.g00fy2.versioncompare/io.github.g00fy2.versioncompare/g' {} +
+          find platforms/android/ -type f \( -name "*.gradle" -o -name "*.java" \) -exec sed -i 's/com.g00fy2:versioncompare:1.3.4/io.github.g00fy2:versioncompare:1.4.0@jar/g' {} +
           
           # 9. 强制使 Gradle 6.5-all.zip 作为 Cordova 的下载 and 运行源，匹配 sdkmanager 与 build-tools
           export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-6.5-all.zip"
