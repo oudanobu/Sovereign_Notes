@@ -19,8 +19,8 @@ interface SyncDialogProps {
   lang: Language;
   t: (key: any) => string;
   isInline?: boolean;
-  platformProfile?: 'win' | 'tablet' | 'android13' | 'android5';
-  setPlatformProfile?: (profile: 'win' | 'tablet' | 'android13' | 'android5') => void;
+  platformProfile?: 'win' | 'tablet' | 'android13' | 'android9';
+  setPlatformProfile?: (profile: 'win' | 'tablet' | 'android13' | 'android9') => void;
   androidWebViewEngine?: 'bundled' | 'system';
   setAndroidWebViewEngine?: (engine: 'bundled' | 'system') => void;
 }
@@ -1167,26 +1167,26 @@ export function SyncDialog({
                     {
                       id: 'tablet',
                       icon: '📟',
-                      titleZh: '2. Windows 平板 / 智能触控大字版 (防重叠)',
-                      titleEn: '2. Tablet Touch Mode (Anti-Collision Layout)',
-                      descZh: '触控优化大热区（46px+），防误触。彻底重塑顶部工具栏，将文件夹、标签、编辑和预览按钮进行多行重排与堆叠展示，防止在 PWA 狭窄宽度下发生任何重叠与冲突！',
-                      descEn: 'Fat-finger touch-friendly targets (46px+). Automatically transforms the top header into a stacked multi-row layout to prevent overlapping on narrower screens.'
+                      titleZh: '2. 诺基亚 N1 / 平板智能触控版 (防碰撞)',
+                      titleEn: '2. Nokia N1 / Tablet Touch Mode (Collision Safe)',
+                      descZh: '专为诺基亚 N1 (Lollipop 经典平板) 及各类触摸平板自适应优化的 46px+ 大误触热区。重构顶部导航，支持多行堆叠展现，保证中大平板视野下绝对无撞击拉伸。',
+                      descEn: 'Optimized touch safety (46px+). Reconstructs headers in multi-row stacks to guarantee absolutely no overlay collisions on Nokia N1 (Android 5.0 Lollipop tablet) or iPads.'
+                    },
+                    {
+                      id: 'android9',
+                      icon: '📻',
+                      titleZh: '3. 安卓 9.0 / 夏普 R2 / Chrome 70 兼容模式 (默认)',
+                      titleEn: '3. Android 9.0 / Sharp R2 / Chrome 70 CSS Compatible (Default)',
+                      descZh: '【系统默认】针对老版内核强力优化，剔除复杂的 3D 转换、OKLCH 色域与过载 CPU 的毛玻璃。回退现代 Flex-Gap 为标准 margin，完全兼容 Sharp R2。',
+                      descEn: 'High-compatibility flat rendering with heavy CSS effects excluded. Backports modern layout gaps to standard margins to support Chrome 70+ WebViews perfectly.'
                     },
                     {
                       id: 'android13',
                       icon: '📱',
-                      titleZh: '3. 安卓 13+ / 现代全面屏全面优化版',
-                      titleEn: '3. Android 13+ Modern Full-Screen',
-                      descZh: 'PWA 全面屏手势安全区适配，大圆角卡片布局。优化触控滚动物理阻尼。适用于配备全面屏、打孔屏的现代中高配安卓系统，滑动顺滑。',
-                      descEn: 'Sleek modern rounded layout with notch and gesture bar safe-area support. Fluid inertial scroll behaviors for high-refresh modern phones.'
-                    },
-                    {
-                      id: 'android5',
-                      icon: '📻',
-                      titleZh: '4. 安卓 4.4 - 5.0 / 老旧复古兼容极速版',
-                      titleEn: '4. Android 5.0 Retro Safe Layout',
-                      descZh: '极致平面化（完全剔除阴影、毛玻璃与渐变，减负CPU）。禁用一切重负载重绘动效。自动补正 Flex Gap 为传统 Margin 间距以消除老版 WebView 排版拉伸偏离。',
-                      descEn: 'Flat components with shadows and backdrop blurs disabled to save fragile CPU cores. Strict transition suppression and margin offsets fallback.'
+                      titleZh: '4. 安卓 13+ / 现代高配全面屏安全优化版',
+                      titleEn: '4. Android 13+ Modern Full-Screen UI',
+                      descZh: '全面屏手势安全区自适应，圆滑边角和柔和惯性，支持开启现代毛玻璃（Backdrop blur）、3D 阴影及动态渲染。推荐较新的 Android 13 物理设备开启。',
+                      descEn: 'Sleek modern layout with notch safe-areas and fluid transitions. Perfect for modern high-refresh Android 13+ systems to support beautiful blurs and shadows.'
                     }
                   ].map((profileItem) => {
                     const isSelected = platformProfile === profileItem.id;

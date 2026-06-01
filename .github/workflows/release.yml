@@ -189,26 +189,29 @@ jobs:
           fi
         shell: bash
 
-      - name: Fast Compiling of Native Android APK for 旧平板 (GeckoView Engine)
+      - name: Fast Compiling of Native Android APK Variants
         run: |
           # 1. 准备/创建 assets/www 并同步复制现代 React 编译产物
           mkdir -p android-geckoview/app/src/main/assets/www
           cp -r dist/* android-geckoview/app/src/main/assets/www/
           
-          # 2. 配置 JDK 11 并执行 Gradle 原生构建
+          # 2. 配置 JDK 11 并执行 Gradle 原生构建 (移除了不支持的 --verbose 选项以解决异常)
           export JAVA_HOME=$JAVA_HOME_11_X64
           cd android-geckoview
-          gradle assembleRelease --verbose
-          
-          # 3. 提取编译好的 Release APK
+          gradle assembleRelease
           cd ..
-          FINAL_SRC=$(find android-geckoview/app/build/outputs/ -name "*release-unsigned.apk" -o -name "*-release.apk" -o -name "*.apk" | head -n 1)
-          if [ -z "$FINAL_SRC" ]; then
-            echo "❌ 严重错误：未能发现 any Android/GeckoView APK 编译装配成果物！"
+          
+          # 3. 提取编译好的 Release APK 并保底
+          GECKO_SRC=$(find android-geckoview/app/build/outputs/ -path "*geckoview*unsigned.apk" -o -path "*geckoview*Release.apk" -o -path "*geckoview*.apk" | head -n 1)
+          SYSTEM_SRC=$(find android-geckoview/app/build/outputs/ -path "*systemwebview*unsigned.apk" -o -path "*systemwebview*Release.apk" -o -path "*systemwebview*.apk" | head -n 1)
+          
+          if [ -z "$GECKO_SRC" ] || [ -z "$SYSTEM_SRC" ]; then
+            echo "❌ 严重错误：未能发现 any Android/GeckoView or System APK 编译装配成果物！"
             exit 1
           fi
           
-          echo "🎯 成功发现全新 GeckoView 混合底层物理包: $FINAL_SRC"
+          echo "🎯 成功发现全新 GeckoView 混合底层物理包: $GECKO_SRC"
+          echo "🎯 成功发现全新 SystemWebView 封装物理包: $SYSTEM_SRC"
           
           # 4. 生成 2048 位安全自签名 Keystore 密钥
           echo "🚀 正在生成兼容 Android 全版本（Android 5.0 - 13+）的 2048 位安全自签名 Keystore 密钥..."
@@ -222,23 +225,32 @@ jobs:
             -keypass "SovereignPass123" \
             -dname "CN=SovereignNote, OU=SovereignApp, O=SovereignOrg, L=SovereignCity, S=SovereignState, C=CN"
 
-          echo "🚀 正在对 APK 进行 4 字节对齐优化（zipalign）..."
-          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$FINAL_SRC" aligned.apk
-
-          echo "🚀 正在使用 apksigner 覆盖 V1 + V2 + V3 签名方案，确保最大程度适配旧版 Android 平板..."
+          # 5. 对齐、签名和验证 GECKOVIEW APK
+          echo "🚀 [1/2] 正在对齐和签名 GeckoView APK..."
+          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$GECKO_SRC" gecko_aligned.apk
           $ANDROID_HOME/build-tools/30.0.3/apksigner sign \
             --ks sovereign.keystore \
             --ks-key-alias sovereign-alias \
             --ks-pass pass:"SovereignPass123" \
             --key-pass pass:"SovereignPass123" \
-            --out signed.apk aligned.apk
+            --out gecko_signed.apk gecko_aligned.apk
+          $ANDROID_HOME/build-tools/30.0.3/apksigner verify -v gecko_signed.apk
 
-          echo "🚀 验证签名状态..."
-          $ANDROID_HOME/build-tools/30.0.3/apksigner verify -v signed.apk
+          # 6. 对齐、签名 and 验证 SYSTEMWEBVIEW APK
+          echo "🚀 [2/2] 正在对齐和签名 SystemWebView APK..."
+          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$SYSTEM_SRC" system_aligned.apk
+          $ANDROID_HOME/build-tools/30.0.3/apksigner sign \
+            --ks sovereign.keystore \
+            --ks-key-alias sovereign-alias \
+            --ks-pass pass:"SovereignPass123" \
+            --key-pass pass:"SovereignPass123" \
+            --out system_signed.apk system_aligned.apk
+          $ANDROID_HOME/build-tools/30.0.3/apksigner verify -v system_signed.apk
 
           mkdir -p "$GITHUB_WORKSPACE/dist-release-artifacts/3-android"
-          cp signed.apk "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk"
-          echo "✨ 恭喜！全新 GeckoView 内核极速安卓原生 APK 已完美发布归档！"
+          cp gecko_signed.apk "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android-GeckoView.apk"
+          cp system_signed.apk "$GITHUB_WORKSPACE/dist-release-artifacts/3-android/SovereignNote-Android-SystemWebView.apk"
+          echo "✨ 恭喜！全新 GeckoView 与 SystemWebView 安卓原生双 APK 均已签名并发布归档！"
 
 
       # ==================== STEP 3.5: 上传制品作为 Actions 运行时的 Artifacts (保持极佳的目录结构) ====================
@@ -265,12 +277,14 @@ jobs:
                * **`SovereignNote-PWA-SingleFile.html`**：纯单文件应用，可在所有电脑、Pad 浏览器中无网络直接拖拽运行，支持 100% 离线 IndexedDB 特性。
             2. **`2-windows/` (原生桌面 EXE 绿色版)**
                * **`SovereignNote-Windows-Portable-x64.exe`**（64位系统专包）。同时提供 SovereignNote-Windows-Portable-ia32.exe（针对 32位 Windows (Win32) 兼容优化，完美绕过“需要64位Windows系统”报错），彻底摆脱外部浏览器的约束！
-            3. **`3-android/` (安卓5.0+ 经典平板原生 APK 版)**
-               * **`SovereignNote-Android5.0-Tablet.apk`**：专为经典旧版安卓平板（Android 5.0+ / 5.1 / 6.0 等）转译优化的原生 GeckoView (Firefox Kernel) 独立内核封装 APK，具备极致的 HTML5 及 ES6+ 兼容性，免证书、免 https 强制校验，完美消除 300ms 点击延迟，性能与流畅度俱佳。
+            3. **`3-android/` (安卓原生双引擎 APK 专区)**
+               * **`SovereignNote-Android-GeckoView.apk`**：内置 GeckoView 独立自主高能内核，适合首发调试及极旧版硬件（例如配备 Intel CPU 的诺基亚 N1 平板），具备绝对完美的 H5 / ES6+ 兼容保证。
+               * **`SovereignNote-Android-SystemWebView.apk`**：纯净低消耗系统原生 WebView 包，体积仅 2MB 左右，极力契合夏普 R2 (安卓9.0) 以及更新的安卓13+高规格设备。
           files: |
             dist-release-artifacts/1-pwa/SovereignNote-PWA-SingleFile.html
             dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-x64.exe
             dist-release-artifacts/2-windows/SovereignNote-Windows-Portable-ia32.exe
-            dist-release-artifacts/3-android/SovereignNote-Android5.0-Tablet.apk
+            dist-release-artifacts/3-android/SovereignNote-Android-GeckoView.apk
+            dist-release-artifacts/3-android/SovereignNote-Android-SystemWebView.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

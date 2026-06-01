@@ -77,9 +77,9 @@ export default function App() {
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<'all' | 'whiteboard'>('all');
 
   // Platform device CSS profile state
-  const [platformProfile, setPlatformProfile] = useState<'win' | 'tablet' | 'android13' | 'android5'>(() => {
+  const [platformProfile, setPlatformProfile] = useState<'win' | 'tablet' | 'android13' | 'android9'>(() => {
     const saved = localStorage.getItem('sovereign_platform_profile');
-    if (saved === 'win' || saved === 'tablet' || saved === 'android13' || saved === 'android5') {
+    if (saved === 'win' || saved === 'tablet' || saved === 'android13' || saved === 'android9') {
       return saved;
     }
     const ua = navigator.userAgent.toLowerCase();
@@ -95,32 +95,14 @@ export default function App() {
     }
 
     const isAndroid = ua.includes('android');
-    // Return android5 if version is < 11.0, explicit Android 9/5, or old chrome kernel
     if (isAndroid || ua.includes('linux')) {
-      const androidMatch = ua.match(/android\s+([0-9.]+)/);
-      if (androidMatch) {
-        const version = parseFloat(androidMatch[1]);
-        if (version < 11.0 || version === 9.0 || version === 5.0) {
-          return 'android5';
-        }
-      }
-      if (
-        ua.includes('android 9') || 
-        ua.includes('android 5') || 
-        ua.includes('android 6') || 
-        ua.includes('android 7') || 
-        ua.includes('android 8') || 
-        isOldChrome
-      ) {
-        return 'android5';
-      }
-      if (isAndroid) {
-        return 'android13';
-      }
+      // Android devices default to high-compatibility Chrome 70 (Android 9.0) CSS profile
+      // Users can manually toggle to 'android13' (Modern UI with advanced features)
+      return 'android9';
     }
 
     if (isOldChrome) {
-      return 'android5';
+      return 'android9';
     }
 
     const isTablet = /ipad|tablet|playbook|silk/i.test(ua) || 
@@ -139,7 +121,7 @@ export default function App() {
   // Sync class profile directly to <html> element
   useEffect(() => {
     const htmlEl = document.documentElement;
-    htmlEl.classList.remove('profile-win', 'profile-tablet', 'profile-android13', 'profile-android5');
+    htmlEl.classList.remove('profile-win', 'profile-tablet', 'profile-android13', 'profile-android9');
     htmlEl.classList.add(`profile-${platformProfile}`);
     htmlEl.setAttribute('data-android-webview', androidWebViewEngine);
   }, [platformProfile, androidWebViewEngine]);

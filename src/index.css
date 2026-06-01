@@ -298,11 +298,11 @@ textarea,
 }
 
 /* -------------------------------------------------------------
- * PROFILE 4: ANDROID 5.0 / 4.4 历史老旧 WebView (profile-android5) - 零渲染开销 & 绝对色域保底
+ * PROFILE 4: ANDROID 9.0 / Sharp R2 / Chrome 70 CSS 兼容模式 (profile-android9) - 零渲染开销 & 绝对色域保底
  * ------------------------------------------------------------- */
 /* 完全剔除占用 GPU/CPU 重绘缓存的属性（阴影、滤镜、动效模糊、3D过渡），确保平稳单页运行 */
-.profile-android5,
-.profile-android5 * {
+.profile-android9,
+.profile-android9 * {
   box-shadow: none !important;
   text-shadow: none !important;
   backdrop-filter: none !important;
@@ -313,99 +313,99 @@ textarea,
 }
 
 /* Force Light-mode coloring inside ancient Android WebViews to bypass forced-dark overlay overlaps */
-.profile-android5 {
+.profile-android9 {
   background-color: #f8fafc !important;
   color: #0f172a !important;
 }
-.profile-android5 main,
-.profile-android5 section,
-.profile-android5 aside {
+.profile-android9 main,
+.profile-android9 section,
+.profile-android9 aside {
   background-color: #ffffff !important;
   color: #1e293b !important;
 }
-.profile-android5 aside > div:first-child {
+.profile-android9 aside > div:first-child {
   background-color: #ffffff !important;
   border-right: 1.5px solid #cbd5e1 !important;
 }
-.profile-android5 aside > div:last-child {
+.profile-android9 aside > div:last-child {
   background-color: #f1f5f9 !important;
 }
-.profile-android5 .note-list-item {
+.profile-android9 .note-list-item {
   background-color: #ffffff !important;
   border-bottom: 1.5px solid #e1e8f0 !important;
 }
 
 /* Force standard high-contrast light labels for ancient WebView */
-.profile-android5 h1,
-.profile-android5 h2,
-.profile-android5 h3,
-.profile-android5 h4,
-.profile-android5 p,
-.profile-android5 text {
+.profile-android9 h1,
+.profile-android9 h2,
+.profile-android9 h3,
+.profile-android9 h4,
+.profile-android9 p,
+.profile-android9 text {
   color: #0f172a !important;
 }
-.profile-android5 .text-slate-400,
-.profile-android5 .text-slate-500,
-.profile-android5 .text-gray-500,
-.profile-android5 .text-slate-450 {
+.profile-android9 .text-slate-400,
+.profile-android9 .text-slate-500,
+.profile-android9 .text-gray-500,
+.profile-android9 .text-slate-450 {
   color: #475569 !important; /* Strong secondary gray */
 }
 
 /* 强力回归实体直角或简易微圆角，绝不起用 border-width：这会给所有层叠 div/span 加上冗余怪异的实线黑框毁掉 UI */
-.profile-android5 button,
-.profile-android5 select,
-.profile-android5 label {
+.profile-android9 button,
+.profile-android9 select,
+.profile-android9 label {
   border-radius: 4px;
 }
 
 /* Solid background fallbacks */
-.profile-android5 .bg-slate-50\/40,
-.profile-android5 .bg-slate-50\/50,
-.profile-android5 .bg-gray-150\/70,
-.profile-android5 .bg-white\/80 {
+.profile-android9 .bg-slate-50\/40,
+.profile-android9 .bg-slate-50\/50,
+.profile-android9 .bg-gray-150\/70,
+.profile-android9 .bg-white\/80 {
   background-color: #f1f5f9 !important; /* solid gray slate-100 */
 }
 
 /* Fixed color boxes under active themes */
-.profile-android5 .bg-slate-900,
+.profile-android9 .bg-slate-900,
 .profile-android13 .bg-slate-900 {
   background-color: #0f172a !important;
   color: #ffffff !important;
 }
-.profile-android5 .bg-purple-650,
+.profile-android9 .bg-purple-650,
 .profile-android13 .bg-purple-650 {
   background-color: #6d28d9 !important;
   color: #ffffff !important;
 }
-.profile-android5 .bg-amber-500,
+.profile-android9 .bg-amber-500,
 .profile-android13 .bg-amber-500 {
   background-color: #d97706 !important;
   color: #ffffff !important;
 }
-.profile-android5 .bg-indigo-650,
+.profile-android9 .bg-indigo-650,
 .profile-android13 .bg-indigo-650 {
   background-color: #4338ca !important;
   color: #ffffff !important;
 }
 
 /* Make toggled active icon buttons text pure white */
-.profile-android5 .text-white,
+.profile-android9 .text-white,
 .profile-android13 .text-white {
   color: #ffffff !important;
 }
 
 /* 屏蔽不兼容的外部字体下载延迟，强制极简化Roboto或内置网页无衬线字体 */
-.profile-android5,
-.profile-android5 text,
-.profile-android5 select,
-.profile-android5 input,
-.profile-android5 textarea {
+.profile-android9,
+.profile-android9 text,
+.profile-android9 select,
+.profile-android9 input,
+.profile-android9 textarea {
   font-family: Roboto, sans-serif, sans-serif-condensed !important;
   -webkit-font-smoothing: initial !important;
 }
 /* Universal fallback for modern CSS inset property to support Webscout / WebViews older than Chrome 87 (e.g. Android 5, Android 9, older iOS, older smart TVs) */
-html.profile-android5 .inset-0, 
-body.profile-android5 [class*="inset-0"],
+html.profile-android9 .inset-0, 
+body.profile-android9 [class*="inset-0"],
 html.profile-android13 .inset-0, 
 body.profile-android13 [class*="inset-0"] {
   top: 0 !important;
@@ -413,15 +413,15 @@ body.profile-android13 [class*="inset-0"] {
   bottom: 0 !important;
   left: 0 !important;
 }
-html.profile-android5 .inset-y-0, 
-body.profile-android5 [class*="inset-y-0"],
+html.profile-android9 .inset-y-0, 
+body.profile-android9 [class*="inset-y-0"],
 html.profile-android13 .inset-y-0, 
 body.profile-android13 [class*="inset-y-0"] {
   top: 0 !important;
   bottom: 0 !important;
 }
-html.profile-android5 .inset-x-0, 
-body.profile-android5 [class*="inset-x-0"],
+html.profile-android9 .inset-x-0, 
+body.profile-android9 [class*="inset-x-0"],
 html.profile-android13 .inset-x-0, 
 body.profile-android13 [class*="inset-x-0"] {
   left: 0 !important;
@@ -446,115 +446,115 @@ body.profile-android13 [class*="inset-x-0"] {
 }
 
 /* Ensure elements explicitely styled with fixed classes never get overwritten by absolute layout rules */
-html.profile-android5 [class*="fixed"],
-body.profile-android5 [class*="fixed"],
+html.profile-android9 [class*="fixed"],
+body.profile-android9 [class*="fixed"],
 html.profile-android13 [class*="fixed"],
 body.profile-android13 [class*="fixed"] {
   position: fixed !important;
 }
 
-/* 针对古老 Chrome 37 到 83 内核 (Android 5-10) WebView 中 flex 弹性盒 gap 缺失的 sibling margin 精准补偿 */
-html.profile-android5 .flex.gap-0\.5 > * + *,
-html.profile-android5 .flex.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
+/* 针对古老 Chrome 37 到 83 内核 (Android 5-10) WebView 中 flex 弹性盒 gap 缺失 of sibling margin 精准补偿 */
+html.profile-android9 .flex.gap-0\.5 > * + *,
+html.profile-android9 .flex.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 2px !important;
 }
-html.profile-android5 .flex.flex-col.gap-0\.5 > * + *,
-html.profile-android5 .flex.flex-col.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-0\.5 > * + *,
+html.profile-android9 .flex.flex-col.gap-0\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 2px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-1 > * + *,
-html.profile-android5 .flex.gap-1 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-1 > * + *,
+html.profile-android9 .flex.gap-1 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 4px !important;
 }
-html.profile-android5 .flex.flex-col.gap-1 > * + *,
-html.profile-android5 .flex.flex-col.gap-1 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-1 > * + *,
+html.profile-android9 .flex.flex-col.gap-1 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 4px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-1\.5 > * + *,
-html.profile-android5 .flex.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-1\.5 > * + *,
+html.profile-android9 .flex.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 6px !important;
 }
-html.profile-android5 .flex.flex-col.gap-1\.5 > * + *,
-html.profile-android5 .flex.flex-col.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-1\.5 > * + *,
+html.profile-android9 .flex.flex-col.gap-1\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 6px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-2 > * + *,
-html.profile-android5 .flex.gap-2 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-2 > * + *,
+html.profile-android9 .flex.gap-2 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 8px !important;
 }
-html.profile-android5 .flex.flex-col.gap-2 > * + *,
-html.profile-android5 .flex.flex-col.gap-2 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-2 > * + *,
+html.profile-android9 .flex.flex-col.gap-2 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 8px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-2\.5 > * + *,
-html.profile-android5 .flex.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-2\.5 > * + *,
+html.profile-android9 .flex.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 10px !important;
 }
-html.profile-android5 .flex.flex-col.gap-2\.5 > * + *,
-html.profile-android5 .flex.flex-col.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-2\.5 > * + *,
+html.profile-android9 .flex.flex-col.gap-2\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 10px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-3 > * + *,
-html.profile-android5 .flex.gap-3 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-3 > * + *,
+html.profile-android9 .flex.gap-3 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 12px !important;
 }
-html.profile-android5 .flex.flex-col.gap-3 > * + *,
-html.profile-android5 .flex.flex-col.gap-3 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-3 > * + *,
+html.profile-android9 .flex.flex-col.gap-3 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 12px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-3\.5 > * + *,
-html.profile-android5 .flex.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-3\.5 > * + *,
+html.profile-android9 .flex.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 14px !important;
 }
-html.profile-android5 .flex.flex-col.gap-3\.5 > * + *,
-html.profile-android5 .flex.flex-col.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-3\.5 > * + *,
+html.profile-android9 .flex.flex-col.gap-3\.5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 14px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-4 > * + *,
-html.profile-android5 .flex.gap-4 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-4 > * + *,
+html.profile-android9 .flex.gap-4 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 16px !important;
 }
-html.profile-android5 .flex.flex-col.gap-4 > * + *,
-html.profile-android5 .flex.flex-col.gap-4 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-4 > * + *,
+html.profile-android9 .flex.flex-col.gap-4 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 16px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-5 > * + *,
-html.profile-android5 .flex.gap-5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-5 > * + *,
+html.profile-android9 .flex.gap-5 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 20px !important;
 }
-html.profile-android5 .flex.flex-col.gap-5 > * + *,
-html.profile-android5 .flex.flex-col.gap-5 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-5 > * + *,
+html.profile-android9 .flex.flex-col.gap-5 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 20px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.gap-6 > * + *,
-html.profile-android5 .flex.gap-6 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.gap-6 > * + *,
+html.profile-android9 .flex.gap-6 > :not([hidden]) ~ :not([hidden]) {
   margin-left: 24px !important;
 }
-html.profile-android5 .flex.flex-col.gap-6 > * + *,
-html.profile-android5 .flex.flex-col.gap-6 > :not([hidden]) ~ :not([hidden]) {
+html.profile-android9 .flex.flex-col.gap-6 > * + *,
+html.profile-android9 .flex.flex-col.gap-6 > :not([hidden]) ~ :not([hidden]) {
   margin-top: 24px !important;
   margin-left: 0 !important;
 }
 
-html.profile-android5 .flex.flex-wrap {
+html.profile-android9 .flex.flex-wrap {
   margin-bottom: -6px !important;
 }
 
