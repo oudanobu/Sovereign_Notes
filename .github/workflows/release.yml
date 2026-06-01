@@ -138,11 +138,11 @@ jobs:
           cd ..
 
       # ==================== STEP 3: 编译 Android 5.0 触控真机原生 APK ====================
-      - name: Setup Java JDK 11 (For Android 5.0 Legacy Target)
+      - name: Setup Java JDK 8 (For Android 5.0 Legacy Target and Cordova 9.1.0 Compatibility)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11' # 配合 config.xml 里的降级规范，锁死 JDK 11
+          java-version: '8' # 配合老版 cordova-android 9.1.0 与 Gradle 6.5，锁死 JDK 8
 
       - name: Setup Gradle 6.5 Override
         uses: gradle/actions/setup-gradle@v4
@@ -277,7 +277,7 @@ jobs:
           
           # 9. 强制使 Gradle 6.5-all.zip 作为 Cordova 的下载 and 运行源，匹配 sdkmanager 与 build-tools
           export CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL="https://services.gradle.org/distributions/gradle-6.5-all.zip"
-          export JAVA_HOME=$JAVA_HOME_11_X64
+          export JAVA_HOME=$JAVA_HOME_8_X64
           
           # 10. 启动包含 XWalk 浏览器内核编译的完全离线 APK 构建
           cordova build android --release --verbose
