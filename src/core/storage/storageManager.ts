@@ -2,7 +2,7 @@ import { openDB, IDBPDatabase } from 'idb';
 import { Note, Tag, Folder, AssetItem } from '../../types';
 
 const DB_NAME = 'LocalSovereignNotesDB';
-const DB_VERSION = 3; // Upgraded to v3 for asset storage integration
+const DB_VERSION = 4; // Upgraded to v4 for compatibility with pure driver
 
 
 // Types for Migration Shim & Backup

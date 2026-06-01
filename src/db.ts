@@ -8,12 +8,32 @@ import { Note, Tag, Folder, CalendarEvent } from './types';
 const DB_NAME = 'LocalSovereignNotesDB';
 const DB_VERSION = 4;
 
+let dbPromise: Promise<IDBDatabase> | null = null;
+
 export function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (dbPromise) return dbPromise;
+
+  dbPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => {
+      dbPromise = null;
+      reject(request.error);
+    };
+
+    request.onsuccess = () => {
+      const db = request.result;
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+        console.warn('Database connection closed due to version change.');
+      };
+      resolve(db);
+    };
+
+    request.onblocked = () => {
+      console.warn('Database open is blocked by another tab or older connection.');
+    };
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
@@ -54,8 +74,16 @@ export function openDB(): Promise<IDBDatabase> {
         eventStore.createIndex('date', 'date', { unique: false });
         eventStore.createIndex('isDeleted', 'isDeleted', { unique: false });
       }
+
+      // 6. Assets Store (added for storageManager compatibility)
+      if (!db.objectStoreNames.contains('assets')) {
+        const assetStore = db.createObjectStore('assets', { keyPath: 'id' });
+        assetStore.createIndex('noteId', 'noteId', { unique: false });
+      }
     };
   });
+
+  return dbPromise;
 }
 
 // Note Operations
