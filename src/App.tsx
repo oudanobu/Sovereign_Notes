@@ -127,6 +127,28 @@ export default function App() {
     htmlEl.setAttribute('data-android-webview', androidWebViewEngine);
   }, [platformProfile, androidWebViewEngine]);
 
+  // 🎯 应对夏普系统状态栏/虚拟键时差问题的绝对高度锁 (Nokia N1/Sharp-proof absolute viewport height locking)
+  useEffect(() => {
+    const lockViewportHeight = () => {
+      const root = document.getElementById('root');
+      if (!root) return;
+      
+      // 延时 250ms，规避夏普/老系统加载虚拟键导致的时差问题
+      setTimeout(() => {
+        const actualHeight = window.innerHeight;
+        root.style.height = `${actualHeight}px`;
+        root.style.position = 'absolute';
+        root.style.top = '0';
+        root.style.left = '0';
+        root.style.width = '100%';
+      }, 250);
+    };
+
+    lockViewportHeight();
+    window.addEventListener('resize', lockViewportHeight);
+    return () => window.removeEventListener('resize', lockViewportHeight);
+  }, []);
+
   // Navigation state
   const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
   const [bulkActionOpen, setBulkActionOpen] = useState(false);

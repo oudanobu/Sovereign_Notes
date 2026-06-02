@@ -545,4 +545,58 @@ html.profile-android9 .flex.flex-wrap {
   margin-bottom: -6px !important;
 }
 
+/* =======================================================
+   🛡️ SovereignNote 矮胖屏幕（4:3平板/诺基亚 N1）专属防碰撞结界
+   ======================================================= */
+@media (max-aspect-ratio: 3/2) {
+  /* 1. 强行解除最外层容器的弹性限制，允许其自然向下延展 */
+  .notebook-container, 
+  .setting-page-root,
+  .absolute.inset-0.flex.flex-col,
+  .flex-1.flex.overflow-hidden {
+    display: block !important;
+    overflow-y: auto !important; /* 允许在矮屏幕上通过滚动查看完整内容 */
+    height: 100% !important;
+  }
+
+  /* 2. 废除所有 var(--gap) 或 flex 造成的积压，改为老系统绝对懂的绝对 margin */
+  .setting-card,
+  .sync-config-section,
+  .p-5, .p-6, .p-8 {
+    display: block !important;
+    margin: 10px 6px !important; /* 用硬性的上下外边距撑开卡片，绝不重叠 */
+    padding: 12px !important;     /* 物理锁死内边距 */
+    width: auto !important;       /* 防止横向撑爆 */
+  }
+
+  /* 3. 让卡片内部的“标签”与“输入框”从并排强行改为上下两行平铺 */
+  .setting-row,
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    display: block !important;
+    grid-template-columns: none !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .setting-row label,
+  .grid-cols-2 > *,
+  .grid-cols-3 > *,
+  .grid-cols-4 > * {
+    display: block !important;
+    margin-bottom: 6px !important;
+    width: 100% !important;
+  }
+
+  .setting-row input,
+  input,
+  select,
+  textarea {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important; /* 防止 padding 额外撑破宽度 */
+  }
+}
+
+
 

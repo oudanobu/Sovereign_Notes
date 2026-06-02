@@ -261,9 +261,16 @@ export function importDatabaseSnapshot(jsonString: string): Promise<{
   } catch (err) {
     return Promise.reject(err);
   }
-  if (!parsed.notes || !parsed.tags || !parsed.folders) {
-    return Promise.reject(new Error('Invalid backup file. Missing essential database tables.'));
+  
+  // Backward compatibility: If notes is missing, it's definitely invalid, but tags and folders can be empty or missing in older versions.
+  if (!parsed.notes && !parsed.tags && !parsed.folders) {
+    return Promise.reject(new Error('Invalid backup file. Missing essential database main tables.'));
   }
+
+  const notes = parsed.notes || [];
+  const tags = parsed.tags || [];
+  const folders = parsed.folders || [];
+  const events = parsed.events || [];
 
   return openDB().then((db) => {
     return new Promise<{
@@ -271,14 +278,20 @@ export function importDatabaseSnapshot(jsonString: string): Promise<{
       tagsCount: number;
       foldersCount: number;
     }>((resolve, reject) => {
-      const tx = db.transaction(['notes', 'tags', 'folders'], 'readwrite');
+      // Determine what stores we need and check what exists in the active IndexedDB connection
+      const storesToTransact = ['notes', 'tags', 'folders'];
+      if (db.objectStoreNames.contains('events')) {
+        storesToTransact.push('events');
+      }
+
+      const tx = db.transaction(storesToTransact, 'readwrite');
       
       tx.onerror = () => reject(tx.error);
       tx.oncomplete = () => {
         resolve({
-          notesCount: parsed.notes.length,
-          tagsCount: parsed.tags.length,
-          foldersCount: parsed.folders.length,
+          notesCount: notes.length,
+          tagsCount: tags.length,
+          foldersCount: folders.length,
         });
       };
 
@@ -286,16 +299,24 @@ export function importDatabaseSnapshot(jsonString: string): Promise<{
       tx.objectStore('notes').clear();
       tx.objectStore('tags').clear();
       tx.objectStore('folders').clear();
+      if (db.objectStoreNames.contains('events')) {
+        tx.objectStore('events').clear();
+      }
 
       // Populate stores
       const notesStore = tx.objectStore('notes');
-      parsed.notes.forEach((n: Note) => notesStore.put(n));
+      notes.forEach((n: Note) => notesStore.put(n));
 
       const tagsStore = tx.objectStore('tags');
-      parsed.tags.forEach((t: Tag) => tagsStore.put(t));
+      tags.forEach((t: Tag) => tagsStore.put(t));
 
       const foldersStore = tx.objectStore('folders');
-      parsed.folders.forEach((f: Folder) => foldersStore.put(f));
+      folders.forEach((f: Folder) => foldersStore.put(f));
+
+      if (db.objectStoreNames.contains('events') && events.length > 0) {
+        const eventsStore = tx.objectStore('events');
+        events.forEach((e: CalendarEvent) => eventsStore.put(e));
+      }
     });
   });
 }

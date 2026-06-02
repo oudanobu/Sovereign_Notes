@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Server, Cloud, Download, Upload, AlertTriangle, Check, RefreshCw, Plus, Copy, Share2, Sliders } from 'lucide-react';
 import { Tag, Folder, Note } from '../types';
 import { exportDatabaseSnapshot, importDatabaseSnapshot, getNotes, getTags, getFolders, bulkInsertNotes, bulkInsertTags, bulkInsertFolders } from '../db';
@@ -39,7 +39,7 @@ export function SyncDialog({
   androidWebViewEngine = 'bundled',
   setAndroidWebViewEngine
 }: SyncDialogProps) {
-  const [activeTab, setActiveTab] = useState<'backup' | 'lan' | 'webdav' | 'tags' | 'display'>('backup');
+  const [activeTab, setActiveTab] = useState<'backup' | 'lan' | 'webdav' | 'ftp' | 'tags' | 'display'>('backup');
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -68,6 +68,40 @@ export function SyncDialog({
   const [webdavUser, setWebdavUser] = useState('sovereign_user');
   const [webdavPass, setWebdavPass] = useState('demo-password');
   const [webdavPath, setWebdavPath] = useState('SovereignNotesBackup');
+
+  // FTP state values with persistent storage
+  const [ftpHost, setFtpHost] = useState(() => {
+    return localStorage.getItem('sovereign_ftp_host') || 'ftp-sim.sovereign.local';
+  });
+  const [ftpPort, setFtpPort] = useState(() => {
+    return localStorage.getItem('sovereign_ftp_port') || '21';
+  });
+  const [ftpUser, setFtpUser] = useState(() => {
+    return localStorage.getItem('sovereign_ftp_user') || 'anonymous';
+  });
+  const [ftpPass, setFtpPass] = useState(() => {
+    return localStorage.getItem('sovereign_ftp_pass') || 'guest-password';
+  });
+  const [ftpPath, setFtpPath] = useState(() => {
+    return localStorage.getItem('sovereign_ftp_path') || 'SovereignNotesBackup';
+  });
+
+  // Sync FTP settings to localStorage
+  useEffect(() => {
+    localStorage.setItem('sovereign_ftp_host', ftpHost);
+  }, [ftpHost]);
+  useEffect(() => {
+    localStorage.setItem('sovereign_ftp_port', ftpPort);
+  }, [ftpPort]);
+  useEffect(() => {
+    localStorage.setItem('sovereign_ftp_user', ftpUser);
+  }, [ftpUser]);
+  useEffect(() => {
+    localStorage.setItem('sovereign_ftp_pass', ftpPass);
+  }, [ftpPass]);
+  useEffect(() => {
+    localStorage.setItem('sovereign_ftp_path', ftpPath);
+  }, [ftpPath]);
 
   const addLog = (msg: string) => {
     setSyncLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
@@ -383,13 +417,20 @@ export function SyncDialog({
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const json = event.target?.result as string;
-        const res = await importDatabaseSnapshot(json);
-        setSuccessMessage(lang === 'zh'
-          ? `数据灾难性恢复校验通过！共导入笔记 ${res.notesCount} 篇，标签结构 ${res.tagsCount} 条，分类文件夹 ${res.foldersCount} 个。`
-          : `Database restored successfully! Imported ${res.notesCount} notes, ${res.tagsCount} tags, and ${res.foldersCount} categories.`
-        );
-        onSyncCompleted();
+        try {
+          const json = event.target?.result as string;
+          const res = await importDatabaseSnapshot(json);
+          setSuccessMessage(lang === 'zh'
+            ? `数据灾难性恢复校验通过！共导入笔记 ${res.notesCount} 篇，标签结构 ${res.tagsCount} 条，分类文件夹 ${res.foldersCount} 个。`
+            : `Database restored successfully! Imported ${res.notesCount} notes, ${res.tagsCount} tags, and ${res.foldersCount} categories.`
+          );
+          onSyncCompleted();
+        } catch (innerErr: any) {
+          setErrorMessage(lang === 'zh'
+            ? `导入失败：JSON 快照结构损坏、有残留无效字符或不契合 IndexedDB。Error: ${innerErr.message || innerErr}`
+            : `Import failed: The JSON snapshot is unreadable or corrupted. Error: ${innerErr.message || innerErr}`
+          );
+        }
       };
       reader.readAsText(file);
     } catch (err: any) {
@@ -558,6 +599,85 @@ export function SyncDialog({
     }
   };
 
+  // 3.5. Authenticated FTP Proxy Sync Client
+  const handleFtpSync = async (direction: 'upload' | 'download') => {
+    setIsSyncing(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setSyncLogs([]);
+    addLog(lang === 'zh' ? `正在配置并初始化 FTP 账户连接 (方向: ${direction})...` : `Initializing FTP proxy configuration (${direction})...`);
+
+    try {
+      const config = {
+        host: ftpHost,
+        port: ftpPort || '21',
+        user: ftpUser,
+        password: ftpPass,
+        path: ftpPath
+      };
+
+      let reqBody: any = {
+        action: direction,
+        config
+      };
+
+      if (direction === 'upload') {
+        const dbJson = await exportDatabaseSnapshot();
+        reqBody.payload = JSON.parse(dbJson);
+        addLog(lang === 'zh' ? '正在汇编本地完整事务型 IndexedDB 序列快照...' : 'Compiling local database transaction snapshot...');
+      }
+
+      const response = await fetch('/api/ftp-sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(reqBody)
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+        throw new Error(errData.error || `FTP server proxy responded with status ${response.status}`);
+      }
+
+      const resData = await response.json();
+      if (resData.logs && resData.logs.length > 0) {
+        resData.logs.forEach((logLine: string) => addLog(logLine));
+      }
+
+      if (direction === 'upload') {
+        setSuccessMessage(lang === 'zh' 
+          ? `🎉 FTP 物理主权同步快照上传归档成功! (${resData.mode === 'simulated' ? '极速模拟沙盒已捕获快照' : '实时在线数据套接字已写入物理节点'})` 
+          : `FTP cloud backup uploaded successfully! (${resData.mode === 'simulated' ? 'Handled by virtual emulator storage node' : 'Written to native FTP host socket'})`
+        );
+      } else {
+        // download
+        const cloudSnapshotText = resData.payload;
+        if (!cloudSnapshotText) {
+          throw new Error('Downloaded snapshot payload is empty or invalid.');
+        }
+
+        const parsed = typeof cloudSnapshotText === 'string' ? JSON.parse(cloudSnapshotText) : cloudSnapshotText;
+        addLog(lang === 'zh' ? `正在拉取记录校验融合：在云端发现 ${parsed.notes ? parsed.notes.length : 0} 存储文件。` : `Analyzing records: Found ${parsed.notes ? parsed.notes.length : 0} backup notes.`);
+        await mergeLwwData(parsed.notes || [], parsed.tags || [], parsed.folders || []);
+        
+        setSuccessMessage(lang === 'zh' 
+          ? `🎉 FTP 主权时空链双向融合大功告成！全量 IndexedDB 缓冲数据已完美合龙！` 
+          : `Sovereign dual merge of FTP records succeeded! Synchronized storage systems match flawlessly.`
+        );
+        onSyncCompleted();
+      }
+    } catch (err: any) {
+      addLog(`Error: ${err.message}`);
+      setErrorMessage(lang === 'zh' 
+        ? `FTP 同步融合故障: ${err.message}. 建议切换 Host 为 'ftp-sim.sovereign.local' 启用一秒离线极速备份回滚沙盒！`
+        : `FTP Sync Operation Failed: ${err.message}. Consider typing host 'ftp-sim.sovereign.local' to try immediate sandboxed simulator!`
+      );
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // 4. Tag isolated Export / Import
   const handleExportTagsOnly = () => {
     try {
@@ -679,6 +799,17 @@ export function SyncDialog({
           >
             <Cloud className="w-3.5 h-3.5 md:w-4 md:h-4" />
             {t('webdavTab')}
+          </button>
+          <button
+            {...bindTouchTap(() => setActiveTab('ftp'))}
+            className={`flex items-center gap-2 px-3 py-2 md:py-3 text-[11px] md:text-xs font-bold rounded-xl text-left transition duration-150 min-h-[38px] md:min-h-[44px] cursor-pointer whitespace-nowrap shrink-0 w-auto md:w-full ${
+              activeTab === 'ftp'
+                ? 'bg-slate-900 text-white shadow-sm'
+                : 'text-gray-650 hover:bg-slate-100 hover:text-slate-901'
+            }`}
+          >
+            <Server className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500" />
+            {lang === 'zh' ? 'FTP 物理云备份' : 'FTP Archival Sync'}
           </button>
           <button
             {...bindTouchTap(() => setActiveTab('tags'))}
@@ -1099,6 +1230,107 @@ export function SyncDialog({
                     >
                       <Upload className="w-4 h-4" />
                       {lang === 'zh' ? '推送归档' : 'Push Cloud'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 3.5: FTP Cloud Sync */}
+            {activeTab === 'ftp' && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-400 mb-1">
+                    {lang === 'zh' ? '🔑 FTP 主权增量备份设置' : 'FTP Archival Sync Settings'}
+                  </h3>
+                  <p className="text-[11.5px] text-gray-500 font-bold leading-relaxed">
+                    {lang === 'zh' 
+                      ? '本应用支持本地沙盒模拟。您可直接自建私有 NAS 物理 FTP 节点进行全套去中心化双轴合并。默认地址 ftp-sim.sovereign.local 支持纯离线备份测试。' 
+                      : 'Syncs notes via standard FTP proxy nodes. Default host ftp-sim.sovereign.local provides instant, offline sandbox testing.'}
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 rounded-2xl p-4.5 border border-gray-150 text-xs space-y-4 shadow-sm">
+                  <div className="grid grid-cols-12 gap-3.5">
+                    <div className="col-span-8">
+                      <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">
+                        {lang === 'zh' ? 'FTP 主机地址 (HOST)' : 'FTP Host Address'}
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold bg-white min-h-[40px]"
+                        value={ftpHost}
+                        onChange={(e) => setFtpHost(e.target.value)}
+                        placeholder="ftp.my-nas.local"
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">
+                        {lang === 'zh' ? '端口 (PORT)' : 'Port'}
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold bg-white min-h-[40px]"
+                        value={ftpPort}
+                        onChange={(e) => setFtpPort(e.target.value)}
+                        placeholder="21"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">
+                      {lang === 'zh' ? '远程存储路径' : 'Remote Directory Path'}
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold bg-white min-h-[40px]"
+                      value={ftpPath}
+                      onChange={(e) => setFtpPath(e.target.value)}
+                      placeholder="SovereignNotesBackup"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">
+                        {lang === 'zh' ? '账户用户名' : 'FTP Username'}
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-bold bg-white min-h-[40px]"
+                        value={ftpUser}
+                        onChange={(e) => setFtpUser(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9.5px] font-bold uppercase text-slate-400 mb-1">
+                        {lang === 'zh' ? '账户密码' : 'FTP Password'}
+                      </label>
+                      <input
+                        type="password"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-semibold bg-white min-h-[40px]"
+                        value={ftpPass}
+                        onChange={(e) => setFtpPass(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-3.5 pt-1">
+                    <button
+                      {...bindTouchTap(() => handleFtpSync('download'))}
+                      disabled={isSyncing}
+                      className="px-4 py-2.5 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 disabled:bg-gray-100 disabled:text-gray-300 rounded-xl font-bold flex items-center space-x-1.5 cursor-pointer min-h-[44px] text-xs"
+                    >
+                      <Download className="w-4 h-4 text-emerald-600" />
+                      {lang === 'zh' ? '拉取合并 (Download)' : 'Pull & Merge'}
+                    </button>
+                    <button
+                      {...bindTouchTap(() => handleFtpSync('upload'))}
+                      disabled={isSyncing}
+                      className="px-4 py-2.5 bg-slate-900 text-white hover:bg-slate-800 disabled:bg-gray-400 rounded-xl font-bold flex items-center space-x-1.5 cursor-pointer min-h-[44px] text-xs"
+                    >
+                      <Upload className="w-4 h-4 text-emerald-400" />
+                      {lang === 'zh' ? '推送归档 (Upload)' : 'Push Archive'}
                     </button>
                   </div>
                 </div>
