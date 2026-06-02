@@ -56,5 +56,5 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
     // GeckoView 115 standard support (only for GeckoView flavor)
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview:115.0.2'
+    geckoviewImplementation 'org.mozilla.geckoview:geckoview:115.0.20230710165010'
 }
