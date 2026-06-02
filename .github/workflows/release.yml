@@ -226,7 +226,10 @@ jobs:
 
           # 5. 对齐、签名和验证 GECKOVIEW APK
           echo "🚀 [1/2] 正在对齐和签名 GeckoView APK..."
-          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$GECKO_SRC" gecko_signed.apk
+          # 做个安全保底：万一对齐失败，至少仍有原包可用
+          cp "$GECKO_SRC" gecko_signed.apk
+          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$GECKO_SRC" gecko_signed.apk || echo "⚠️ Warning: GeckoView zipalign flagged alignment issues, falling back to original APK layout structure."
+          
           $ANDROID_HOME/build-tools/30.0.3/apksigner sign \
             --ks sovereign.keystore \
             --ks-key-alias sovereign-alias \
@@ -237,7 +240,10 @@ jobs:
 
           # 6. 对齐、签名 and 验证 SYSTEMWEBVIEW APK
           echo "🚀 [2/2] 正在对齐和签名 SystemWebView APK..."
-          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$SYSTEM_SRC" system_signed.apk
+          # 做个安全保底：万一对齐失败，至少仍有原包可用
+          cp "$SYSTEM_SRC" system_signed.apk
+          $ANDROID_HOME/build-tools/30.0.3/zipalign -v -f 4 "$SYSTEM_SRC" system_signed.apk || echo "⚠️ Warning: SystemWebView zipalign flagged alignment issues, falling back to original APK layout structure."
+          
           $ANDROID_HOME/build-tools/30.0.3/apksigner sign \
             --ks sovereign.keystore \
             --ks-key-alias sovereign-alias \
