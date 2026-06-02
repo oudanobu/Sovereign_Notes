@@ -10,7 +10,7 @@ repositories {
 
 android {
     compileSdkVersion 33
-    buildToolsVersion "33.0.0"
+    buildToolsVersion "30.0.3"
 
     defaultConfig {
         applicationId "com.sovereignnote.core"
