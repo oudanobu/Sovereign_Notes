@@ -80,9 +80,17 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
     const parts: React.ReactNode[] = [];
     let currentText = text;
     let index = 0;
+    let textBuffer = '';
+
+    const flushBuffer = () => {
+      if (textBuffer.length > 0) {
+        parts.push(textBuffer);
+        textBuffer = '';
+      }
+    };
 
     // Pattern matching loop for strong, elements, and local-assets.
-    // Extremely efficient linear character parsing
+    // Extremely efficient linear character parsing with text buffering to avoid React key issues
     while (currentText.length > 0) {
       const imageMatch = currentText.match(/^!\[(.*?)\]\((.*?)\)/);
       const boldMatch = currentText.match(/^\*\*(.*?)\*\*/);
@@ -90,23 +98,28 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
       const inlineCodeMatch = currentText.match(/^`(.*?)`/);
 
       if (imageMatch) {
+         flushBuffer();
          parts.push(<LocalImage key={`img-${index}`} src={imageMatch[2]} alt={imageMatch[1]} />);
          currentText = currentText.substring(imageMatch[0].length);
       } else if (boldMatch) {
+         flushBuffer();
          parts.push(<strong key={`bold-${index}`} className="font-bold text-gray-900">{boldMatch[1]}</strong>);
          currentText = currentText.substring(boldMatch[0].length);
       } else if (italicMatch) {
+         flushBuffer();
          parts.push(<em key={`italic-${index}`} className="italic text-gray-800">{italicMatch[1]}</em>);
          currentText = currentText.substring(italicMatch[0].length);
       } else if (inlineCodeMatch) {
+         flushBuffer();
          parts.push(<code key={`code-${index}`} className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 font-mono text-sm text-pink-600 rounded">{inlineCodeMatch[1]}</code>);
          currentText = currentText.substring(inlineCodeMatch[0].length);
       } else {
-         parts.push(currentText[0]);
+         textBuffer += currentText[0];
          currentText = currentText.substring(1);
       }
       index++;
     }
+    flushBuffer();
     return parts;
   };
 
