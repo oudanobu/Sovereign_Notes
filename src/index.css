@@ -403,54 +403,41 @@ textarea,
   font-family: Roboto, sans-serif, sans-serif-condensed !important;
   -webkit-font-smoothing: initial !important;
 }
-/* Universal fallback for modern CSS inset property to support Webscout / WebViews older than Chrome 87 (e.g. Android 5, Android 9, older iOS, older smart TVs) */
-html.profile-android9 .inset-0, 
-body.profile-android9 [class*="inset-0"],
-html.profile-android13 .inset-0, 
-body.profile-android13 [class*="inset-0"] {
+/* Clean standard fallback for older WebViews (like Chrome < 87 on Android 9/Sharp R2) 
+   that do not natively support the modern 'inset' shorthand CSS property.
+   Instead of over-broad wildcard selectors or un-scoped rules, we target and scope cleanly. */
+.profile-android9 .inset-0 {
   top: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
   left: 0 !important;
 }
-html.profile-android9 .inset-y-0, 
-body.profile-android9 [class*="inset-y-0"],
-html.profile-android13 .inset-y-0, 
-body.profile-android13 [class*="inset-y-0"] {
+
+.profile-android9 .inset-y-0 {
   top: 0 !important;
   bottom: 0 !important;
 }
-html.profile-android9 .inset-x-0, 
-body.profile-android9 [class*="inset-x-0"],
-html.profile-android13 .inset-x-0, 
-body.profile-android13 [class*="inset-x-0"] {
+
+.profile-android9 .inset-x-0 {
   left: 0 !important;
   right: 0 !important;
 }
 
 @supports not (inset: 0) {
-  .inset-0, [class*="inset-0"] {
+  .inset-0 {
     top: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     left: 0 !important;
   }
-  .inset-y-0, [class*="inset-y-0"] {
+  .inset-y-0 {
     top: 0 !important;
     bottom: 0 !important;
   }
-  .inset-x-0, [class*="inset-x-0"] {
+  .inset-x-0 {
     left: 0 !important;
     right: 0 !important;
   }
-}
-
-/* Ensure elements explicitely styled with fixed classes never get overwritten by absolute layout rules */
-html.profile-android9 [class*="fixed"],
-body.profile-android9 [class*="fixed"],
-html.profile-android13 [class*="fixed"],
-body.profile-android13 [class*="fixed"] {
-  position: fixed !important;
 }
 
 /* 针对古老 Chrome 37 到 83 内核 (Android 5-10) WebView 中 flex 弹性盒 gap 缺失 of sibling margin 精准补偿 */

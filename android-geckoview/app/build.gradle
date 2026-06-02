@@ -1,5 +1,13 @@
 apply plugin: 'com.android.application'
 
+repositories {
+    maven { url "https://maven.mozilla.org/maven2/" }
+    google()
+    maven { url "https://maven.aliyun.com/repository/google" }
+    maven { url "https://maven.aliyun.com/repository/public" }
+    mavenCentral()
+}
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
