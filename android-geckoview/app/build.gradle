@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 
 repositories {
-    maven { url "https://maven.mozilla.org/maven2/" }
     google()
     maven { url "https://maven.aliyun.com/repository/google" }
     maven { url "https://maven.aliyun.com/repository/public" }
@@ -56,8 +55,5 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
     // GeckoView multi-architecture support (only for GeckoView flavor)
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-stable-armeabi-v7a:70.0.0'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:70.0.0'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-stable-x86:70.0.0'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-stable-x86_64:70.0.0'
+    geckoviewImplementation 'org.mozilla.geckoview:geckoview-stable:115.0.20230710165010'
 }
