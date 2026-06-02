@@ -1,6 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.5
+ * SovereignNote - Build Version 1.4.0
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
