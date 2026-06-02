@@ -189,6 +189,15 @@ jobs:
           fi
         shell: bash
 
+      - name: Fix Android Build-Tools 33.0.0 DX Missing
+        run: |
+          echo "=== 正在创建 33.0.0 的 dx 软链接，桥接老旧 Gradle 构建工具 ==="
+          sudo ln -sf "$ANDROID_HOME/build-tools/33.0.0/d8" "$ANDROID_HOME/build-tools/33.0.0/dx"
+          
+          # 验证软链接是否成功创建
+          ls -l "$ANDROID_HOME/build-tools/33.0.0/dx"
+        shell: bash
+
       - name: Fast Compiling of Native Android APK Variants
         run: |
           # 1. 准备/创建 assets/www 并同步复制现代 React 编译产物
