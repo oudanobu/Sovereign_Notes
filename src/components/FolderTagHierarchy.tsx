@@ -165,7 +165,7 @@ export function FolderTagHierarchy({
             onSelectFolder(null); // Clear folder filter
             onSelectTag(isSelected ? null : tag.id);
           })}
-          className={`flex items-center justify-between py-1 pr-2 rounded-xl cursor-pointer group transition-colors text-xs font-sans font-semibold min-h-[44px] ${indentClass} ${
+          className={`category-item-row flex items-center justify-between py-1 pr-2 rounded-xl cursor-pointer group transition-colors text-xs font-sans font-semibold min-h-[44px] ${indentClass} ${
             isSelected
               ? 'bg-slate-900 text-white shadow-sm'
               : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
@@ -263,7 +263,7 @@ export function FolderTagHierarchy({
                 onSelectTag(null); // Clear tag filtering
                 onSelectFolder(selectedFolderId === 'null' ? null : 'null');
               })}
-              className={`flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer transition min-h-[44px] ${
+              className={`category-item-row flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer transition min-h-[44px] ${
                 selectedFolderId === 'null'
                   ? 'bg-slate-900 text-white shadow-sm'
                   : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
@@ -288,7 +288,7 @@ export function FolderTagHierarchy({
                     onSelectTag(null); // Clear tag filtering
                     onSelectFolder(isSelected ? null : folder.id);
                   })}
-                  className={`flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer group transition-colors min-h-[44px] ${
+                  className={`category-item-row flex items-center justify-between py-1 px-3 rounded-xl text-xs font-bold cursor-pointer group transition-colors min-h-[44px] ${
                     isSelected
                       ? 'bg-slate-900 text-white shadow-sm'
                       : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'

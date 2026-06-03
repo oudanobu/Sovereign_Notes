@@ -1222,7 +1222,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   isActive ? 'bg-white border-l-4 border-slate-900 shadow-sm' : 'hover:bg-gray-150/40'
                 }`}
               >
-                <div className="flex justify-between items-start space-x-1 pb-1">
+                <div className="note-list-item-header flex justify-between items-start space-x-1 pb-1">
                   <h4 className="font-extrabold text-xs font-sans text-slate-800 leading-snug line-clamp-2 pr-1 flex-1">{note.title}</h4>
                   <span className={`text-[10px] uppercase font-bold py-0.5 px-1.5 rounded-md ${
                     note.type === 'mindmap' 
@@ -1237,10 +1237,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                   {contentCleanTeaser}
                 </p>
 
-                <div className="flex justify-between items-center text-[10px]">
+                <div className="note-list-item-footer flex justify-between items-center text-[10px]">
                   <span className="text-[9.5px] font-mono text-slate-400 font-bold">{updatedString}</span>
                   
-                  <div className="flex items-center space-x-2">
+                  <div className="note-list-item-actions flex items-center space-x-2">
                     {/* Category badge */}
                     {note.folderId && (
                       <span className="text-[9px] bg-slate-100 text-slate-500 font-bold py-0.5 px-2 rounded-md truncate max-w-[125px] border border-gray-150">
