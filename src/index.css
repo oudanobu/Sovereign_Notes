@@ -636,6 +636,36 @@ select {
     box-sizing: border-box !important; /* 极其关键：防止内边距把输入框横向撑爆 */
     margin: 0 !important;
   }
+
+  /* =======================================================
+     💥 SovereignNote 终极破壁：强行炸开所有隐藏的栅格和包裹层
+     ======================================================= */
+  /* 1. 抓出所有可能是 UI 框架自动生成的表单项、列容器、包裹层，一律强制变为块级并打满宽度 */
+  div[class*="col-"], 
+  div[class*="form-item"], 
+  div[class*="field-wrapper"],
+  .setting-row > div,
+  form div {
+    display: block !important;
+    width: 100% !important;     /* 强行炸开隐形的宽度小格子 */
+    max-width: 100% !important; /* 彻底解除限制 */
+    min-width: 100% !important; /* 锁死最低边界 */
+    flex: none !important;      /* 废除任何不听话的弹性比例计算 */
+    box-sizing: border-box !important;
+  }
+
+  /* 2. 确保输入框外围的那个父级节点不准并排，必须垂直向下流 */
+  .setting-row, 
+  form > div {
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 16px !important;
+  }
+
+  /* 3. 强制老旧引擎进行重绘（通过改变一个无害的微小位移属性） */
+  #root {
+    transform: translateZ(0); /* 开启硬件加速，强迫诺基亚 N1 的老 Webkit 重新计算并刷新图层 */
+  }
 }
 
 
