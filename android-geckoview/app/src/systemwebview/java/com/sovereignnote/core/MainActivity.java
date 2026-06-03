@@ -17,6 +17,11 @@ public class MainActivity extends AppCompatActivity {
 
         mWebView = findViewById(R.id.webview);
         
+        // Enable WebView web contents debugging for Chrome DevTools inspect
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+        
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
