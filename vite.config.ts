@@ -64,11 +64,12 @@ export default defineConfig(() => {
       },
     },
     build: {
-      target: isSingleFile ? ['es2015', 'chrome49'] : ['es2015', 'chrome30'],
+      target: 'es2020',
       cssTarget: 'firefox68',
       assetsInlineLimit: 100000000,
       chunkSizeWarningLimit: 100000000,
       cssCodeSplit: false,
+      minify: false, // Debug version: do not minify to facilitate inspector usage
       rollupOptions: {
         inlineDynamicImports: true,
         output: {

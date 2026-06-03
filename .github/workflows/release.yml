@@ -197,7 +197,7 @@ jobs:
           # 2. 配置 JDK 11 并执行 Gradle 原生构建 (移除了不支持的 --verbose 选项以解决异常)
           export JAVA_HOME=$JAVA_HOME_11_X64
           cd android-geckoview
-          gradle assembleRelease || true
+          gradle assembleDebug || true
           cd ..
           
           # 3. 提取编译好的 Release APK 并保底
