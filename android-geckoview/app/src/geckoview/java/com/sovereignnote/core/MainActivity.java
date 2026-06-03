@@ -3,6 +3,7 @@ package com.sovereignnote.core;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import org.mozilla.geckoview.GeckoRuntime;
+import org.mozilla.geckoview.GeckoRuntimeSettings;
 import org.mozilla.geckoview.GeckoSession;
 import org.mozilla.geckoview.GeckoView;
 
@@ -17,8 +18,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mGeckoView = findViewById(R.id.geckoview);
+        
+        // 🚨 Enable remote debugging and console output in runtime settings
+        GeckoRuntimeSettings settings = new GeckoRuntimeSettings.Builder()
+            .remoteDebuggingEnabled(true)
+            .consoleOutput(true)
+            .build();
+
         mSession = new GeckoSession();
-        mRuntime = GeckoRuntime.create(this);
+        
+        // 🚨 Force enable accessibility and remote web content inspection
+        mSession.getSettings().setFullAccessibilityOverride(true);
+        mSession.getSettings().setAllowFileAccessFromFileURLs(true);
+        mSession.getSettings().setAllowUniversalAccessFromFileURLs(true);
+
+        mRuntime = GeckoRuntime.create(this, settings);
 
         mSession.open(mRuntime);
         mGeckoView.setSession(mSession);

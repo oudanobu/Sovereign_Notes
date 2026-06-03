@@ -18,7 +18,7 @@ export default defineConfig(() => {
   } else {
     plugins.push(
       legacy({
-        targets: ['chrome >= 30', 'android >= 4.4', 'ios >= 9'],
+        targets: ['firefox >= 68', 'chrome >= 49', 'android >= 5', 'chrome >= 30', 'ios >= 9'],
         additionalLegacyPolyfills: ['regenerator-runtime/runtime']
       })
     );
@@ -26,10 +26,20 @@ export default defineConfig(() => {
 
   // Push post-processor last to ensure it runs after legacy
   plugins.push({
-    name: 'strip-cors-and-module',
+    name: 'strip-cors-module-and-property',
     enforce: 'post',
+    generateBundle(options, bundle) {
+      for (const [fileName, file] of Object.entries(bundle)) {
+        const anyFile = file as any;
+        if (fileName.endsWith('.css') && anyFile && 'source' in anyFile && typeof anyFile.source === 'string') {
+          anyFile.source = anyFile.source.replace(/@property\s+--[a-zA-Z0-9_-]+\s*\{[^}]*\}/gi, '');
+        }
+      }
+    },
     transformIndexHtml(html: string) {
-      let res = html.replace(/ crossorigin/gi, ''); // Replace attribute with leading space
+      // Direct replace of @property declarations within style tags
+      let res = html.replace(/@property\s+--[a-zA-Z0-9_-]+\s*\{[^}]*\}/gi, '');
+      res = res.replace(/ crossorigin/gi, ''); // Replace attribute with leading space
       if (!isSingleFile) {
          res = res.replace(/<script type="module"[^>]*>[\s\S]*?<\/script>/gi, '');
          res = res.replace(/<link rel="modulepreload"[^>]*>/gi, '');
@@ -55,7 +65,7 @@ export default defineConfig(() => {
     },
     build: {
       target: isSingleFile ? ['es2015', 'chrome49'] : ['es2015', 'chrome30'],
-      cssTarget: 'chrome30',
+      cssTarget: 'firefox68',
       assetsInlineLimit: 100000000,
       chunkSizeWarningLimit: 100000000,
       cssCodeSplit: false,
