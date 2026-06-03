@@ -173,6 +173,10 @@ textarea,
   --sidebar-width: 348px;
 }
 /* 独享原生极细滚动条设计 */
+.profile-win * {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent !important;
+}
 .profile-win *::-webkit-scrollbar {
   width: 6px !important;
   height: 6px !important;
