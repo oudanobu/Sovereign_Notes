@@ -54,7 +54,7 @@ export default defineConfig(() => {
       },
     },
     build: {
-      target: isSingleFile ? 'esnext' : ['chrome60', 'safari11'],
+      target: isSingleFile ? 'es2015' : ['es2015', 'chrome69'],
       cssTarget: 'chrome30',
       assetsInlineLimit: 100000000,
       chunkSizeWarningLimit: 100000000,

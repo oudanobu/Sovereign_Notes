@@ -546,55 +546,95 @@ html.profile-android9 .flex.flex-wrap {
 }
 
 /* =======================================================
-   🛡️ SovereignNote 矮胖屏幕（4:3平板/诺基亚 N1）专属防碰撞结界
+   🛡️ SovereignNote 网页版/PWA (诺基亚N1/Kiwi/4:3平板) 终极修复和原生外观解绑
    ======================================================= */
+
+/* 1. 强行剥夺老旧 Android 系统的原生表单劫持 */
+input, select, textarea, button {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  
+  /* 强行重置被系统搞乱的盒模型 */
+  background-color: transparent !important; 
+  border: 1px solid #ccc !important; /* 给一个统一的干净边框 */
+  border-radius: 4px !important;     /* 覆盖系统默认圆角 */
+  
+  /* 强制继承你的字体，防止系统塞入奇怪的老旧字体导致高度撑爆 */
+  font-family: inherit !important;
+  line-height: normal !important;
+  outline: none !important;
+}
+
+/* 针对 Select 下拉菜单在去原生化并剥离边框背景后，需要提供自定义向下箭头标志 */
+select {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="gray" d="M7 10l5 5 5-5z"/></svg>') !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  padding-right: 28px !important;
+}
+
+/* 2. 精准拦截：只要屏幕宽高比小于 1.50（比如诺基亚 N1 的 4:3 屏幕），立刻触发防御 */
 @media (max-aspect-ratio: 3/2) {
-  /* 1. 强行解除最外层容器的弹性限制，允许其自然向下延展 */
+  
+  /* 强行瓦解最外层可能会限制高度、导致内容积压的弹性盒 */
+  #root, 
   .notebook-container, 
   .setting-page-root,
   .absolute.inset-0.flex.flex-col,
   .flex-1.flex.overflow-hidden {
     display: block !important;
-    overflow-y: auto !important; /* 允许在矮屏幕上通过滚动查看完整内容 */
     height: 100% !important;
+    overflow-y: auto !important; /* 允许在胖屏幕上自然向下滚动 */
+    -webkit-overflow-scrolling: touch; /* 保证老系统上滚动依旧丝滑 */
   }
 
-  /* 2. 废除所有 var(--gap) 或 flex 造成的积压，改为老系统绝对懂的绝对 margin */
+  /* 彻底废除老系统可能解析失败的 flex 间距(gap)，全部改用老祖宗绝对认识的 margin */
   .setting-card,
   .sync-config-section,
   .p-5, .p-6, .p-8 {
     display: block !important;
-    margin: 10px 6px !important; /* 用硬性的上下外边距撑开卡片，绝不重叠 */
-    padding: 12px !important;     /* 物理锁死内边距 */
-    width: auto !important;       /* 防止横向撑爆 */
+    margin: 24px 12px !important;  /* 强制用硬性上下外边距把卡片彻底拉开！ */
+    padding: 16px !important;      /* 物理锁死内边距，不给系统压缩的机会 */
+    width: auto !important;
+    box-sizing: border-box !important;
   }
 
-  /* 3. 让卡片内部的“标签”与“输入框”从并排强行改为上下两行平铺 */
+  /* 让卡片内部的“配置整行”从原本并排死磕，强行变成“上下两层独立平铺” */
   .setting-row,
   .grid-cols-2,
   .grid-cols-3,
   .grid-cols-4 {
     display: block !important;
+    width: 100% !important;
     grid-template-columns: none !important;
-    margin-bottom: 12px !important;
+    margin-bottom: 16px !important; /* 让每一项之间留出绝对的呼吸空间 */
   }
-  
+
+  /* 标签文字强制独占一行 */
   .setting-row label,
   .grid-cols-2 > *,
   .grid-cols-3 > *,
   .grid-cols-4 > * {
     display: block !important;
-    margin-bottom: 6px !important;
     width: 100% !important;
+    margin-bottom: 8px !important;
+    font-weight: bold;
+    text-align: left !important;
   }
 
+  /* 输入框强制横向吃满 100% 宽度，完美对齐边界 */
   .setting-row input,
+  .setting-row select,
   input,
   select,
   textarea {
     display: block !important;
     width: 100% !important;
-    box-sizing: border-box !important; /* 防止 padding 额外撑破宽度 */
+    height: 42px !important; /* 强制给一个老系统触控最舒适的物理高度 */
+    padding: 8px !important;
+    box-sizing: border-box !important; /* 极其关键：防止内边距把输入框横向撑爆 */
+    margin: 0 !important;
   }
 }
 
