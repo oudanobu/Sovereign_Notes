@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.5
- * SovereignNote - Build Version 1.4.0
+ * SovereignNote - Build Version 1.4.1
  */
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -814,7 +814,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased profile-${platformProfile} ${fontLevel > 0 ? `font-scale-${fontLevel}` : ''} main-layout-container`}>
       
       {/* Columns Container Wrapper */}
-      <div className={`flex-1 flex overflow-hidden relative min-h-0 columns-layout-wrapper wrapper-sb-${isSidebarCollapsed ? 'collapsed' : 'expanded'} wrapper-list-${isNoteListCollapsed ? 'collapsed' : 'expanded'}`}>
+      <div className={`flex-1 flex overflow-hidden relative min-h-0 columns-layout-wrapper wrapper-active-${activePanel} wrapper-sb-${isSidebarCollapsed ? 'collapsed' : 'expanded'} wrapper-list-${isNoteListCollapsed ? 'collapsed' : 'expanded'}`}>
         
         {/* 1. UNIFIED COMPOSITE SIDEBAR BACKDROP */}
         {activePanel === 'sidebar' && (
@@ -1012,7 +1012,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 className="w-11 h-11 bg-slate-50 border border-gray-200 hover:border-indigo-400 text-indigo-650 rounded-xl flex items-center justify-center transition cursor-pointer active:scale-95"
                 title={t('aboutTitle')}
               >
-                <span className="text-[10px] uppercase font-bold text-indigo-500">v1.4</span>
+                <span className="text-[10px] uppercase font-bold text-indigo-500">v1.4.1</span>
               </button>
             </div>
           </div>

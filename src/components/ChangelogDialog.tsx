@@ -23,7 +23,7 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-900 tracking-tight">{t('aboutTitle')}</h3>
-              <p className="text-[10.5px] font-mono text-indigo-600 font-extrabold tracking-wider uppercase mt-0.5">SovereignNote v1.4.0 (Stable)</p>
+              <p className="text-[10.5px] font-mono text-indigo-600 font-extrabold tracking-wider uppercase mt-0.5">SovereignNote v1.4.1 (Stable)</p>
             </div>
           </div>
           <button
@@ -45,6 +45,31 @@ export function ChangelogDialog({ onClose, lang, t }: ChangelogDialogProps) {
               <p className="text-[11.5px] leading-relaxed text-indigo-900/85 font-medium">{t('corePhilosophy')}</p>
             </div>
           </div>
+
+          {/* v1.4.1 Feature Update */}
+          <div className="space-y-3.5">
+            <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center space-x-1.5 pt-1">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+              <span className="text-indigo-600">{lang === 'zh' ? 'v1.4.1 终端设备与三栏适配' : 'v1.4.1 Mobile View & Layout Fixes'}</span>
+            </h4>
+            
+            <ul className="space-y-2.5 text-xs text-slate-700 font-bold list-none pl-1">
+              <li className="flex items-center space-x-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                <span>{lang === 'zh' ? '复古移动浏览器引擎优化 (.profile-android9)：针对老旧 Android WebView 进行 absolute 绝对定位精细重算，防止 flex 弹性抖动和卡机现象' : 'Retro CSS WebView Support: Restructured absolute positioning hooks for Android 9/older tablets, eliminating Flexbox layout bugs and rendering lag.'}</span>
+              </li>
+              <li className="flex items-center space-x-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                <span>{lang === 'zh' ? '多层级多端切换稳定性：增加 wrapper-active 控制变量，实现单屏、侧栏、笔记列与编辑区间一键精准切换，全面防止交互穿透' : 'Dynamic Tri-Panel Isolation: Added state-active layout wraps to enforce clean absolute layering, preventing bottom overlays bleeding and touch event overlaps.'}</span>
+              </li>
+              <li className="flex items-center space-x-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                <span>{lang === 'zh' ? '性能优化与内存防漏：完美清除老旧内存残留，提升本地持久化多设备同步的性能与数据承载上限' : 'Memory Leak Prevention & Database Stability: Safeguarded IndexedDB transaction lifetimes and garbage-collected idle objects, increasing overall sync performance.'}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="w-full h-px bg-gray-150 my-2"></div>
 
           {/* v1.4.0 Feature Update */}
           <div className="space-y-3.5">

@@ -1,7 +1,7 @@
 {
   "name": "com.sovereignnote.core",
   "displayName": "SovereignNote Core",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Cordova deployment container with high-performance integrated Crosswalk engine",
   "main": "index.js",
   "scripts": {
