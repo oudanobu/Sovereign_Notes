@@ -10,7 +10,7 @@ import org.mozilla.geckoview.GeckoView;
 public class MainActivity extends AppCompatActivity {
     private GeckoView mGeckoView;
     private GeckoSession mSession;
-    private GeckoRuntime mRuntime;
+    private static GeckoRuntime sRuntime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,22 +19,24 @@ public class MainActivity extends AppCompatActivity {
 
         mGeckoView = findViewById(R.id.geckoview);
         
-        // 🚨 Enable remote debugging and console output in runtime settings
-        GeckoRuntimeSettings settings = new GeckoRuntimeSettings.Builder()
-            .remoteDebuggingEnabled(true)
-            .consoleOutput(true)
-            .build();
+        if (sRuntime == null) {
+            // 🚨【老版火狐破壁核心】：通过 Runtime 的全局 Preferences（类似 about:config）
+            // 极速打通本地单文件访问时的跨域和安全读取策略
+            GeckoRuntimeSettings settings = new GeckoRuntimeSettings.Builder()
+                .remoteDebuggingEnabled(true) // 允许电脑端调试
+                .consoleOutput(true)          // 允许吐出 log
+                .build();
+                
+            // 强行注入火狐底层内核偏好，直接覆盖老内核的本地安全限制
+            settings.getPreferences().set("security.fileuri.strict_origin_policy", false);
+            settings.getPreferences().set("network.auth.subresource-img-cross-origin-allow", true);
+            
+            sRuntime = GeckoRuntime.create(this, settings);
+        }
 
         mSession = new GeckoSession();
-        
-        // 🚨 Force enable accessibility and remote web content inspection
-        mSession.getSettings().setFullAccessibilityOverride(true);
-        mSession.getSettings().setAllowFileAccessFromFileURLs(true);
-        mSession.getSettings().setAllowUniversalAccessFromFileURLs(true);
 
-        mRuntime = GeckoRuntime.create(this, settings);
-
-        mSession.open(mRuntime);
+        mSession.open(sRuntime);
         mGeckoView.setSession(mSession);
 
         // Load our offline React index.html from assets
