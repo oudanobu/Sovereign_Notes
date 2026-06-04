@@ -19,7 +19,9 @@ export default defineConfig(() => {
     plugins.push(
       legacy({
         targets: ['firefox >= 68', 'chrome >= 49', 'android >= 5', 'chrome >= 30', 'ios >= 9'],
-        additionalLegacyPolyfills: ['regenerator-runtime/runtime']
+        additionalLegacyPolyfills: ['regenerator-runtime/runtime'],
+        modernPolyfills: true,
+        renderLegacyChunks: true
       })
     );
   }
@@ -64,7 +66,7 @@ export default defineConfig(() => {
       },
     },
     build: {
-      target: 'es2020',
+      target: isSingleFile ? 'es2017' : 'es2020',
       cssTarget: 'firefox68',
       assetsInlineLimit: 100000000,
       chunkSizeWarningLimit: 100000000,
