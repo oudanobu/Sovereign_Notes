@@ -345,6 +345,13 @@ textarea,
 .profile-android9 h3,
 .profile-android9 h4,
 .profile-android9 p,
+.profile-android9 span,
+.profile-android9 div,
+.profile-android9 button,
+.profile-android9 label,
+.profile-android9 input,
+.profile-android9 textarea,
+.profile-android9 select,
 .profile-android9 text {
   color: #0f172a !important;
 }
@@ -451,7 +458,9 @@ body.profile-android9,
    ------------------------------------------------------------- */
 @media screen and (max-width: 1023px) {
   /* 1. When Sidebar Tab is active */
-  .profile-android9 .wrapper-active-sidebar .left-sidebar-rail {
+  .profile-android9 .wrapper-active-sidebar .left-sidebar-rail,
+  .profile-android13 .wrapper-active-sidebar .left-sidebar-rail,
+  .profile-tablet .wrapper-active-sidebar .left-sidebar-rail {
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -463,12 +472,18 @@ body.profile-android9,
     display: block !important;
   }
   .profile-android9 .wrapper-active-sidebar .middle-note-list,
-  .profile-android9 .wrapper-active-sidebar .right-editor-workspace {
+  .profile-android9 .wrapper-active-sidebar .right-editor-workspace,
+  .profile-android13 .wrapper-active-sidebar .middle-note-list,
+  .profile-android13 .wrapper-active-sidebar .right-editor-workspace,
+  .profile-tablet .wrapper-active-sidebar .middle-note-list,
+  .profile-tablet .wrapper-active-sidebar .right-editor-workspace {
     display: none !important;
   }
 
   /* 2. When Notes List is active */
-  .profile-android9 .wrapper-active-list .middle-note-list {
+  .profile-android9 .wrapper-active-list .middle-note-list,
+  .profile-android13 .wrapper-active-list .middle-note-list,
+  .profile-tablet .wrapper-active-list .middle-note-list {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
@@ -480,12 +495,18 @@ body.profile-android9,
     z-index: 10 !important;
   }
   .profile-android9 .wrapper-active-list .left-sidebar-rail,
-  .profile-android9 .wrapper-active-list .right-editor-workspace {
+  .profile-android9 .wrapper-active-list .right-editor-workspace,
+  .profile-android13 .wrapper-active-list .left-sidebar-rail,
+  .profile-android13 .wrapper-active-list .right-editor-workspace,
+  .profile-tablet .wrapper-active-list .left-sidebar-rail,
+  .profile-tablet .wrapper-active-list .right-editor-workspace {
     display: none !important;
   }
 
   /* 3. When Editor Workspace is active */
-  .profile-android9 .wrapper-active-workspace .right-editor-workspace {
+  .profile-android9 .wrapper-active-workspace .right-editor-workspace,
+  .profile-android13 .wrapper-active-workspace .right-editor-workspace,
+  .profile-tablet .wrapper-active-workspace .right-editor-workspace {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
@@ -497,14 +518,24 @@ body.profile-android9,
     z-index: 20 !important;
   }
   .profile-android9 .wrapper-active-workspace .left-sidebar-rail,
-  .profile-android9 .wrapper-active-workspace .middle-note-list {
+  .profile-android9 .wrapper-active-workspace .middle-note-list,
+  .profile-android13 .wrapper-active-workspace .left-sidebar-rail,
+  .profile-android13 .wrapper-active-workspace .middle-note-list,
+  .profile-tablet .wrapper-active-workspace .left-sidebar-rail,
+  .profile-tablet .wrapper-active-workspace .middle-note-list {
     display: none !important;
   }
   
   /* Fallbacks for standard hidden utility state in mobile absolute engine */
   .profile-android9 .left-sidebar-rail.hidden,
   .profile-android9 .middle-note-list.hidden,
-  .profile-android9 .right-editor-workspace.hidden {
+  .profile-android9 .right-editor-workspace.hidden,
+  .profile-android13 .left-sidebar-rail.hidden,
+  .profile-android13 .middle-note-list.hidden,
+  .profile-android13 .right-editor-workspace.hidden,
+  .profile-tablet .left-sidebar-rail.hidden,
+  .profile-tablet .middle-note-list.hidden,
+  .profile-tablet .right-editor-workspace.hidden {
     display: none !important;
   }
 }
@@ -742,21 +773,26 @@ html.profile-android9 .flex.flex-wrap {
    🛡️ SovereignNote 网页版/PWA (诺基亚N1/Kiwi/4:3平板) 终极修复和原生外观解绑
    ======================================================= */
 
-/* 1. 强行剥夺老旧 Android 系统的原生表单劫持 */
+/* 1. 强行剥夺老旧 Android 系统的原生表单劫持 (Un-scoped standards-based normalization resets) */
 input, select, textarea, button {
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  appearance: none !important;
-  
-  /* 强行重置被系统搞乱的盒模型 */
-  background-color: transparent !important; 
-  border: 1px solid #ccc !important; /* 给一个统一的干净边框 */
-  border-radius: 4px !important;     /* 覆盖系统默认圆角 */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   
   /* 强制继承你的字体，防止系统塞入奇怪的老旧字体导致高度撑爆 */
   font-family: inherit !important;
   line-height: normal !important;
   outline: none !important;
+}
+
+/* Scoped inputs, selects, and textareas styling exclusively for older Android 9 compatibility profiles to bypass native 3D bevels */
+.profile-android9 input,
+.profile-android9 select,
+.profile-android9 textarea {
+  background-color: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  color: #0f172a !important;
 }
 
 /* 针对 Select 下拉菜单在去原生化并剥离边框背景后，需要提供自定义向下箭头标志 */

@@ -753,12 +753,12 @@ export function SyncDialog({
             <p className="text-[10.5px] text-gray-450 font-bold leading-normal">{t('localSovereignDB')}</p>
           </div>
         </div>
-        {!isInline && (
+        {onClose && (
           <button
             {...bindTouchTap(onClose)}
-            className="text-gray-400 hover:text-gray-800 p-2.5 rounded-xl hover:bg-gray-100 font-bold transition duration-150 text-xs min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+            className="text-slate-700 hover:text-slate-900 px-3.5 py-1.5 rounded-xl hover:bg-slate-200/50 font-bold transition duration-150 text-xs min-h-[44px] flex items-center justify-center cursor-pointer border border-gray-200 bg-white shadow-xs"
           >
-            ✕
+            {lang === 'zh' ? '返回 ✕' : 'Back ✕'}
           </button>
         )}
       </div>

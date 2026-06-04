@@ -850,6 +850,8 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               {/* Folders select */}
               <button
                 {...bindTouchTap(() => {
+                  setMainView('notes');
+                  setActivePanel('list');
                   if (activeSidebarTab === 'folders' && !isSidebarCollapsed) {
                     setIsSidebarCollapsed(true);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'true');
@@ -874,6 +876,8 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               {/* Tags select */}
               <button
                 {...bindTouchTap(() => {
+                  setMainView('notes');
+                  setActivePanel('list');
                   if (activeSidebarTab === 'tags' && !isSidebarCollapsed) {
                     setIsSidebarCollapsed(true);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'true');
@@ -897,6 +901,8 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               {/* Calendar select */}
               <button
                 {...bindTouchTap(() => {
+                  setMainView('notes');
+                  setActivePanel('list');
                   if (activeSidebarTab === 'calendar' && !isSidebarCollapsed) {
                     setIsSidebarCollapsed(true);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'true');
@@ -920,6 +926,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               {/* Canvas selector */}
               <button
                 {...bindTouchTap(() => {
+                  setMainView('notes');
                   setSelectedTypeFilter(selectedTypeFilter === 'whiteboard' ? 'all' : 'whiteboard');
                   setActivePanel('list');
                 })}
@@ -1708,6 +1715,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             lang={lang}
             t={t}
             isInline={true}
+            onClose={() => {
+              setMainView('notes');
+              setActivePanel('list');
+            }}
             platformProfile={platformProfile}
             setPlatformProfile={(profile) => {
               setPlatformProfile(profile);
