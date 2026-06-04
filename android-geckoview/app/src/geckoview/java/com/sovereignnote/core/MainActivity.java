@@ -26,10 +26,6 @@ public class MainActivity extends AppCompatActivity {
                 .remoteDebuggingEnabled(true) // 允许电脑端调试
                 .consoleOutput(true)          // 允许吐出 log
                 .build();
-                
-            // 强行注入火狐底层内核偏好，直接覆盖老内核的本地安全限制
-            settings.getPreferences().set("security.fileuri.strict_origin_policy", false);
-            settings.getPreferences().set("network.auth.subresource-img-cross-origin-allow", true);
             
             sRuntime = GeckoRuntime.create(this, settings);
         }

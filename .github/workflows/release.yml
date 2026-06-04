@@ -188,6 +188,19 @@ jobs:
             exit 1
           fi
         shell: bash
+      - name: 🧹 物理清除 Android SDK 中的 34x 脏资产
+        run: |
+          echo "=========================================================="
+          echo "正在强行清扫环境里导致 JAXB 脑死亡的 34x 预览版组件..."
+          echo "=========================================================="
+          # 扫描并物理抹除所有带 34x 的平台与工具链目录
+          rm -rf $ANDROID_HOME/platforms/android-34x || true
+          rm -rf $ANDROID_HOME/build-tools/34x* || true
+          rm -rf $ANDROID_HOME/system-images/android-34x || true
+          # 顺便清理可能引发 unexpected element 警告的扩展层
+          find $ANDROID_HOME -name "*34x*" -exec rm -rf {} + || true
+          echo "✅ 34x 毒素已彻底肃清，环境已恢复纯净状态！"
+
       - name: Fast Compiling of Native Android APK Variants
         run: |
           # 1. 准备/创建 assets/www 并同步复制现代 React 编译产物
