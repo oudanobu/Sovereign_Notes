@@ -40,6 +40,13 @@ export default defineConfig(() => {
           // Replace modern regex representation /()??/ with dynamic runtime RegExp to prevent SyntaxError compile failure on older WebViews
           anyFile.code = anyFile.code.replace(/\/\(\)\?\?\//g, 'new RegExp("()??")');
         }
+        // Direct sanitization: clean HTML inline scripts or JS leaks in the output bundle
+        if (fileName.endsWith('.html') && anyFile && 'source' in anyFile && typeof anyFile.source === 'string') {
+          anyFile.source = anyFile.source
+            .replace(/\/\(\)\?\?\//g, 'new RegExp("()??")')
+            .replace(/\?\.([\w\[\]]+)/g, ' && $1')
+            .replace(/\?\?/g, '||');
+        }
       }
     },
     transformIndexHtml(html: string) {
@@ -57,6 +64,11 @@ export default defineConfig(() => {
            return m ? `<script src="${m[1]}"></script>` : match;
          });
       }
+      // Apply inline script sanitization to strip any optional chaining or nullish coalescing tokens in the HTML structure
+      res = res
+        .replace(/\/\(\)\?\?\//g, 'new RegExp("()??")')
+        .replace(/\?\.([\w\[\]]+)/g, ' && $1')
+        .replace(/\?\?/g, '||');
       return res;
     }
   });
