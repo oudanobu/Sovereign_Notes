@@ -826,7 +826,9 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
         <aside
           className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-205 h-full flex-shrink-0 transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
-            activePanel === 'sidebar' ? 'flex translate-x-0' : 'hidden lg:flex -translate-x-full lg:translate-x-0'
+            activePanel === 'sidebar' 
+              ? 'flex translate-x-0' 
+              : 'hidden lg:flex -translate-x-full lg:translate-x-0'
           } ${
             isSidebarCollapsed ? 'w-[68px]' : 'w-[348px]'
           }`}
@@ -1017,8 +1019,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
           {/* B. COLLAPSIBLE FUNCTIONAL CONTENT PANEL */}
           <div
-            className={`flex flex-col justify-between bg-white border-r border-gray-150 transition-all duration-300 ease-in-out overflow-hidden h-full ${
-              isSidebarCollapsed ? 'w-0 border-r-0' : 'w-[280px]'
+            className={`justify-between bg-white border-r border-gray-150 transition-all duration-300 ease-in-out overflow-hidden h-full ${
+              isSidebarCollapsed 
+                ? 'hidden border-r-0 w-0' 
+                : 'flex flex-col w-[280px]'
             }`}
           >
             {/* 1. FIXED TOP BRAND & SEARCH BAR (Does not scroll) */}
@@ -1153,8 +1157,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       {mainView === 'notes' ? (
         <>
           {/* 2. CENTER LIST BLOCK */}
-          <section className={`transition-all duration-300 ease-in-out border-r border-gray-200 bg-slate-50/50 flex flex-col h-full flex-shrink-0 ${
-            activePanel === 'list' ? 'flex' : 'hidden lg:flex'
+          <section className={`transition-all duration-300 ease-in-out border-r border-gray-200 bg-slate-50/50 h-full flex-shrink-0 ${
+            activePanel === 'list' 
+              ? 'flex flex-col' 
+              : 'hidden lg:flex lg:flex-col'
           } ${
             isNoteListCollapsed ? 'lg:w-0 lg:border-r-0 overflow-hidden' : 'w-full lg:w-[390px]'
           }`}>
@@ -1335,8 +1341,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       </section>
 
       {/* 3. RIGHT WRITING AND RENDER WORKPLACE */}
-      <main className={`flex-1 bg-white flex flex-col h-full min-w-0 ${
-        activePanel === 'workspace' ? 'flex' : 'hidden lg:flex'
+      <main className={`flex-1 bg-white h-full min-w-0 ${
+        activePanel === 'workspace' 
+          ? 'flex flex-col' 
+          : 'hidden lg:flex lg:flex-col'
       }`}>
         {activeSelectedNoteInstance ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -1691,7 +1699,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
       </main>
         </>
       ) : mainView === 'settings' ? (
-        <div className={`flex-1 w-full bg-slate-100 flex flex-col h-full ${activePanel === 'workspace' || activePanel === 'list' ? 'flex' : 'hidden lg:flex'}`}>
+        <div className={`flex-1 w-full bg-slate-100 h-full ${activePanel === 'workspace' || activePanel === 'list' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'}`}>
           <SyncDialog
             notes={notes}
             tags={tags}
@@ -1713,7 +1721,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
           />
         </div>
       ) : (
-        <div className={`flex-1 w-full flex flex-col h-full ${activePanel === 'workspace' || activePanel === 'list' ? 'flex' : 'hidden lg:flex'}`}>
+        <div className={`flex-1 w-full h-full ${activePanel === 'workspace' || activePanel === 'list' ? 'flex flex-col' : 'hidden lg:flex lg:flex-col'}`}>
           <SovereignLookup
             lang={lang}
             onClose={() => {
