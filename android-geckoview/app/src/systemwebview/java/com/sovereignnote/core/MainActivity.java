@@ -31,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setAllowFileAccessFromFileURLs(true);
         webSettings.setAllowUniversalAccessFromFileURLs(true);
         
+        // Disable caching and clear old cached index assets to prevent "Unexpected token" errors
+        mWebView.clearCache(true);
+        webSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        
         // Ensure standard responsive viewport fits perfectly inside WebView
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);

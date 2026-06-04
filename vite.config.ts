@@ -36,6 +36,10 @@ export default defineConfig(() => {
         if (fileName.endsWith('.css') && anyFile && 'source' in anyFile && typeof anyFile.source === 'string') {
           anyFile.source = anyFile.source.replace(/@property\s+--[a-zA-Z0-9_-]+\s*\{[^}]*\}/gi, '');
         }
+        if (fileName.endsWith('.js') && anyFile && 'code' in anyFile && typeof anyFile.code === 'string') {
+          // Replace modern regex representation /()??/ with dynamic runtime RegExp to prevent SyntaxError compile failure on older WebViews
+          anyFile.code = anyFile.code.replace(/\/\(\)\?\?\//g, 'new RegExp("()??")');
+        }
       }
     },
     transformIndexHtml(html: string) {
