@@ -398,6 +398,183 @@ textarea,
   color: #ffffff !important;
 }
 
+/* =============================================================================
+   VINTAGE COMPATIBILITY PROFILE: absolute fallbacks for ancient Chromium (Android 9/Sharp R2)
+   Prevent Flexbox layout collapse, left-hand squeezing, and viewport calculation deadlocks.
+   ============================================================================= */
+
+/* First, ensure html and body do not override to block or introduce scroll deadlocks */
+html.profile-android9, 
+body.profile-android9, 
+.profile-android9 #root {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.profile-android9 .main-layout-container {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.profile-android9 .columns-layout-wrapper {
+  display: block !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* -------------------------------------------------------------
+   MOBILE VIEW ENGINE (< 1024px)
+   For phone screen bounds, absolute stretch the active panel over full dimensions.
+   ------------------------------------------------------------- */
+@media screen and (max-width: 1023px) {
+  /* On portrait mobile view, sidebar drawer can show as a fixed float panel */
+  .profile-android9 .left-sidebar-rail {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 280px !important;
+    max-width: 85% !important;
+    height: 100% !important;
+    z-index: 50 !important;
+    display: block !important;
+  }
+
+  /* Note list occupies 100% of the display when active */
+  .profile-android9 .middle-note-list {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    z-index: 10 !important;
+  }
+
+  /* Note workspace workspace occupies 100% of the display when active */
+  .profile-android9 .right-editor-workspace {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    z-index: 20 !important;
+  }
+  
+  /* Fallbacks for standard hidden utility state in mobile absolute engine */
+  .profile-android9 .left-sidebar-rail.hidden,
+  .profile-android9 .middle-note-list.hidden,
+  .profile-android9 .right-editor-workspace.hidden {
+    display: none !important;
+  }
+}
+
+/* -------------------------------------------------------------
+   DESKTOP VIEW ENGINE (>= 1024px) - Non-collapsing Grid/Absolute placement
+   ------------------------------------------------------------- */
+@media screen and (min-width: 1024px) {
+  /* Outer Left Sidebar position */
+  .profile-android9 .left-sidebar-rail {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100% !important;
+    display: block !important;
+  }
+  
+  /* Select Sidebar absolute width values based on parent states classes */
+  .profile-android9 .wrapper-sb-collapsed .left-sidebar-rail {
+    width: 68px !important;
+  }
+  .profile-android9 .wrapper-sb-expanded .left-sidebar-rail {
+    width: 348px !important;
+  }
+
+  /* 2. Middle List column placement based on sidebar width class values */
+  .profile-android9 .middle-note-list {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    height: 100% !important;
+    display: block !important;
+  }
+  .profile-android9 .wrapper-sb-collapsed .middle-note-list {
+    left: 68px !important;
+  }
+  .profile-android9 .wrapper-sb-expanded .middle-note-list {
+    left: 348px !important;
+  }
+  
+  /* Middle list column width values based on list collapsed state */
+  .profile-android9 .wrapper-list-collapsed .middle-note-list {
+    width: 0 !important;
+    display: none !important;
+  }
+  .profile-android9 .wrapper-list-expanded .middle-note-list {
+    width: 390px !important;
+  }
+
+  /* 3. Right Writing & Render Area Stretching */
+  .profile-android9 .right-editor-workspace {
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    height: 100% !important;
+    display: block !important;
+  }
+
+  /* Align Workspace relative to the combination of collapsed states of parent wrapper */
+  /* Sidebar Collapsed (68px) and Note List Collapsed (0px) -> Workspace Left = 68px */
+  .profile-android9 .wrapper-sb-collapsed.wrapper-list-collapsed .right-editor-workspace {
+    left: 68px !important;
+  }
+  
+  /* Sidebar Collapsed (68px) and Note List Expanded (390px) -> Workspace Left = 68 + 390 = 458px */
+  .profile-android9 .wrapper-sb-collapsed.wrapper-list-expanded .right-editor-workspace {
+    left: 458px !important;
+  }
+
+  /* Sidebar Expanded (348px) and Note List Collapsed (0px) -> Workspace Left = 348px */
+  .profile-android9 .wrapper-sb-expanded.wrapper-list-collapsed .right-editor-workspace {
+    left: 348px !important;
+  }
+
+  /* Sidebar Expanded (348px) and Note List Expanded (390px) -> Workspace Left = 348 + 390 = 738px */
+  .profile-android9 .wrapper-sb-expanded.wrapper-list-expanded .right-editor-workspace {
+    left: 738px !important;
+  }
+}
+
 /* 屏蔽不兼容的外部字体下载延迟，强制极简化Roboto或内置网页无衬线字体 */
 .profile-android9,
 .profile-android9 text,

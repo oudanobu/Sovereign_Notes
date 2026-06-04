@@ -811,10 +811,10 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
   const activeSelectedNoteInstance = notes.find(n => n.id === selectedNoteId && !n.isDeleted);
 
   return (
-    <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased profile-${platformProfile} ${fontLevel > 0 ? `font-scale-${fontLevel}` : ''}`}>
+    <div className={`absolute inset-0 flex flex-col bg-gray-50 text-slate-800 overflow-hidden font-sans antialiased profile-${platformProfile} ${fontLevel > 0 ? `font-scale-${fontLevel}` : ''} main-layout-container`}>
       
       {/* Columns Container Wrapper */}
-      <div className="flex-1 flex overflow-hidden relative min-h-0">
+      <div className={`flex-1 flex overflow-hidden relative min-h-0 columns-layout-wrapper wrapper-sb-${isSidebarCollapsed ? 'collapsed' : 'expanded'} wrapper-list-${isNoteListCollapsed ? 'collapsed' : 'expanded'}`}>
         
         {/* 1. UNIFIED COMPOSITE SIDEBAR BACKDROP */}
         {activePanel === 'sidebar' && (
@@ -831,7 +831,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               : 'hidden lg:flex -translate-x-full lg:translate-x-0'
           } ${
             isSidebarCollapsed ? 'w-[68px]' : 'w-[348px]'
-          }`}
+          } left-sidebar-rail`}
         >
           {/* A. PERMANENT ICON RAIL */}
           <div className="w-[68px] flex-shrink-0 border-r border-gray-150 flex flex-col justify-between items-center py-4 select-none bg-white h-full">
@@ -1163,7 +1163,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               : 'hidden lg:flex lg:flex-col'
           } ${
             isNoteListCollapsed ? 'lg:w-0 lg:border-r-0 overflow-hidden' : 'w-full lg:w-[390px]'
-          }`}>
+          } middle-note-list`}>
         <div className="px-4 py-4 border-b border-gray-200 flex justify-between items-center bg-white flex-shrink-0">
           <div className="flex items-center space-x-2">
             <button
@@ -1345,7 +1345,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
         activePanel === 'workspace' 
           ? 'flex flex-col' 
           : 'hidden lg:flex lg:flex-col'
-      }`}>
+      } right-editor-workspace`}>
         {activeSelectedNoteInstance ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             
