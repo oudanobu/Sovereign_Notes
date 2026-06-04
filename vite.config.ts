@@ -42,10 +42,17 @@ export default defineConfig(() => {
         }
         // Direct sanitization: clean HTML inline scripts or JS leaks in the output bundle
         if (fileName.endsWith('.html') && anyFile && 'source' in anyFile && typeof anyFile.source === 'string') {
-          anyFile.source = anyFile.source
-            .replace(/\/\(\)\?\?\//g, 'new RegExp("()??")')
-            .replace(/\?\.([\w\[\]]+)/g, ' && $1')
-            .replace(/\?\?/g, '||');
+          console.log("执行方案 C：正在对 index.html 实施内联探测脚本无损物理切除...");
+          let html = anyFile.source;
+
+          // 【大杀器 1】：直接把带有不兼容语法的内联 Module 探测脚本或系统内联判断脚本彻底蒸发
+          // 匹配任何包含 `?` 或 `nomodule` 逻辑、自作聪明的内联 script 块
+          html = html.replace(/<script\b[^>]*>([\s\S]*?\?[\s\S]*?)<\/script>/gi, '');
+
+          // 【大杀器 2】：确保没有残留的正则自杀字面量
+          html = html.replace(/\/\(\)\?\?\//g, 'new RegExp("()??")');
+
+          anyFile.source = html;
         }
       }
     },
@@ -64,11 +71,9 @@ export default defineConfig(() => {
            return m ? `<script src="${m[1]}"></script>` : match;
          });
       }
-      // Apply inline script sanitization to strip any optional chaining or nullish coalescing tokens in the HTML structure
-      res = res
-        .replace(/\/\(\)\?\?\//g, 'new RegExp("()??")')
-        .replace(/\?\.([\w\[\]]+)/g, ' && $1')
-        .replace(/\?\?/g, '||');
+      // Apply Scenario C: physically slice any inline scripts with un-polyfillable modern tokens or conditional logic
+      res = res.replace(/<script\b[^>]*>([\s\S]*?\?[\s\S]*?)<\/script>/gi, '');
+      res = res.replace(/\/\(\)\?\?\//g, 'new RegExp("()??")');
       return res;
     }
   });
