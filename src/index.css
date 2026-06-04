@@ -167,7 +167,7 @@ textarea,
  * ============================================================================= */
 
 /* -------------------------------------------------------------
- * PROFILE 1: WINDOWS 桌面系统 (profile-win) - 高密度高精细
+ * PROFILE 1: WINDOWS 桌面系统 (profile-win) - 高密度高精细 (启用现代 CSS 标准与特效)
  * ------------------------------------------------------------- */
 .profile-win {
   --sidebar-width: 348px;
@@ -191,11 +191,20 @@ textarea,
 .profile-win *::-webkit-scrollbar-thumb:hover {
   background-color: rgba(148, 163, 184, 0.55) !important;
 }
-/* 鼠标悬浮提示与微妙移动过渡 */
+/* 鼠标悬浮提示与微妙移动过渡 (仅在现代 Windows 上启用高帧率缩放过渡) */
 @media (hover: hover) {
   .profile-win .hover\:scale-102:hover {
-    transform: scale(1.02);
+    transform: scale(1.02) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
   }
+}
+/* 现代标准 Windows 特效：高对比毛玻璃与复合深度投影 */
+.profile-win .sync-dialog-backdrop,
+.profile-win .modal-glass-surface {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(18px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03) !important;
 }
 
 /* -------------------------------------------------------------
@@ -244,7 +253,7 @@ textarea,
 }
 
 /* -------------------------------------------------------------
- * PROFILE 3: ANDROID 13+ 现代全面屏智能手机 (profile-android13) - 极流畅弹性手感 & 高对比度保底
+ * PROFILE 3: ANDROID 13+ 现代全面屏智能手机 (profile-android13) - 极流畅弹性手感 & 高对比度保底 (现代全面屏特效)
  * ------------------------------------------------------------- */
 .profile-android13 {
   overscroll-behavior-y: none !important;
@@ -272,6 +281,11 @@ textarea,
 /* 物理动力滚动滑动手感 */
 .profile-android13 .overflow-y-auto {
   scroll-behavior: smooth !important;
+}
+/* 现代 Andorid 13 启用温和过渡，避免生硬跳变，同时提升圆角 */
+.profile-android13 .hover\:scale-102:hover {
+  transform: scale(1.015) !important;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
 }
 
 /* Force light high-contrast colors in all modern and retro Android profiles to prevent layout/text color collisions */
@@ -768,6 +782,30 @@ html.profile-android9 .flex.flex-col.gap-6 > :not([hidden]) ~ :not([hidden]) {
 html.profile-android9 .flex.flex-wrap {
   margin-bottom: -6px !important;
 }
+
+/* Precise gap-x overrides for oldest Chrome 70 compatibility */
+html.profile-android9 .flex.gap-x-0\.5 > * + *, html.profile-android9 .flex.gap-x-0\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 2px !important; }
+html.profile-android9 .flex.gap-x-1 > * + *, html.profile-android9 .flex.gap-x-1 > :not([hidden]) ~ :not([hidden]) { margin-left: 4px !important; }
+html.profile-android9 .flex.gap-x-1\.5 > * + *, html.profile-android9 .flex.gap-x-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 6px !important; }
+html.profile-android9 .flex.gap-x-2 > * + *, html.profile-android9 .flex.gap-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 8px !important; }
+html.profile-android9 .flex.gap-x-2\.5 > * + *, html.profile-android9 .flex.gap-x-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 10px !important; }
+html.profile-android9 .flex.gap-x-3 > * + *, html.profile-android9 .flex.gap-x-3 > :not([hidden]) ~ :not([hidden]) { margin-left: 12px !important; }
+html.profile-android9 .flex.gap-x-3\.5 > * + *, html.profile-android9 .flex.gap-x-3\.5 > :not([hidden]) ~ :not([hidden]) { margin-left: 14px !important; }
+html.profile-android9 .flex.gap-x-4 > * + *, html.profile-android9 .flex.gap-x-4 > :not([hidden]) ~ :not([hidden]) { margin-left: 16px !important; }
+html.profile-android9 .flex.gap-x-5 > * + *, html.profile-android9 .flex.gap-x-5 > :not([hidden]) ~ :not([hidden]) { margin-left: 20px !important; }
+html.profile-android9 .flex.gap-x-6 > * + *, html.profile-android9 .flex.gap-x-6 > :not([hidden]) ~ :not([hidden]) { margin-left: 24px !important; }
+
+/* Precise gap-y overrides for oldest Chrome 70 compatibility */
+html.profile-android9 .flex.gap-y-0\.5 > * + *, html.profile-android9 .flex.gap-y-0\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 2px !important; }
+html.profile-android9 .flex.gap-y-1 > * + *, html.profile-android9 .flex.gap-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 4px !important; }
+html.profile-android9 .flex.gap-y-1\.5 > * + *, html.profile-android9 .flex.gap-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 6px !important; }
+html.profile-android9 .flex.gap-y-2 > * + *, html.profile-android9 .flex.gap-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 8px !important; }
+html.profile-android9 .flex.gap-y-2\.5 > * + *, html.profile-android9 .flex.gap-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 10px !important; }
+html.profile-android9 .flex.gap-y-3 > * + *, html.profile-android9 .flex.gap-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 12px !important; }
+html.profile-android9 .flex.gap-y-3\.5 > * + *, html.profile-android9 .flex.gap-y-3\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 14px !important; }
+html.profile-android9 .flex.gap-y-4 > * + *, html.profile-android9 .flex.gap-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 16px !important; }
+html.profile-android9 .flex.gap-y-5 > * + *, html.profile-android9 .flex.gap-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 20px !important; }
+html.profile-android9 .flex.gap-y-6 > * + *, html.profile-android9 .flex.gap-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 24px !important; }
 
 /* =======================================================
    🛡️ SovereignNote 网页版/PWA (诺基亚N1/Kiwi/4:3平板) 终极修复和原生外观解绑
