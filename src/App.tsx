@@ -27,7 +27,8 @@ import {
   Tag as TagIcon,
   Palette,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ArrowRightLeft
 } from 'lucide-react';
 import { Note, Tag, Folder, MindMapData, CalendarEvent } from './types';
 import { openDB, getNotes, getTags, getFolders, saveNote, saveTag, saveFolder, bulkInsertNotes, bulkInsertTags, bulkInsertFolders, getEvents, saveEvent, bulkInsertEvents } from './db';
@@ -39,6 +40,7 @@ import { SyncDialog } from './components/SyncDialog';
 import { ChangelogDialog } from './components/ChangelogDialog';
 import { RichTextEditor } from './components/RichTextEditor';
 import { WhiteboardEditor } from './components/WhiteboardEditor';
+import { SovereignLookup } from './components/SovereignLookup';
 import { useLanguage } from './utils/i18n';
 import { bindTouchTap } from './utils/touchUtils';
 
@@ -150,7 +152,7 @@ export default function App() {
   }, []);
 
   // Navigation state
-  const [mainView, setMainView] = useState<'notes' | 'settings'>('notes');
+  const [mainView, setMainView] = useState<'notes' | 'settings' | 'lookup'>('notes');
   const [bulkActionOpen, setBulkActionOpen] = useState(false);
   const [showChangelog, setShowChangelog] = useState(false);
 
@@ -929,6 +931,27 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                 <Palette className="w-4.5 h-4.5" />
               </button>
 
+              {/* Sovereign Reverse Lookup Yellow Pages */}
+              <button
+                {...bindTouchTap(() => {
+                  if (mainView === 'lookup') {
+                    setMainView('notes');
+                    setActivePanel('list');
+                  } else {
+                    setMainView('lookup');
+                    setActivePanel('workspace');
+                  }
+                })}
+                className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
+                  mainView === 'lookup'
+                    ? 'bg-amber-500 border-amber-600 text-slate-950 font-bold shadow-xs animate-pulse ring-2 ring-amber-400'
+                    : 'bg-slate-50 border-gray-200 text-slate-600 hover:bg-slate-100'
+                }`}
+                title={lang === 'zh' ? '配方倒查黄页' : 'Formula Lookup'}
+              >
+                <ArrowRightLeft className="w-4.5 h-4.5" />
+              </button>
+
               {/* Sync settings */}
               <button
                 {...bindTouchTap(() => {
@@ -1667,7 +1690,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
         )}
       </main>
         </>
-      ) : (
+      ) : mainView === 'settings' ? (
         <div className={`flex-1 w-full bg-slate-100 flex flex-col h-full ${activePanel === 'workspace' || activePanel === 'list' ? 'flex' : 'hidden lg:flex'}`}>
           <SyncDialog
             notes={notes}
@@ -1686,6 +1709,16 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
             setAndroidWebViewEngine={(engine) => {
               setAndroidWebViewEngine(engine);
               localStorage.setItem('sovereign_android_webview', engine);
+            }}
+          />
+        </div>
+      ) : (
+        <div className={`flex-1 w-full flex flex-col h-full ${activePanel === 'workspace' || activePanel === 'list' ? 'flex' : 'hidden lg:flex'}`}>
+          <SovereignLookup
+            lang={lang}
+            onClose={() => {
+              setMainView('notes');
+              setActivePanel('list');
             }}
           />
         </div>
