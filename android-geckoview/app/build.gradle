@@ -24,15 +24,12 @@ android {
         targetSdkVersion 33
         versionCode 5
         versionName "1.4.1"
+        multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-        }
     }
 
-    flavorDimensions "engine"
+    flavorDimensions "engine", "device"
     productFlavors {
         geckoview {
             dimension "engine"
@@ -41,6 +38,35 @@ android {
         systemwebview {
             dimension "engine"
             applicationIdSuffix ".systemwebview"
+        }
+        
+        modern64 {
+            dimension "device"
+            targetSdkVersion 33
+            ndk {
+                abiFilters "arm64-v8a"
+            }
+        }
+        sharp {
+            dimension "device"
+            targetSdkVersion 28
+            ndk {
+                abiFilters "arm64-v8a"
+            }
+        }
+        legacy32 {
+            dimension "device"
+            targetSdkVersion 23
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
+        nokia {
+            dimension "device"
+            targetSdkVersion 22
+            ndk {
+                abiFilters "x86"
+            }
         }
     }
 
@@ -61,9 +87,22 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // GeckoView 115 standard support (Packaging all four architectures as native JNI artifacts via @aar to completely bypass capability validation conflicts in Gradle)
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010@aar'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010@aar'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-x86_64:115.0.20230710165010@aar'
+    // GeckoView 115 targeted support mapped specifically to each flavor configuration.
+    // Packaging each architecture with the @aar suffix completely disables Gradle's module metadata resolution,
+    // which prevents any global/IDE sync capability validation conflicts of org.mozilla.geckoview:geckoview.
+    geckoviewModern64Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar'
+    geckoviewSharpImplementation 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar'
+    geckoviewLegacy32Implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010@aar'
+    geckoviewNokiaImplementation 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010@aar'
+}
+
+// Double-layer insurance: Register a global capability resolution strategy to resolve any potential conflict on 'org.mozilla.geckoview:geckoview'
+configurations.all {
+    resolutionStrategy {
+        capabilitiesResolution {
+            withCapability("org.mozilla.geckoview:geckoview") {
+                select(candidates.first())
+            }
+        }
+    }
 }
