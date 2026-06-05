@@ -21,8 +21,8 @@ interface SyncDialogProps {
   isInline?: boolean;
   platformProfile?: 'win' | 'tablet' | 'android13' | 'android9';
   setPlatformProfile?: (profile: 'win' | 'tablet' | 'android13' | 'android9') => void;
-  androidWebViewEngine?: 'bundled' | 'system';
-  setAndroidWebViewEngine?: (engine: 'bundled' | 'system') => void;
+  androidWebViewEngine?: 'bundled' | 'system' | 'firefox130';
+  setAndroidWebViewEngine?: (engine: 'bundled' | 'system' | 'firefox130') => void;
 }
 
 export function SyncDialog({
@@ -1471,7 +1471,7 @@ export function SyncDialog({
                       : 'For custom Android APK wrappers and PWA runs. Configure whether to boot a bundled high-performance engine or fallback directly to system WebView.'}
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {/* OPTION 1: BUNDLED (Default) */}
                     <button
                       type="button"
@@ -1480,16 +1480,16 @@ export function SyncDialog({
                           setAndroidWebViewEngine('bundled');
                         }
                       })}
-                      className={`text-left p-4 rounded-2xl border-2 transition-all flex flex-col justify-between cursor-pointer min-h-[110px] ${
+                      className={`text-left p-4 rounded-xl border-2 transition-all flex flex-col justify-between cursor-pointer min-h-[120px] ${
                         androidWebViewEngine === 'bundled'
                           ? 'bg-indigo-50/40 border-indigo-600 text-indigo-950 font-black ring-2 ring-indigo-600/10'
                           : 'bg-white border-gray-200 text-slate-800 hover:border-slate-350'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
-                        <span className="text-xs font-black flex items-center space-x-1.5">
+                        <span className="text-[11px] font-black flex items-center space-x-1.5">
                           <span>📦</span>
-                          <span>{lang === 'zh' ? '软件自带 WebView 内核 (推荐)' : 'Software Bundled WebView (Rec)'}</span>
+                          <span>{lang === 'zh' ? '软件自带 WebView (推荐)' : 'Custom Bundled'}</span>
                         </span>
                         {androidWebViewEngine === 'bundled' && (
                           <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping"></span>
@@ -1497,8 +1497,8 @@ export function SyncDialog({
                       </div>
                       <p className="text-[10px] leading-relaxed text-gray-500 font-extrabold mt-2">
                         {lang === 'zh' 
-                          ? '【默认内核】内置高相配、高可靠 XWalk 或现代 Chromium 运行核。绝缘硬件碎片化，支持安卓 5.0，大幅缩减老旧 WebView 加载阻尼。' 
-                          : 'Pre-bundled custom layout core. Isolates fragmentation, supports Android 5.0+, and completely removes latency on vintage devices.'}
+                          ? '【默认内核】内置高相配 XWalk / Chromium 内核。绝缘物理硬件碎片化，支持 Android 5.0 经典系统。' 
+                          : 'Pre-bundled custom layouts core. Isolates fragmentation and removes latency on classic systems.'}
                       </p>
                     </button>
 
@@ -1510,16 +1510,16 @@ export function SyncDialog({
                           setAndroidWebViewEngine('system');
                         }
                       })}
-                      className={`text-left p-4 rounded-2xl border-2 transition-all flex flex-col justify-between cursor-pointer min-h-[110px] ${
+                      className={`text-left p-4 rounded-xl border-2 transition-all flex flex-col justify-between cursor-pointer min-h-[120px] ${
                         androidWebViewEngine === 'system'
                           ? 'bg-indigo-50/40 border-indigo-600 text-indigo-950 font-black ring-2 ring-indigo-600/10'
                           : 'bg-white border-gray-200 text-slate-800 hover:border-slate-350'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
-                        <span className="text-xs font-black flex items-center space-x-1.5">
+                        <span className="text-[11px] font-black flex items-center space-x-1.5">
                           <span>⚙️</span>
-                          <span>{lang === 'zh' ? '调用系统自带 WebView 元件' : 'System Native WebView'}</span>
+                          <span>{lang === 'zh' ? '调用系统自带 WebView' : 'System Native'}</span>
                         </span>
                         {androidWebViewEngine === 'system' && (
                           <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping"></span>
@@ -1527,8 +1527,38 @@ export function SyncDialog({
                       </div>
                       <p className="text-[10px] leading-relaxed text-gray-500 font-extrabold mt-2">
                         {lang === 'zh' 
-                          ? '直接调用当前设备系统的自带 Android System WebView。减小独立封包体积，但若底层安卓系统内核过旧，排版可能发生一定拉伸。' 
-                          : 'Delegates compilation and layouts to the local system WebView component. Saves system RAM but layout quality matches system version.'}
+                          ? '直接调用内置 Android System WebView 件。体积更轻盈，但内核极老时可能发生界面折叠。' 
+                          : 'Delegates compilation to standard system WebView component. Saves bandwidth but rendering layout relies on OS.'}
+                      </p>
+                    </button>
+
+                    {/* OPTION 3: FIREFOX GECKOVIEW 130 */}
+                    <button
+                      type="button"
+                      {...bindTouchTap(() => {
+                        if (setAndroidWebViewEngine) {
+                          setAndroidWebViewEngine('firefox130');
+                        }
+                      })}
+                      className={`text-left p-4 rounded-xl border-2 transition-all flex flex-col justify-between cursor-pointer min-h-[120px] ${
+                        androidWebViewEngine === 'firefox130'
+                          ? 'bg-orange-50/40 border-orange-600 text-orange-950 font-black ring-2 ring-orange-600/10'
+                          : 'bg-white border-gray-200 text-slate-800 hover:border-slate-350'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className="text-[11px] font-black flex items-center space-x-1.5">
+                          <span>🦊</span>
+                          <span>{lang === 'zh' ? '火狐 GeckoView 内核 130.0' : 'Firefox Geist 130'}</span>
+                        </span>
+                        {androidWebViewEngine === 'firefox130' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-orange-600 animate-ping"></span>
+                        )}
+                      </div>
+                      <p className="text-[10px] leading-relaxed text-slate-500 font-extrabold mt-2">
+                        {lang === 'zh' 
+                          ? '【极力推荐】装载 Firefox 独立沙盒 130 内核。诺基亚 N1 物理首选！全特性现代渲染，彻底解决任何错折现象！' 
+                          : 'Enables decoupled GeckoView 130 runtime engine. Prime match for Nokia N1 tablet, fully supporting modern CSS and layout properties.'}
                       </p>
                     </button>
                   </div>

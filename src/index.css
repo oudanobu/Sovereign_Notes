@@ -472,9 +472,7 @@ body.profile-android9,
    ------------------------------------------------------------- */
 @media screen and (max-width: 1023px) {
   /* 1. When Sidebar Tab is active */
-  .profile-android9 .wrapper-active-sidebar .left-sidebar-rail,
-  .profile-android13 .wrapper-active-sidebar .left-sidebar-rail,
-  .profile-tablet .wrapper-active-sidebar .left-sidebar-rail {
+  .wrapper-active-sidebar .left-sidebar-rail {
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
@@ -485,19 +483,13 @@ body.profile-android9,
     z-index: 50 !important;
     display: block !important;
   }
-  .profile-android9 .wrapper-active-sidebar .middle-note-list,
-  .profile-android9 .wrapper-active-sidebar .right-editor-workspace,
-  .profile-android13 .wrapper-active-sidebar .middle-note-list,
-  .profile-android13 .wrapper-active-sidebar .right-editor-workspace,
-  .profile-tablet .wrapper-active-sidebar .middle-note-list,
-  .profile-tablet .wrapper-active-sidebar .right-editor-workspace {
+  .wrapper-active-sidebar .middle-note-list,
+  .wrapper-active-sidebar .right-editor-workspace {
     display: none !important;
   }
 
   /* 2. When Notes List is active */
-  .profile-android9 .wrapper-active-list .middle-note-list,
-  .profile-android13 .wrapper-active-list .middle-note-list,
-  .profile-tablet .wrapper-active-list .middle-note-list {
+  .wrapper-active-list .middle-note-list {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
@@ -508,19 +500,13 @@ body.profile-android9,
     display: block !important;
     z-index: 10 !important;
   }
-  .profile-android9 .wrapper-active-list .left-sidebar-rail,
-  .profile-android9 .wrapper-active-list .right-editor-workspace,
-  .profile-android13 .wrapper-active-list .left-sidebar-rail,
-  .profile-android13 .wrapper-active-list .right-editor-workspace,
-  .profile-tablet .wrapper-active-list .left-sidebar-rail,
-  .profile-tablet .wrapper-active-list .right-editor-workspace {
+  .wrapper-active-list .left-sidebar-rail,
+  .wrapper-active-list .right-editor-workspace {
     display: none !important;
   }
 
   /* 3. When Editor Workspace is active */
-  .profile-android9 .wrapper-active-workspace .right-editor-workspace,
-  .profile-android13 .wrapper-active-workspace .right-editor-workspace,
-  .profile-tablet .wrapper-active-workspace .right-editor-workspace {
+  .wrapper-active-workspace .right-editor-workspace {
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
@@ -531,25 +517,15 @@ body.profile-android9,
     display: block !important;
     z-index: 20 !important;
   }
-  .profile-android9 .wrapper-active-workspace .left-sidebar-rail,
-  .profile-android9 .wrapper-active-workspace .middle-note-list,
-  .profile-android13 .wrapper-active-workspace .left-sidebar-rail,
-  .profile-android13 .wrapper-active-workspace .middle-note-list,
-  .profile-tablet .wrapper-active-workspace .left-sidebar-rail,
-  .profile-tablet .wrapper-active-workspace .middle-note-list {
+  .wrapper-active-workspace .left-sidebar-rail,
+  .wrapper-active-workspace .middle-note-list {
     display: none !important;
   }
   
   /* Fallbacks for standard hidden utility state in mobile absolute engine */
-  .profile-android9 .left-sidebar-rail.hidden,
-  .profile-android9 .middle-note-list.hidden,
-  .profile-android9 .right-editor-workspace.hidden,
-  .profile-android13 .left-sidebar-rail.hidden,
-  .profile-android13 .middle-note-list.hidden,
-  .profile-android13 .right-editor-workspace.hidden,
-  .profile-tablet .left-sidebar-rail.hidden,
-  .profile-tablet .middle-note-list.hidden,
-  .profile-tablet .right-editor-workspace.hidden {
+  .left-sidebar-rail.hidden,
+  .middle-note-list.hidden,
+  .right-editor-workspace.hidden {
     display: none !important;
   }
 }
@@ -841,15 +817,20 @@ select {
   padding-right: 28px !important;
 }
 
-/* 2. 精准拦截：只要屏幕宽高比小于 1.50（比如诺基亚 N1 的 4:3 屏幕），立刻触发防御 */
+/* 2. 精准拦截：针对古老安卓9或默认老平板，当屏幕宽高比小于 1.50 时触发防御 */
 @media (max-aspect-ratio: 3/2) {
   
-  /* 强行瓦解最外层可能会限制高度、导致内容积压的弹性盒 */
-  #root, 
-  .notebook-container, 
-  .setting-page-root,
-  .absolute.inset-0.flex.flex-col,
-  .flex-1.flex.overflow-hidden {
+  /* 仅在 profile-android9 或 profile-tablet 启用这些极强制扁平化与 display: block 规避规则 */
+  html.profile-android9 #root, 
+  html.profile-tablet #root,
+  html.profile-android9 .notebook-container, 
+  html.profile-tablet .notebook-container,
+  html.profile-android9 .setting-page-root,
+  html.profile-tablet .setting-page-root,
+  html.profile-android9 .absolute.inset-0.flex.flex-col,
+  html.profile-tablet .absolute.inset-0.flex.flex-col,
+  html.profile-android9 .flex-1.flex.overflow-hidden,
+  html.profile-tablet .flex-1.flex.overflow-hidden {
     display: block !important;
     height: 100% !important;
     overflow-y: auto !important; /* 允许在胖屏幕上自然向下滚动 */
@@ -857,9 +838,13 @@ select {
   }
 
   /* 彻底废除老系统可能解析失败的 flex 间距(gap)，全部改用老祖宗绝对认识的 margin */
-  .setting-card,
-  .sync-config-section,
-  .p-5, .p-6, .p-8 {
+  html.profile-android9 .setting-card,
+  html.profile-tablet .setting-card,
+  html.profile-android9 .sync-config-section,
+  html.profile-tablet .sync-config-section,
+  html.profile-android9 .p-5, html.profile-tablet .p-5,
+  html.profile-android9 .p-6, html.profile-tablet .p-6,
+  html.profile-android9 .p-8, html.profile-tablet .p-8 {
     display: block !important;
     margin: 24px 12px !important;  /* 强制用硬性上下外边距把卡片彻底拉开！ */
     padding: 16px !important;      /* 物理锁死内边距，不给系统压缩的机会 */
@@ -868,10 +853,14 @@ select {
   }
 
   /* 让卡片内部的“配置整行”从原本并排死磕，强行变成“上下两层独立平铺” */
-  .setting-row,
-  .grid-cols-2,
-  .grid-cols-3,
-  .grid-cols-4 {
+  html.profile-android9 .setting-row,
+  html.profile-tablet .setting-row,
+  html.profile-android9 .grid-cols-2,
+  html.profile-tablet .grid-cols-2,
+  html.profile-android9 .grid-cols-3,
+  html.profile-tablet .grid-cols-3,
+  html.profile-android9 .grid-cols-4,
+  html.profile-tablet .grid-cols-4 {
     display: block !important;
     width: 100% !important;
     grid-template-columns: none !important;
@@ -879,10 +868,14 @@ select {
   }
 
   /* 标签文字强制独占一行 */
-  .setting-row label,
-  .grid-cols-2 > *,
-  .grid-cols-3 > *,
-  .grid-cols-4 > * {
+  html.profile-android9 .setting-row label,
+  html.profile-tablet .setting-row label,
+  html.profile-android9 .grid-cols-2 > *,
+  html.profile-tablet .grid-cols-2 > *,
+  html.profile-android9 .grid-cols-3 > *,
+  html.profile-tablet .grid-cols-3 > *,
+  html.profile-android9 .grid-cols-4 > *,
+  html.profile-tablet .grid-cols-4 > * {
     display: block !important;
     width: 100% !important;
     margin-bottom: 8px !important;
@@ -891,11 +884,16 @@ select {
   }
 
   /* 输入框强制横向吃满 100% 宽度，完美对齐边界 */
-  .setting-row input,
-  .setting-row select,
-  input,
-  select,
-  textarea {
+  html.profile-android9 .setting-row input,
+  html.profile-tablet .setting-row input,
+  html.profile-android9 .setting-row select,
+  html.profile-tablet .setting-row select,
+  html.profile-android9 input,
+  html.profile-tablet input,
+  html.profile-android9 select,
+  html.profile-tablet select,
+  html.profile-android9 textarea,
+  html.profile-tablet textarea {
     display: block !important;
     width: 100% !important;
     height: 42px !important; /* 强制给一个老系统触控最舒适的物理高度 */
@@ -908,11 +906,16 @@ select {
      💥 SovereignNote 终极破壁：强行炸开所有隐藏的栅格和包裹层
      ======================================================= */
   /* 1. 抓出所有可能是 UI 框架自动生成的表单项、列容器、包裹层，一律强制变为块级并打满宽度 */
-  div[class*="col-"], 
-  div[class*="form-item"], 
-  div[class*="field-wrapper"],
-  .setting-row > div,
-  form div {
+  html.profile-android9 div[class*="col-"], 
+  html.profile-tablet div[class*="col-"], 
+  html.profile-android9 div[class*="form-item"], 
+  html.profile-tablet div[class*="form-item"], 
+  html.profile-android9 div[class*="field-wrapper"],
+  html.profile-tablet div[class*="field-wrapper"],
+  html.profile-android9 .setting-row > div,
+  html.profile-tablet .setting-row > div,
+  html.profile-android9 form div,
+  html.profile-tablet form div {
     display: block !important;
     width: 100% !important;     /* 强行炸开隐形的宽度小格子 */
     max-width: 100% !important; /* 彻底解除限制 */
@@ -922,15 +925,18 @@ select {
   }
 
   /* 2. 确保输入框外围的那个父级节点不准并排，必须垂直向下流 */
-  .setting-row, 
-  form > div {
+  html.profile-android9 .setting-row,
+  html.profile-tablet .setting-row,
+  html.profile-android9 form > div,
+  html.profile-tablet form > div {
     display: block !important;
     width: 100% !important;
     margin-bottom: 16px !important;
   }
 
   /* 3. 强制老旧引擎进行重绘（通过改变一个无害的微小位移属性） */
-  #root {
+  html.profile-android9 #root,
+  html.profile-tablet #root {
     transform: translateZ(0); /* 开启硬件加速，强迫诺基亚 N1 的老 Webkit 重新计算并刷新图层 */
   }
 }
@@ -1037,23 +1043,27 @@ select {
 }
 
 /* =======================================================
-   💥 SovereignNote 终极破壁：物理级洗掉现代 CSS 变量死锁
+   💥 SovereignNote 终极破壁：物理级洗掉现代 CSS 变量死锁 (仅对 profile-android9 / profile-tablet 生效)
    ======================================================= */
 @media (max-aspect-ratio: 3/2), screen and (max-width: 800px) {
     
-    /* 1. 彻底扒掉所有阻碍横向展开的容器，全部强行改写为刚性块级 */
-    div, section, article, form, [class*="tw-"], [class*="flex"] {
+    /* 1. 彻底扒掉所有阻碍极窄旧屏显示层架的容器，强制扁平化 (仅旧设备) */
+    html.profile-android9 div, html.profile-tablet div,
+    html.profile-android9 section, html.profile-tablet section,
+    html.profile-android9 article, html.profile-tablet article,
+    html.profile-android9 form, html.profile-tablet form,
+    html.profile-android9 [class*="tw-"], html.profile-tablet [class*="tw-"],
+    html.profile-android9 [class*="flex"], html.profile-tablet [class*="flex"] {
         /* 如果这些元素是用来做单行列表项的，强行转成刚性平铺 */
         min-width: 0 !important;
         /* 解除所有基于现代变量计算的宽度限制 */
         max-width: 100% !important; 
     }
 
-    /* 2. 针对你截图里那个拧巴在左侧一窄条的“笔记/列表项卡片” */
-    /* 跨越所有 UI 框架层级，直接强制整行横向拉满 */
-    .note-item, 
-    [class*="item-row"], 
-    div[class*="content"] > div {
+    /* 2. 针对旧设备截图里那个拧巴在左侧一窄条的“笔记/列表项卡片” */
+    html.profile-android9 .note-item, html.profile-tablet .note-item,
+    html.profile-android9 [class*="item-row"], html.profile-tablet [class*="item-row"],
+    html.profile-android9 div[class*="content"] > div, html.profile-tablet div[class*="content"] > div {
         display: block !important;       /* 放弃不听话的 flex */
         width: 100% !important;          /* 强行吃满屏幕横向 */
         min-width: 100% !important;
@@ -1062,17 +1072,21 @@ select {
         clear: both !important;
     }
 
-    /* 3. 强行让文本区域和删除按钮各自归位 */
-    /* 既然 flex 靠不住，我们就用最古老、最稳定的浮动或绝对像素 */
-    div[class*="text"], div[class*="title"], span {
+    /* 3. 强行让文本区域 and 删除按钮各自归位 (仅旧设备，精准定位卡片内部元素) */
+    html.profile-android9 div[class*="text"], html.profile-tablet div[class*="text"],
+    html.profile-android9 div[class*="title"], html.profile-tablet div[class*="title"],
+    html.profile-android9 .note-item span, html.profile-tablet .note-item span,
+    html.profile-android9 .category-item-row span, html.profile-tablet .category-item-row span {
         display: inline-block !important;
         width: 75% !important;           /* 文本占据左边 75% 的空间 */
         vertical-align: middle !important;
         text-align: left !important;
     }
 
-    /* 右侧的垃圾桶图标/删除按钮 */
-    button, [class*="delete"], [class*="btn"] {
+    /* 右侧的垃圾桶图标/删除按钮 (仅旧设备) */
+    html.profile-android9 button, html.profile-tablet button,
+    html.profile-android9 [class*="delete"], html.profile-tablet [class*="delete"],
+    html.profile-android9 [class*="btn"], html.profile-tablet [class*="btn"] {
         display: inline-block !important;
         width: 20% !important;           /* 垃圾桶占据右边 20% 的空间 */
         text-align: right !important;

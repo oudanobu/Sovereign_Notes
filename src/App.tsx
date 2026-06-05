@@ -116,9 +116,12 @@ export default function App() {
   });
 
   // Android WebView custom core engine state (default is 'bundled' as requested)
-  const [androidWebViewEngine, setAndroidWebViewEngine] = useState<'bundled' | 'system'>(() => {
+  const [androidWebViewEngine, setAndroidWebViewEngine] = useState<'bundled' | 'system' | 'firefox130'>(() => {
     const saved = localStorage.getItem('sovereign_android_webview');
-    return saved === 'system' ? 'system' : 'bundled';
+    if (saved === 'system' || saved === 'firefox130' || saved === 'bundled') {
+      return saved;
+    }
+    return 'bundled';
   });
 
   // Sync class profile directly to <html> element
