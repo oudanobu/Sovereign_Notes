@@ -26,7 +26,7 @@ android {
         }
     }
 
-    flavorDimensions "engine"
+    flavorDimensions "engine", "abi"
     productFlavors {
         geckoview {
             dimension "engine"
@@ -35,6 +35,37 @@ android {
         systemwebview {
             dimension "engine"
             applicationIdSuffix ".systemwebview"
+        }
+
+        arm64 {
+            dimension "abi"
+            ndk {
+                abiFilters "arm64-v8a"
+            }
+        }
+        arm32 {
+            dimension "abi"
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
+        x86 {
+            dimension "abi"
+            ndk {
+                abiFilters "x86"
+            }
+        }
+        x86_64 {
+            dimension "abi"
+            ndk {
+                abiFilters "x86_64"
+            }
+        }
+        universal {
+            dimension "abi"
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+            }
         }
     }
 
@@ -55,11 +86,9 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // GeckoView 115 standard support (Multi-architecture)
-    // Supports 64-bit ARM (modern devices like Xiaomi Android 13), 32-bit ARM (legacy),
-    // and 32-bit Intel x86 (Nokia N1 native Intel Atom runtime support)
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010'
-    geckoviewImplementation 'org.mozilla.geckoview:geckoview-x86_64:115.0.20230710165010'
+    // GeckoView 115 standard support (Split by target architecture flavor to completely bypass capabilities conflicts in Gradle)
+    geckoviewArm64Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010'
+    geckoviewArm32Implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010'
+    geckoviewX86Implementation 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010'
+    geckoviewX86_64Implementation 'org.mozilla.geckoview:geckoview-x86_64:115.0.20230710165010'
 }
