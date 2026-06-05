@@ -86,42 +86,37 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    
-    // GeckoView 115 targeted support mapped specifically to each flavor configuration.
-    // We add them to general implementation first with a custom 'targetFlavor' extension flag,
-    // then dispatch them to the correct dynamically created configurations in afterEvaluate.
-    implementation('org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewModern64' }
-    implementation('org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewSharp' }
-    implementation('org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewLegacy32' }
-    implementation('org.mozilla.geckoview:geckoview-x86:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewNokia' }
 }
 
-// Waiting for all product flavors/configurations to be modeled, then dispatch the dependencies
-project.afterEvaluate {
-    def globalImpl = configurations.getByName("implementation")
+// Event-driven configuration mapping to ensure both compiler (CompileClasspath) and packager (RuntimeClasspath and Implementation) receive targeted GeckoView architectures
+configurations.all { configuration ->
+    def configName = configuration.name
     
-    // Find all GeckoView dependencies containing our targetFlavor tag
-    def gvDependencies = globalImpl.dependencies.findAll { dep ->
-        dep.hasProperty('ext') && dep.ext.has('targetFlavor')
+    if (configName.equalsIgnoreCase("geckoviewModern64Implementation") || 
+        configName.equalsIgnoreCase("geckoviewModern64CompileClasspath") ||
+        configName.equalsIgnoreCase("geckoviewModern64RuntimeClasspath")) {
+        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
     }
     
-    gvDependencies.each { dep ->
-        def targetConfigName = "${dep.ext.targetFlavor}Implementation"
-        def targetConfig = configurations.findByName(targetConfigName)
-        
-        if (targetConfig != null) {
-            targetConfig.dependencies.add(dep)
-        }
+    if (configName.equalsIgnoreCase("geckoviewSharpImplementation") || 
+        configName.equalsIgnoreCase("geckoviewSharpCompileClasspath") ||
+        configName.equalsIgnoreCase("geckoviewSharpRuntimeClasspath")) {
+        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
     }
     
-    // Remove the dispatched dependencies from the global implementation configuration
-    // to prevent architecture pollution and layout-level capability resolution conflicts.
-    globalImpl.dependencies.removeAll(gvDependencies)
-}
+    if (configName.equalsIgnoreCase("geckoviewLegacy32Implementation") || 
+        configName.equalsIgnoreCase("geckoviewLegacy32CompileClasspath") ||
+        configName.equalsIgnoreCase("geckoviewLegacy32RuntimeClasspath")) {
+        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010')
+    }
+    
+    if (configName.equalsIgnoreCase("geckoviewNokiaImplementation") || 
+        configName.equalsIgnoreCase("geckoviewNokiaCompileClasspath") ||
+        configName.equalsIgnoreCase("geckoviewNokiaRuntimeClasspath")) {
+        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010')
+    }
 
-// Double-layer insurance: Register a global capability resolution strategy to resolve any potential conflict on 'org.mozilla.geckoview:geckoview'
-configurations.all {
-    resolutionStrategy {
+    configuration.resolutionStrategy {
         capabilitiesResolution {
             withCapability("org.mozilla.geckoview:geckoview") {
                 select(candidates.first())
