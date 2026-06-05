@@ -1,7 +1,13 @@
 apply plugin: 'com.android.application'
 
 repositories {
-    maven { url "https://maven.mozilla.org/maven2/" }
+    maven {
+        url "https://maven.mozilla.org/maven2/"
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
     google()
     maven { url "https://maven.aliyun.com/repository/google" }
     maven { url "https://maven.aliyun.com/repository/public" }
