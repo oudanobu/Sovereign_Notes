@@ -88,12 +88,35 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
     // GeckoView 115 targeted support mapped specifically to each flavor configuration.
-    // We use the explicit add() method to inject configurations by name. This completely
-    // bypasses dynamic Groovy method missing decoration limits for multi-dimensional configurations.
-    add("geckoviewModern64Implementation", 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar')
-    add("geckoviewSharpImplementation", 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar')
-    add("geckoviewLegacy32Implementation", 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010@aar')
-    add("geckoviewNokiaImplementation", 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010@aar')
+    // We add them to general implementation first with a custom 'targetFlavor' extension flag,
+    // then dispatch them to the correct dynamically created configurations in afterEvaluate.
+    implementation('org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewModern64' }
+    implementation('org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewSharp' }
+    implementation('org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewLegacy32' }
+    implementation('org.mozilla.geckoview:geckoview-x86:115.0.20230710165010@aar') { ext.targetFlavor = 'geckoviewNokia' }
+}
+
+// Waiting for all product flavors/configurations to be modeled, then dispatch the dependencies
+project.afterEvaluate {
+    def globalImpl = configurations.getByName("implementation")
+    
+    // Find all GeckoView dependencies containing our targetFlavor tag
+    def gvDependencies = globalImpl.dependencies.findAll { dep ->
+        dep.hasProperty('ext') && dep.ext.has('targetFlavor')
+    }
+    
+    gvDependencies.each { dep ->
+        def targetConfigName = "${dep.ext.targetFlavor}Implementation"
+        def targetConfig = configurations.findByName(targetConfigName)
+        
+        if (targetConfig != null) {
+            targetConfig.dependencies.add(dep)
+        }
+    }
+    
+    // Remove the dispatched dependencies from the global implementation configuration
+    // to prevent architecture pollution and layout-level capability resolution conflicts.
+    globalImpl.dependencies.removeAll(gvDependencies)
 }
 
 // Double-layer insurance: Register a global capability resolution strategy to resolve any potential conflict on 'org.mozilla.geckoview:geckoview'
