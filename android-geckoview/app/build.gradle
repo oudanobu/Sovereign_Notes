@@ -22,51 +22,65 @@ android {
         applicationId "com.sovereignnote.core"
         minSdkVersion 21
         targetSdkVersion 33
-        versionCode 5
-        versionName "1.4.1"
+        versionCode 6
+        versionName "1.5.0"
         multiDexEnabled true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    flavorDimensions "engine", "device"
+    flavorDimensions "channel"
     productFlavors {
-        geckoview {
-            dimension "engine"
-            applicationIdSuffix ".geckoview"
-        }
-        systemwebview {
-            dimension "engine"
-            applicationIdSuffix ".systemwebview"
-        }
-        
-        modern64 {
-            dimension "device"
+        modernAndroid13 {
+            dimension "channel"
+            applicationIdSuffix ".modern13"
             targetSdkVersion 33
             ndk {
                 abiFilters "arm64-v8a"
             }
         }
-        sharp {
-            dimension "device"
+        sharpR2 {
+            dimension "channel"
+            applicationIdSuffix ".sharp"
             targetSdkVersion 28
             ndk {
                 abiFilters "arm64-v8a"
             }
         }
-        legacy32 {
-            dimension "device"
+        legacyAndroid6 {
+            dimension "channel"
+            applicationIdSuffix ".legacy"
             targetSdkVersion 23
             ndk {
                 abiFilters "armeabi-v7a"
             }
         }
-        nokia {
-            dimension "device"
+        nokiaN1 {
+            dimension "channel"
+            applicationIdSuffix ".nokia"
             targetSdkVersion 22
             ndk {
                 abiFilters "x86"
             }
+        }
+    }
+
+    sourceSets {
+        modernAndroid13 {
+            java.srcDirs = ['src/geckoview/java']
+            res.srcDirs = ['src/geckoview/res']
+        }
+        sharpR2 {
+            java.srcDirs = ['src/geckoview/java']
+            res.srcDirs = ['src/geckoview/res']
+        }
+        legacyAndroid6 {
+            java.srcDirs = ['src/geckoview/java']
+            res.srcDirs = ['src/geckoview/res']
+        }
+        nokiaN1 {
+            java.srcDirs = ['src/geckoview/java']
+            res.srcDirs = ['src/geckoview/res']
         }
     }
 
@@ -88,32 +102,32 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 }
 
-// Event-driven configuration mapping to ensure both compiler (CompileClasspath) and packager (RuntimeClasspath and Implementation) receive targeted GeckoView architectures
+// Event-driven configuration mapping to ensure both compiler (CompileClasspath) and packager (RuntimeClasspath and Implementation) receive targeted GeckoView v130 architectures
 configurations.all { configuration ->
     def configName = configuration.name
     
-    if (configName.equalsIgnoreCase("geckoviewModern64Implementation") || 
-        configName.equalsIgnoreCase("geckoviewModern64CompileClasspath") ||
-        configName.equalsIgnoreCase("geckoviewModern64RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
+    if (configName.equalsIgnoreCase("modernAndroid13Implementation") || 
+        configName.equalsIgnoreCase("modernAndroid13CompileClasspath") ||
+        configName.equalsIgnoreCase("modernAndroid13RuntimeClasspath")) {
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:130.0.20240829141703')
     }
     
-    if (configName.equalsIgnoreCase("geckoviewSharpImplementation") || 
-        configName.equalsIgnoreCase("geckoviewSharpCompileClasspath") ||
-        configName.equalsIgnoreCase("geckoviewSharpRuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
+    if (configName.equalsIgnoreCase("sharpR2Implementation") || 
+        configName.equalsIgnoreCase("sharpR2CompileClasspath") ||
+        configName.equalsIgnoreCase("sharpR2RuntimeClasspath")) {
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:130.0.20240829141703')
     }
     
-    if (configName.equalsIgnoreCase("geckoviewLegacy32Implementation") || 
-        configName.equalsIgnoreCase("geckoviewLegacy32CompileClasspath") ||
-        configName.equalsIgnoreCase("geckoviewLegacy32RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010')
+    if (configName.equalsIgnoreCase("legacyAndroid6Implementation") || 
+        configName.equalsIgnoreCase("legacyAndroid6CompileClasspath") ||
+        configName.equalsIgnoreCase("legacyAndroid6RuntimeClasspath")) {
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-armeabi-v7a:130.0.20240829141703')
     }
     
-    if (configName.equalsIgnoreCase("geckoviewNokiaImplementation") || 
-        configName.equalsIgnoreCase("geckoviewNokiaCompileClasspath") ||
-        configName.equalsIgnoreCase("geckoviewNokiaRuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010')
+    if (configName.equalsIgnoreCase("nokiaN1Implementation") || 
+        configName.equalsIgnoreCase("nokiaN1CompileClasspath") ||
+        configName.equalsIgnoreCase("nokiaN1RuntimeClasspath")) {
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-x86:130.0.20240829141703')
     }
 
     configuration.resolutionStrategy {
