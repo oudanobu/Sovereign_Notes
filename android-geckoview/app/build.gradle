@@ -107,6 +107,15 @@ dependencies {
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
 configurations.all { configuration ->
+    resolutionStrategy {
+        // 强制回滚到不包含 SDK 34 现代资源格式的稳定版本
+        force 'androidx.lifecycle:lifecycle-runtime:2.6.2'
+        force 'androidx.lifecycle:lifecycle-livedata:2.6.2'
+        force 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
+        force 'androidx.lifecycle:lifecycle-process:2.6.2'
+        force 'androidx.lifecycle:lifecycle-livedata-core:2.6.2'
+        force 'androidx.annotation:annotation-experimental:1.3.0'
+    }
     resolutionStrategy.eachDependency { details ->
         if (details.requested.group == 'org.mozilla.geckoview') {
             // 无论是旧的 geckoview-armeabi-v7a，还是误设的 geckoview-stable
