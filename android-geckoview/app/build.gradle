@@ -102,7 +102,7 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
     // 基础骨架引入标准多架构全量包（去除 -stable 尾缀）
-    implementation 'org.mozilla.geckoview:geckoview:130.0.20240829141703'
+    implementation 'org.mozilla.geckoview:geckoview:128.0'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
@@ -110,9 +110,11 @@ configurations.all { configuration ->
     resolutionStrategy.eachDependency { details ->
         if (details.requested.group == 'org.mozilla.geckoview') {
             // 无论是旧的 geckoview-armeabi-v7a，还是误设的 geckoview-stable
-            // 只要不是纯净的 'geckoview'，统一暴力修正为官方唯一的全量构件名称
+            // 统一直接指定为 '128.0' 版本，同时修正为官方唯一的全量构件 'geckoview'
             if (details.requested.name != 'geckoview') {
-                details.useTarget("org.mozilla.geckoview:geckoview:${details.requested.version}")
+                details.useTarget("org.mozilla.geckoview:geckoview:128.0")
+            } else if (details.requested.version != '128.0') {
+                details.useVersion("128.0")
             }
         }
     }
