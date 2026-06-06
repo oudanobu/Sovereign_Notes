@@ -95,25 +95,25 @@ configurations.all { configuration ->
     if (configName.equalsIgnoreCase("geckoviewModern64Implementation") || 
         configName.equalsIgnoreCase("geckoviewModern64CompileClasspath") ||
         configName.equalsIgnoreCase("geckoviewModern64RuntimeClasspath")) {
-        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
     }
     
     if (configName.equalsIgnoreCase("geckoviewSharpImplementation") || 
         configName.equalsIgnoreCase("geckoviewSharpCompileClasspath") ||
         configName.equalsIgnoreCase("geckoviewSharpRuntimeClasspath")) {
-        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:115.0.20230710165010')
     }
     
     if (configName.equalsIgnoreCase("geckoviewLegacy32Implementation") || 
         configName.equalsIgnoreCase("geckoviewLegacy32CompileClasspath") ||
         configName.equalsIgnoreCase("geckoviewLegacy32RuntimeClasspath")) {
-        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-armeabi-v7a:115.0.20230710165010')
     }
     
     if (configName.equalsIgnoreCase("geckoviewNokiaImplementation") || 
         configName.equalsIgnoreCase("geckoviewNokiaCompileClasspath") ||
         configName.equalsIgnoreCase("geckoviewNokiaRuntimeClasspath")) {
-        dependencies.add(configName, 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-x86:115.0.20230710165010')
     }
 
     configuration.resolutionStrategy {
