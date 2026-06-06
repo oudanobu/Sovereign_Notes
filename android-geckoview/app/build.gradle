@@ -108,7 +108,7 @@ dependencies {
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
 configurations.all { configuration ->
     resolutionStrategy {
-        // 强制回滚到不包含 SDK 34 现代资源格式的稳定版本
+        // 1. 之前已锁定的生命周期库
         force 'androidx.lifecycle:lifecycle-runtime:2.6.2'
         force 'androidx.lifecycle:lifecycle-livedata:2.6.2'
         force 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
@@ -116,13 +116,27 @@ configurations.all { configuration ->
         force 'androidx.lifecycle:lifecycle-livedata-core:2.6.2'
         force 'androidx.annotation:annotation-experimental:1.3.0'
         
-        // 追加锁定：防止间接依赖偷偷带入的现代核心基础库资源
+        // 2. 追加锁定：防止间接依赖偷偷带入的现代核心基础库资源
         force 'androidx.core:core:1.10.1'
         force 'androidx.core:core-ktx:1.10.1'
         force 'androidx.appcompat:appcompat:1.6.1'
         force 'androidx.fragment:fragment:1.6.1'
+
+        // 3. 掘地三尺追加锁定：防止伴生 UI 库、过渡动画库、以及现代 Material 资源渗入
+        force 'com.google.android.material:material:1.9.0'
+        force 'androidx.vectordrawable:vectordrawable:1.1.0'
+        force 'androidx.vectordrawable:vectordrawable-animated:1.1.0'
+        force 'androidx.transition:transition:1.4.1'
+        force 'androidx.drawerlayout:drawerlayout:1.2.0'
+        force 'androidx.viewpager2:viewpager2:1.0.0'
+        force 'androidx.activity:activity:1.7.2'
+        force 'androidx.activity:activity-ktx:1.7.2'
     }
     resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'com.android.tools.build' && details.requested.name == 'aapt2') {
+            // 强行拉取并借壳使用能吃下所有高版本 XML 属性的现代 AAPT2 发行版
+            details.useVersion "7.4.2-8841542"
+        }
         if (details.requested.group == 'org.mozilla.geckoview') {
             // 无论是旧的 geckoview-armeabi-v7a，还是误设的 geckoview-stable
             // 统一直接指定为 '128.0.20240704121409' 版本，同时修正为官方唯一的全量构件 'geckoview'
@@ -132,5 +146,12 @@ configurations.all { configuration ->
                 details.useVersion("128.0.20240704121409")
             }
         }
+    }
+}
+
+// 动态重写当前变体的全局进程控制参数，强行突破旧版 AGP 的布尔值限制
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+        System.setProperty("android.aapt2FromMavenOverride", "true")
     }
 }
