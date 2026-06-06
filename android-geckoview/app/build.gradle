@@ -101,8 +101,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 基础骨架引入标准多架构全量包（geckoview-stable）
-    implementation 'org.mozilla.geckoview:geckoview-stable:128.0.20240704121409'
+    // 针对不同架构的渠道，动态引入适配其 ABI 的特定架构 GeckoView 依赖
+    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0.20240704121409'
+    sharpR2Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0.20240704121409'
+    legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-stable-armeabi-v7a:128.0.20240704121409'
+    nokiaN1Implementation 'org.mozilla.geckoview:geckoview-stable-x86:128.0.20240704121409'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
