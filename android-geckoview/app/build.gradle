@@ -109,25 +109,25 @@ configurations.all { configuration ->
     if (configName.equalsIgnoreCase("modernAndroid13Implementation") || 
         configName.equalsIgnoreCase("modernAndroid13CompileClasspath") ||
         configName.equalsIgnoreCase("modernAndroid13RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:130.0.20240829141703')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
     }
     
     if (configName.equalsIgnoreCase("sharpR2Implementation") || 
         configName.equalsIgnoreCase("sharpR2CompileClasspath") ||
         configName.equalsIgnoreCase("sharpR2RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-arm64-v8a:130.0.20240829141703')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
     }
     
     if (configName.equalsIgnoreCase("legacyAndroid6Implementation") || 
         configName.equalsIgnoreCase("legacyAndroid6CompileClasspath") ||
         configName.equalsIgnoreCase("legacyAndroid6RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-armeabi-v7a:130.0.20240829141703')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
     }
     
     if (configName.equalsIgnoreCase("nokiaN1Implementation") || 
         configName.equalsIgnoreCase("nokiaN1CompileClasspath") ||
         configName.equalsIgnoreCase("nokiaN1RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-x86:130.0.20240829141703')
+        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
     }
 
     configuration.resolutionStrategy {
