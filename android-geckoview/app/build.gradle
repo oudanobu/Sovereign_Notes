@@ -100,40 +100,19 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    
+    // 基础骨架引入标准多架构全量包（去除 -stable 尾缀）
+    implementation 'org.mozilla.geckoview:geckoview:130.0.20240829141703'
 }
 
-// Event-driven configuration mapping to ensure both compiler (CompileClasspath) and packager (RuntimeClasspath and Implementation) receive targeted GeckoView v130 architectures
+// 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
 configurations.all { configuration ->
-    def configName = configuration.name
-    
-    if (configName.equalsIgnoreCase("modernAndroid13Implementation") || 
-        configName.equalsIgnoreCase("modernAndroid13CompileClasspath") ||
-        configName.equalsIgnoreCase("modernAndroid13RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
-    }
-    
-    if (configName.equalsIgnoreCase("sharpR2Implementation") || 
-        configName.equalsIgnoreCase("sharpR2CompileClasspath") ||
-        configName.equalsIgnoreCase("sharpR2RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
-    }
-    
-    if (configName.equalsIgnoreCase("legacyAndroid6Implementation") || 
-        configName.equalsIgnoreCase("legacyAndroid6CompileClasspath") ||
-        configName.equalsIgnoreCase("legacyAndroid6RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
-    }
-    
-    if (configName.equalsIgnoreCase("nokiaN1Implementation") || 
-        configName.equalsIgnoreCase("nokiaN1CompileClasspath") ||
-        configName.equalsIgnoreCase("nokiaN1RuntimeClasspath")) {
-        project.dependencies.add(configName, 'org.mozilla.geckoview:geckoview-stable:130.0.20240829141703')
-    }
-
-    configuration.resolutionStrategy {
-        capabilitiesResolution {
-            withCapability("org.mozilla.geckoview:geckoview") {
-                select(candidates.first())
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.mozilla.geckoview') {
+            // 无论是旧的 geckoview-armeabi-v7a，还是误设的 geckoview-stable
+            // 只要不是纯净的 'geckoview'，统一暴力修正为官方唯一的全量构件名称
+            if (details.requested.name != 'geckoview') {
+                details.useTarget("org.mozilla.geckoview:geckoview:${details.requested.version}")
             }
         }
     }
