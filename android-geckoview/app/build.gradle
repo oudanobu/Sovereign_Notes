@@ -95,17 +95,17 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    // 强行关闭多线程 Worker 行为，迫使 AAPT2 在独立的单进程安全沙盒中串行编译资源，彻底免疫 C++ 闪退
+    project.ext.set("android.enableAapt2WorkerActions", "false")
 }
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 针对不同架构的渠道，动态引入适配其 ABI 的特定架构 GeckoView 依赖
-    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0.20240704121409'
-    sharpR2Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0.20240704121409'
-    legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-stable-armeabi-v7a:128.0.20240704121409'
-    nokiaN1Implementation 'org.mozilla.geckoview:geckoview-stable-x86:128.0.20240704121409'
+    // 终极对齐：直接引入 Mozilla 官方全架构标准稳定版 AAR
+    implementation 'org.mozilla.geckoview:geckoview:128.0.20240704121409'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
@@ -141,20 +141,8 @@ configurations.all { configuration ->
             details.useVersion "7.4.2-8841542"
         }
         if (details.requested.group == 'org.mozilla.geckoview') {
-            // 无论是旧的 geckoview-armeabi-v7a，或是直接设置的 geckoview-stable 等，
-            // 统一将其定位至官方发布的 128.0.20240704121409 的对应架构包或 fat 包，保证不因构件名无法加载
-            if (details.requested.name.contains('armeabi-v7a')) {
-                details.useTarget("org.mozilla.geckoview:geckoview-stable-armeabi-v7a:128.0.20240704121409")
-            } else if (details.requested.name.contains('arm64-v8a')) {
-                details.useTarget("org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0.20240704121409")
-            } else if (details.requested.name.contains('x86_64')) {
-                details.useTarget("org.mozilla.geckoview:geckoview-stable-x86_64:128.0.20240704121409")
-            } else if (details.requested.name.contains('x86')) {
-                details.useTarget("org.mozilla.geckoview:geckoview-stable-x86:128.0.20240704121409")
-            } else {
-                // 否则直接强制到官方全量包 geckoview-stable
-                details.useTarget("org.mozilla.geckoview:geckoview-stable:128.0.20240704121409")
-            }
+            // 无论是旧的 geckoview 变构件，或是任何特殊变体，统一重定向至官方发布的标准全架构多合一 (Fat AAR) 稳定版
+            details.useTarget("org.mozilla.geckoview:geckoview:128.0.20240704121409")
         }
     }
 }
