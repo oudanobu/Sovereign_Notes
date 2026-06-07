@@ -104,8 +104,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 终极对齐：直接引入 Mozilla 官方全架构标准稳定版 AAR (Fat AAR)
-    implementation 'org.mozilla.geckoview:geckoview-stable:128.0'
+    // 分渠道精准对齐：直接引入 Mozilla 官方针对各架构发布的标准、真实存在的 ESR 稳定版 AAR
+    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0'
+    sharpR2Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0'
+    legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-stable-armeabi-v7a:128.0'
+    nokiaN1Implementation 'org.mozilla.geckoview:geckoview-stable-x86:128.0'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
@@ -141,8 +144,16 @@ configurations.all { configuration ->
             details.useVersion "7.4.2-8841542"
         }
         if (details.requested.group == 'org.mozilla.geckoview') {
-            // 无论是旧的 geckoview 变构件，或是任何特殊变体，统一重定向至官方发布的标准全架构多合一 (Fat AAR) 稳定版
-            details.useTarget("org.mozilla.geckoview:geckoview-stable:128.0")
+            // 强行校准任何引入的 GeckoView 库版本为官方稳定的 128.0
+            if (details.requested.name.contains('armeabi-v7a') || 
+                details.requested.name.contains('arm64-v8a') || 
+                details.requested.name.contains('x86_64') || 
+                details.requested.name.contains('x86')) {
+                details.useVersion '128.0'
+            } else {
+                // 如果是之前被解析成无后缀的 geckoview-stable 或 geckoview，重定向至 ARM64 稳定版，防止因 404 中断构建
+                details.useTarget("org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0")
+            }
         }
     }
 }
