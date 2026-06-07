@@ -104,8 +104,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 终极策略：直接作为全局依赖，确保无论哪个变体、哪个 SourceSet 都能在编译期轻松抓取到类（最不容易出错）
-    implementation "org.mozilla.geckoview:geckoview-omni:128.0.20240704121409"
+    // 分渠道精准对齐：直接引入 Mozilla 官方针对各架构发布的标准、真实存在的 ESR 稳定版 AAR (官方默认不加 -stable 后缀)
+    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
+    sharpR2Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
+    legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:128.0.20240704121409'
+    nokiaN1Implementation 'org.mozilla.geckoview:geckoview-x86:128.0.20240704121409'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
@@ -141,8 +144,17 @@ configurations.all { configuration ->
             details.useVersion "7.4.2-8841542"
         }
         if (details.requested.group == 'org.mozilla.geckoview') {
-            // 强行将所有对 geckoview 的各版本/变体请求统一指向唯一能通的官方 Omni 全架构 128.0 稳定版包
-            details.useTarget "org.mozilla.geckoview:geckoview-omni:128.0.20240704121409"
+            def name = details.requested.name
+            // 1. 如果包含 -stable，将其修正为真实的官方无缝名称 (不含 -stable)
+            if (name.contains('-stable')) {
+                name = name.replace('-stable', '')
+            }
+            // 2. 如果之前被直接解析为完全无后缀的 generic 'geckoview' 或 'geckoview-omni'，重定向至 ARM64 稳定版，防止因 404 中断构建
+            if (name == 'geckoview' || name == 'geckoview-omni') {
+                name = 'geckoview-arm64-v8a'
+            }
+            // 3. 强行将对应的架构名称和版本锁定在官方真实的 ES 128 版本 (128.0.20240704121409)
+            details.useTarget("org.mozilla.geckoview:${name}:128.0.20240704121409")
         }
     }
 }
