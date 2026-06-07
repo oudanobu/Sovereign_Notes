@@ -104,8 +104,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 终极对齐：直接引入 Mozilla 官方全架构标准稳定版 AAR
-    implementation 'org.mozilla.geckoview:geckoview:128.0.20240704121409'
+    // 终极对齐：直接引入 Mozilla 官方全架构标准稳定版 AAR (Fat AAR)
+    implementation 'org.mozilla.geckoview:geckoview-stable:128.0'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
@@ -142,7 +142,7 @@ configurations.all { configuration ->
         }
         if (details.requested.group == 'org.mozilla.geckoview') {
             // 无论是旧的 geckoview 变构件，或是任何特殊变体，统一重定向至官方发布的标准全架构多合一 (Fat AAR) 稳定版
-            details.useTarget("org.mozilla.geckoview:geckoview:128.0.20240704121409")
+            details.useTarget("org.mozilla.geckoview:geckoview-stable:128.0")
         }
     }
 }
