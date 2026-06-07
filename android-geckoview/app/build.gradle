@@ -104,12 +104,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 无论是哪个变体渠道，统一引入官方真实存在的 128 周期全架构包 (Omni 包)
-    def geckoviewVersion = "128.0.20240704121409"
-    modernAndroid13Implementation "org.mozilla.geckoview:geckoview-omni:${geckoviewVersion}"
-    sharpR2Implementation "org.mozilla.geckoview:geckoview-omni:${geckoviewVersion}"
-    legacyAndroid6Implementation "org.mozilla.geckoview:geckoview-omni:${geckoviewVersion}"
-    nokiaN1Implementation "org.mozilla.geckoview:geckoview-omni:${geckoviewVersion}"
+    // 终极策略：直接作为全局依赖，确保无论哪个变体、哪个 SourceSet 都能在编译期轻松抓取到类（最不容易出错）
+    implementation "org.mozilla.geckoview:geckoview-omni:128.0.20240704121409"
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
