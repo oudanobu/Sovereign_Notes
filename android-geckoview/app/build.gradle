@@ -104,11 +104,11 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 分渠道精准对齐：直接引入 Mozilla 官方针对各架构发布的标准、真实存在的 ESR 稳定版 AAR
-    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0'
-    sharpR2Implementation 'org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0'
-    legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-stable-armeabi-v7a:128.0'
-    nokiaN1Implementation 'org.mozilla.geckoview:geckoview-stable-x86:128.0'
+    // 分渠道精准对齐：直接引入 Mozilla 官方针对各架构发布的标准、真实存在的 ESR 稳定版 AAR (官方默认不加 -stable 后缀)
+    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0'
+    sharpR2Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0'
+    legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:128.0'
+    nokiaN1Implementation 'org.mozilla.geckoview:geckoview-x86:128.0'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
@@ -144,15 +144,16 @@ configurations.all { configuration ->
             details.useVersion "7.4.2-8841542"
         }
         if (details.requested.group == 'org.mozilla.geckoview') {
-            // 强行校准任何引入的 GeckoView 库版本为官方稳定的 128.0
-            if (details.requested.name.contains('armeabi-v7a') || 
-                details.requested.name.contains('arm64-v8a') || 
-                details.requested.name.contains('x86_64') || 
-                details.requested.name.contains('x86')) {
-                details.useVersion '128.0'
+            // 如果检测到老代码或者间接依赖里包含错误的 "-stable" 命名，将其修正为真实的官方名称
+            if (details.requested.name.contains('geckoview-stable')) {
+                def realName = details.requested.name.replace('geckoview-stable', 'geckoview')
+                details.useTarget("org.mozilla.geckoview:${realName}:128.0")
+            } else if (details.requested.name == 'geckoview') {
+                // 如果是之前被解析成完全无后缀的 geckoview，重定向至 ARM64 稳定版，防止因 404 中断构建
+                details.useTarget("org.mozilla.geckoview:geckoview-arm64-v8a:128.0")
             } else {
-                // 如果是之前被解析成无后缀的 geckoview-stable 或 geckoview，重定向至 ARM64 稳定版，防止因 404 中断构建
-                details.useTarget("org.mozilla.geckoview:geckoview-stable-arm64-v8a:128.0")
+                // 否则校准任何状态下的官方 GeckoView 库版本为固定的 128.0
+                details.useVersion '128.0'
             }
         }
     }
