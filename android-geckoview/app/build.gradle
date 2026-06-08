@@ -110,7 +110,7 @@ android {
 
 dependencies {
     // 💡 强力破壁：确保任何渠道、任何自定义 SourceSet 在编译期都能绝对感知到 Android 核心系统类
-    compileOnly files("${android.sdkDirectory}/platforms/android-${android.compileSdkVersion}/android.jar")
+    compileOnly androidSdkJar()
 
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
@@ -186,3 +186,11 @@ android.applicationVariants.all { variant ->
         }
     }
 }
+
+// 💡 全局自适应动态捕获函数：完美避开所有不同 CI 平台的物理路径和名称拼写差异
+def androidSdkJar() {
+    def compileSdk = android.compileSdkVersion.toString()
+    def targetFolder = compileSdk.startsWith("android-") ? compileSdk : "android-" + compileSdk
+    return files("${android.sdkDirectory}/platforms/${targetFolder}/android.jar")
+}
+
