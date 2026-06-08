@@ -63,6 +63,14 @@ android {
                 abiFilters "x86"
             }
         }
+        systemwebview {
+            dimension "channel"
+            applicationIdSuffix ".system"
+            targetSdkVersion 33
+            ndk {
+                abiFilters "arm64-v8a", "armeabi-v7a", "x86", "x86_64"
+            }
+        }
     }
 
     sourceSets {
@@ -92,8 +100,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
     // 强行关闭多线程 Worker 行为，迫使 AAPT2 在独立的单进程安全沙盒中串行编译资源，彻底免疫 C++ 闪退
@@ -104,7 +112,10 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 分渠道精准对齐：直接引入 Mozilla 官方针对各架构发布的标准、真实存在的 ESR 稳定版 AAR (官方默认不加 -stable 后缀)
+    // 1. 声明一个绝对能通的全局基础版本，确保无论哪个变体或自定义 SourceSet 都能在编译期轻松抓取到类
+    implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:128.0.20240704121409'
+
+    // 2. 分渠道精准对齐：直接引入 Mozilla 官方针对各架构发布的标准、真实存在的 ESR 稳定版 AAR (官方默认不加 -stable 后缀)
     modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
     sharpR2Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
     legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:128.0.20240704121409'
@@ -159,9 +170,16 @@ configurations.all { configuration ->
     }
 }
 
-// 动态重写当前变体的全局进程控制参数，强行突破旧版 AGP 的布尔值限制
+// 动态重写当前变体的全局进程控制参数，强行突破旧版 AGP 的布尔值限制，并自动重组输出文件名以确保完美对接 release.yml 搜寻流
 android.applicationVariants.all { variant ->
     variant.outputs.all { output ->
         System.setProperty("android.aapt2FromMavenOverride", "true")
+        
+        // 自动将编译完毕的 APK 物理重命名，精准切入 release.yml 的 *geckoview* / *systemwebview* 高级匹配规则
+        if (variant.flavorName == "modernAndroid13" || variant.flavorName == "legacyAndroid6") {
+            outputFileName = "app-geckoview-debug.apk"
+        } else if (variant.flavorName == "sharpR2" || variant.flavorName == "nokiaN1") {
+            outputFileName = "app-systemwebview-debug.apk"
+        }
     }
 }

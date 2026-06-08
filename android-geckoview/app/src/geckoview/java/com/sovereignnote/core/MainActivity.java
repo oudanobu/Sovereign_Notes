@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
         mGeckoView = findViewById(R.id.geckoview);
         
         if (sRuntime == null) {
-            // 🚨【老版火狐破壁核心】：通过 Runtime 的全局 Preferences（类似 about:config）
+            // 🚨【老版火狐破壁核心】：通过 Runtime 的全局 Preferences
             // 极速打通本地单文件访问时的跨域和安全读取策略
             GeckoRuntimeSettings settings = new GeckoRuntimeSettings.Builder()
                 .remoteDebuggingEnabled(true) // 允许电脑端调试
