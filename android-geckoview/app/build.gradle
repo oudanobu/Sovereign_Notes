@@ -115,14 +115,21 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     
-    // 1. 声明一个绝对能通的全局基础版本，确保无论哪个变体或自定义 SourceSet 都能在编译期轻松抓取到类
-    implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:128.0.20240704121409'
-
-    // 2. 分渠道精准对齐：直接引入 Mozilla 官方针对各架构发布的标准、真实存在的 ESR 稳定版 AAR (官方默认不加 -stable 后缀)
-    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
-    sharpR2Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
+    // 🚀 1. 针对老旧设备的 legacyAndroid6 渠道：只允许投喂 32 位的 v7a 架构
     legacyAndroid6Implementation 'org.mozilla.geckoview:geckoview-armeabi-v7a:128.0.20240704121409'
+    legacyAndroid6CompileOnly 'org.mozilla.geckoview:geckoview-armeabi-v7a:128.0.20240704121409'
+
+    // 🚀 2. 针对现代设备的 modernAndroid13 渠道：只允许投喂 64 位的 v8a 架构
+    modernAndroid13Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
+    modernAndroid13CompileOnly 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
+
+    // 🚀 3. sharpR2 渠道：也是 64 位的 v8a 架构
+    sharpR2Implementation 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
+    sharpR2CompileOnly 'org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409'
+
+    // 🚀 4. nokiaN1 渠道：x86 架构
     nokiaN1Implementation 'org.mozilla.geckoview:geckoview-x86:128.0.20240704121409'
+    nokiaN1CompileOnly 'org.mozilla.geckoview:geckoview-x86:128.0.20240704121409'
 }
 
 // 🌟 终极去毒机制：强行修正全渠道的混淆重定向名
