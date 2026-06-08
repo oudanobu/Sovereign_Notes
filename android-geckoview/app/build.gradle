@@ -90,6 +90,10 @@ android {
             java.srcDirs = ['src/geckoview/java']
             res.srcDirs = ['src/geckoview/res']
         }
+        systemwebview {
+            java.srcDirs = ['src/systemwebview/java']
+            res.srcDirs = ['src/systemwebview/res']
+        }
     }
 
     buildTypes {

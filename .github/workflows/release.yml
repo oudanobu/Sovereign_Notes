@@ -278,9 +278,32 @@ jobs:
             # 安全防线：如果标准路径找不到，使用全局底层查找引擎模糊定位
             if [ ! -f "$src_apk" ]; then
               local base_name=$(basename "$src_apk")
-              local found=$(find android-geckoview/app/build/outputs/ -name "$base_name" | head -n 1)
+              local found=""
+              
+              # 1) 首先通过精确名字查找
+              found=$(find android-geckoview/app/build/outputs/ -name "$base_name" | head -n 1)
+              
+              # 2) 如果未找到，针对特定渠道和名字运行模糊忽略大小写匹配
+              if [ -z "$found" ]; then
+                if [[ "$base_name" == *"systemwebview"* ]]; then
+                  found=$(find android-geckoview/app/build/outputs/ -iname "*system*webview*.apk" -o -iname "*systemwebview*.apk" -o -iname "*system*.apk" | head -n 1)
+                else
+                  # 对 GeckoView 的各渠道运行特定模糊匹配
+                  found=$(find android-geckoview/app/build/outputs/ -iname "*${base_name%.apk}*" -o -iname "*$(echo $base_name | cut -d'-' -f3)*.apk" | head -n 1)
+                fi
+              fi
+              
+              # 3) 如果依旧没找到，寻找该输出产品目录下任意生成的 .apk
+              if [ -z "$found" ]; then
+                local flavor_sub=$(echo "$base_name" | cut -d'-' -f3)
+                if [ -n "$flavor_sub" ]; then
+                  found=$(find android-geckoview/app/build/outputs/ -path "*$flavor_sub*.apk" | head -n 1)
+                fi
+              fi
+
               if [ -n "$found" ]; then
                 src_apk="$found"
+                echo "💡 精准搜寻雷达成功召回物理资产: $src_apk"
               else
                 echo "❌ 严重错误：在构建目标中未找到 APK: $base_name"
                 return 1
