@@ -40,6 +40,30 @@ export function SyncDialog({
   setAndroidWebViewEngine
 }: SyncDialogProps) {
   const [activeTab, setActiveTab] = useState<'backup' | 'lan' | 'webdav' | 'ftp' | 'tags' | 'display'>('backup');
+  const [hasInstallPrompt, setHasInstallPrompt] = useState(false);
+  const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const checkPwaStatus = () => {
+      setHasInstallPrompt(!!(window as any).deferredInstallPrompt);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+      setIsPwaInstalled(isStandalone);
+    };
+
+    checkPwaStatus();
+
+    const handlePromptEvent = () => {
+      setHasInstallPrompt(true);
+    };
+
+    window.addEventListener('pwa-prompt-available', handlePromptEvent);
+    return () => {
+      window.removeEventListener('pwa-prompt-available', handlePromptEvent);
+    };
+  }, []);
+
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -1563,6 +1587,89 @@ export function SyncDialog({
                     </button>
                   </div>
                 </div>
+
+                {/* ─── NEW: PROGRESSIVE WEB APP (PWA) INSTALLER CORE ─── */}
+                <div className="border-t border-slate-200/60 pt-4.5 mt-4">
+                  <div className="flex items-center space-x-2 mb-1.5">
+                    <span className="text-sm">⚡</span>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-sans">
+                      {lang === 'zh' ? 'Progressive Web App (PWA) 离线程序服务' : 'PWA Standalone App Integration'}
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-gray-500 font-extrabold leading-relaxed mb-3 font-sans">
+                    {lang === 'zh' 
+                      ? 'SovereignNote 支持 PWA 渐进式应用规范。将本站安装至您的手机主屏幕、电脑 Chrome 或 macOS 启动台，即可随时享有 100% 离线独立进程与数据安全沙存。' 
+                      : 'SovereignNote fully supports the offline PWA standards. Install it on your phone or PC homescreen to launch securely in separate standalone sandbox engines.'}
+                  </p>
+
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4.5 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center space-x-3.5 w-full md:w-auto">
+                      <div className="h-11 w-11 rounded-1.5xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-md shrink-0 select-none">
+                        <img src="./icon.svg" className="w-7 h-7" alt="Logo" referrerPolicy="no-referrer" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-black text-slate-900 leading-none">SovereignNote</span>
+                          {isPwaInstalled ? (
+                            <span className="text-[8.5px] bg-emerald-500 text-white font-extrabold px-1.5 py-0.5 rounded-md leading-none uppercase tracking-wide select-none">
+                              {lang === 'zh' ? '独立应用中运行' : 'Standalone App'}
+                            </span>
+                          ) : (
+                            <span className="text-[8.5px] bg-slate-200 text-slate-700 font-extrabold px-1.5 py-0.5 rounded-md leading-none uppercase tracking-wide select-none">
+                              {lang === 'zh' ? '网页预览版' : 'Web View'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold mt-1.5 leading-none">
+                          {isPwaInstalled 
+                            ? (lang === 'zh' ? '数据完全隔离锁闭在您的当前物理硬件中。' : 'Perfect. Isolation lock bounded inside physical storage.') 
+                            : (lang === 'zh' ? '全球离线服务就位，支持一键脱壳本地运行。' : 'Offline service-worker enabled. Click install below.')
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="w-full md:w-auto shrink-0 flex justify-end">
+                      {isPwaInstalled ? (
+                        <div className="text-[10.5px] font-black text-emerald-600 flex items-center space-x-1.5 py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-200 select-none">
+                          <span>✔</span>
+                          <span>{lang === 'zh' ? '已作为客户端独立运行' : 'Standalone client active'}</span>
+                        </div>
+                      ) : hasInstallPrompt ? (
+                        <button
+                          type="button"
+                          {...bindTouchTap(async () => {
+                            const promptEvent = (window as any).deferredInstallPrompt;
+                            if (!promptEvent) return;
+                            promptEvent.prompt();
+                            const { outcome } = await promptEvent.userChoice;
+                            console.log(`[PWA] Install choice: ${outcome}`);
+                            (window as any).deferredInstallPrompt = null;
+                            setHasInstallPrompt(false);
+                          })}
+                          className="w-full md:w-auto px-4.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-xs font-extrabold shadow-md hover:shadow-lg hover:shadow-indigo-600/10 cursor-pointer min-h-[40px] text-center transition-all"
+                        >
+                          {lang === 'zh' ? '✨ 立即安装到主屏幕 / 桌面' : '✨ Install Standalone App'}
+                        </button>
+                      ) : (
+                        <div className="w-full md:w-auto text-right text-[10px] text-slate-400 font-black tracking-normal leading-relaxed text-center md:text-right select-none">
+                          {lang === 'zh' ? (
+                            <div>
+                              <p>请点击您当前浏览器的 <span className="font-black text-slate-700 bg-slate-200 rounded px-1">分享</span> 或 <span className="font-black text-slate-700 bg-slate-200 rounded px-1">菜单 ⋯</span> 按钮</p>
+                              <p className="mt-1">选择 「添加到主屏幕」 或 「安装 SovereignNote」</p>
+                            </div>
+                          ) : (
+                            <div>
+                              <p>Open browser <span className="font-black text-slate-705 bg-slate-200 rounded px-1">Share</span> or <span className="font-black text-slate-705 bg-slate-200 rounded px-1">Menu ⋯</span></p>
+                              <p className="mt-1">Select 「Add to Home Screen」 or 「Install」</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             )}
           </div>

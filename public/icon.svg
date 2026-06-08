@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="penGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <filter id="navShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Base Smooth Squire Canvas -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+
+  <!-- Glowing Outer Orbit Ring -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="url(#glowGrad)" stroke-width="4" stroke-opacity="0.3"/>
+
+  <!-- Core Graphic Core Container -->
+  <g filter="url(#navShadow)" transform="translate(0, -10)">
+    <!-- Shield Outline for Sovereignty and Security Protection -->
+    <path d="M256,96 C300,96 370,116 384,156 C384,270 320,380 256,416 C192,380 128,270 128,156 C142,116 212,96 256,96 Z" 
+          fill="#111827" 
+          fill-opacity="0.6"
+          stroke="url(#glowGrad)" 
+          stroke-width="16" 
+          stroke-linejoin="round"/>
+
+    <!-- Inside Notebook Pages Stack Visual -->
+    <path d="M190,190 L322,190 M190,230 L322,230 M190,270 L280,270 M190,310 L250,310" 
+          stroke="#475569" 
+          stroke-width="8" 
+          stroke-linecap="round"/>
+
+    <!-- Stylized Feather Quill Digital Writing Instrument -->
+    <path d="M330,160 L240,290 C225,310 220,315 210,330 L200,345 C198,348 200,352 204,350 L220,340 C235,330 240,325 260,310 L350,180" 
+          fill="none"
+          stroke="url(#penGrad)" 
+          stroke-width="14" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+          
+    <!-- Fountain Nib highlight -->
+    <path d="M206,346 L212,338" 
+          stroke="#e2e8f0" 
+          stroke-width="4" 
+          stroke-linecap="round"/>
+  </g>
+</svg>

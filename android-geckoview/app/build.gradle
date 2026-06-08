@@ -185,10 +185,17 @@ android.applicationVariants.all { variant ->
     variant.outputs.all { output ->
         System.setProperty("android.aapt2FromMavenOverride", "true")
         
-        // 自动将编译完毕的 APK 物理重命名，精准切入 release.yml 的 *geckoview* / *systemwebview* 高级匹配规则
-        if (variant.flavorName == "modernAndroid13" || variant.flavorName == "legacyAndroid6") {
-            outputFileName = "app-geckoview-debug.apk"
-        } else if (variant.flavorName == "sharpR2" || variant.flavorName == "nokiaN1") {
+        // 每个渠道拥有其绝对独立的专属物理输出命名，坚决杜绝同名覆盖！
+        def flavor = variant.flavorName
+        if (flavor == "modernAndroid13") {
+            outputFileName = "app-geckoview-modernAndroid13-debug.apk"
+        } else if (flavor == "sharpR2") {
+            outputFileName = "app-geckoview-sharpR2-debug.apk"
+        } else if (flavor == "legacyAndroid6") {
+            outputFileName = "app-geckoview-legacyAndroid6-debug.apk"
+        } else if (flavor == "nokiaN1") {
+            outputFileName = "app-geckoview-nokiaN1-debug.apk"
+        } else if (flavor == "systemwebview") {
             outputFileName = "app-systemwebview-debug.apk"
         }
     }
