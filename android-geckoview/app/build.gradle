@@ -159,6 +159,11 @@ configurations.all { configuration ->
         force 'androidx.viewpager2:viewpager2:1.0.0'
         force 'androidx.activity:activity:1.7.2'
         force 'androidx.activity:activity-ktx:1.7.2'
+
+        // 4. Kotlin 规避机制：将 kotlin-stdlib, kotlin-stdlib-jdk7, kotlin-stdlib-jdk8 强行锁定在 1.8.20，消除混入老版本带来的 Duplicate Class 问题
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.20'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.20'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20'
     }
     resolutionStrategy.eachDependency { details ->
         if (details.requested.group == 'com.android.tools.build' && details.requested.name == 'aapt2') {
