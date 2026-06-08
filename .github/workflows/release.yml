@@ -242,6 +242,8 @@ jobs:
           echo "✅ 34x 毒素已彻底肃清，环境已恢复纯净状态！"
 
       - name: Fast Compiling of Native Android APK Variants
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs='-Xmx3072m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8 --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED'"
         run: |
           # 1. 准备/创建 assets/www 并同步复制现代 React 编译产物
           mkdir -p android-geckoview/app/src/main/assets/www
