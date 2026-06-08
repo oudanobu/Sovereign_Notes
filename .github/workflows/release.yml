@@ -252,8 +252,15 @@ jobs:
           # 2. 配置 JDK 17 并执行 Gradle 原生构建 (已在 build.gradle 中对齐 Java 17)
           export JAVA_HOME=$JAVA_HOME_17_X64
           cd android-geckoview
-          gradle assembleDebug || true
+          gradle assembleDebug
           cd ..
+
+          # 2.5 调试输出：列出所有成功构建出来的物理 APK 资产
+          echo "=========================================================="
+          echo " 📁 列出所有成功构建出来的物理 APK 资产："
+          echo "=========================================================="
+          find android-geckoview/app/build/outputs/ -name "*.apk" || true
+          echo "=========================================================="
           
           # 3. 生成 2048 位安全自签名 Keystore 密钥
           echo "🚀 正在生成兼容 Android 全版本（Android 5.0 - 13+）的 2048 位安全自签名 Keystore 密钥..."
@@ -286,10 +293,10 @@ jobs:
               # 2) 如果未找到，针对特定渠道和名字运行模糊忽略大小写匹配
               if [ -z "$found" ]; then
                 if [[ "$base_name" == *"systemwebview"* ]]; then
-                  found=$(find android-geckoview/app/build/outputs/ -iname "*system*webview*.apk" -o -iname "*systemwebview*.apk" -o -iname "*system*.apk" | head -n 1)
+                  found=$(find android-geckoview/app/build/outputs/ \( -iname "*system*webview*.apk" -o -iname "*systemwebview*.apk" -o -iname "*system*.apk" \) | head -n 1)
                 else
                   # 对 GeckoView 的各渠道运行特定模糊匹配
-                  found=$(find android-geckoview/app/build/outputs/ -iname "*${base_name%.apk}*" -o -iname "*$(echo $base_name | cut -d'-' -f3)*.apk" | head -n 1)
+                  found=$(find android-geckoview/app/build/outputs/ \( -iname "*${base_name%.apk}*" -o -iname "*$(echo $base_name | cut -d'-' -f3)*.apk" \) | head -n 1)
                 fi
               fi
               

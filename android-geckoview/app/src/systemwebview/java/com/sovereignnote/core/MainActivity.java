@@ -6,6 +6,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
 import androidx.appcompat.app.AppCompatActivity;
+import com.sovereignnote.core.R;
 
 public class MainActivity extends AppCompatActivity {
     private WebView mWebView;

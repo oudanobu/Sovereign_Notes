@@ -2,6 +2,7 @@ package com.sovereignnote.core;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import com.sovereignnote.core.R;
 import org.mozilla.geckoview.GeckoRuntime;
 import org.mozilla.geckoview.GeckoRuntimeSettings;
 import org.mozilla.geckoview.GeckoSession;
