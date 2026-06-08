@@ -1144,7 +1144,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               )}
 
               {activeSidebarTab === 'calendar' && (
-                <div className="animate-fade-in flex-1 min-h-0">
+                <div className="animate-fade-in flex-1 min-h-0 w-full h-full flex flex-col">
                   <CalendarPanel
                     notes={notes}
                     events={events}

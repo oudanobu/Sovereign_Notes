@@ -93,7 +93,7 @@ export function CalendarPanel({
   const blankDays: React.JSX.Element[] = [];
   for (let i = 0; i < firstDayIndex; i++) {
     blankDays.push(
-      <div key={`blank-${i}`} className="aspect-square w-full" />
+      <div key={`blank-${i}`} className="aspect-square min-h-[38px] w-full" />
     );
   }
 
@@ -126,7 +126,7 @@ export function CalendarPanel({
       lunarText = '';
     }
 
-    let dayClass = "aspect-square w-full text-xs font-sans font-semibold flex flex-col items-center justify-center rounded-xl cursor-pointer transition-all relative py-1 focus:outline-none ";
+    let dayClass = "aspect-square min-h-[38px] w-full text-xs font-sans font-semibold flex flex-col items-center justify-center rounded-xl cursor-pointer transition-all relative py-1 focus:outline-none ";
     
     if (isSelected) {
       dayClass += "bg-slate-900 text-white font-extrabold shadow-sm scale-102 ";

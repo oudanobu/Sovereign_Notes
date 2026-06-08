@@ -921,153 +921,6 @@ select {
     box-sizing: border-box !important; /* 极其关键：防止内边距把输入框横向撑爆 */
     margin: 0 !important;
   }
-
-  /* =======================================================
-     💥 SovereignNote 终极破壁：强行炸开所有隐藏的栅格和包裹层
-     ======================================================= */
-  /* 1. 抓出所有可能是 UI 框架自动生成的表单项、列容器、包裹层，一律强制变为块级并打满宽度 */
-  html.profile-android9 div[class*="col-"], 
-  html.profile-android13 div[class*="col-"], 
-  html.profile-tablet div[class*="col-"], 
-  html.profile-android9 div[class*="form-item"], 
-  html.profile-android13 div[class*="form-item"], 
-  html.profile-tablet div[class*="form-item"], 
-  html.profile-android9 div[class*="field-wrapper"],
-  html.profile-android13 div[class*="field-wrapper"],
-  html.profile-tablet div[class*="field-wrapper"],
-  html.profile-android9 .setting-row > div,
-  html.profile-android13 .setting-row > div,
-  html.profile-tablet .setting-row > div,
-  html.profile-android9 form div,
-  html.profile-android13 form div,
-  html.profile-tablet form div {
-    display: block !important;
-    width: 100% !important;     /* 强行炸开隐形的宽度小格子 */
-    max-width: 100% !important; /* 彻底解除限制 */
-    min-width: 100% !important; /* 锁死最低边界 */
-    flex: none !important;      /* 废除任何不听话的弹性比例计算 */
-    box-sizing: border-box !important;
-  }
-
-  /* 2. 确保输入框外围的那个父级节点不准并排，必须垂直向下流 */
-  html.profile-android9 .setting-row,
-  html.profile-android13 .setting-row,
-  html.profile-tablet .setting-row,
-  html.profile-android9 form > div,
-  html.profile-android13 form > div,
-  html.profile-tablet form > div {
-    display: block !important;
-    width: 100% !important;
-    margin-bottom: 16px !important;
-  }
-
-  /* 3. 强制老旧引擎进行重绘（通过改变一个无害的微小位移属性） */
-  html.profile-android9 #root,
-  html.profile-android13 #root,
-  html.profile-tablet #root {
-    transform: translateZ(0); /* 开启硬件加速，强迫诺基亚 N1 的老 Webkit 重新计算并刷新图层 */
-  }
-}
-
-/* =======================================================
-   🛡️ SovereignNote 局部卡片行（图标+文字+垃圾桶）硬核对齐
-   ======================================================= */
-
-/* 1. 强行锁定这一行是水平均匀排布的 Flex 容器，且允许换行/不压缩 */
-.category-item-row {
-  display: flex !important;
-  flex-direction: row !important;      /* 强行确保是横向并排 */
-  justify-content: space-between !important; /* 让内容和右边隔开 */
-  align-items: center !important;      /* 垂直居中对齐 */
-  width: 100% !important;
-  min-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* 2. 左侧的文件夹/文件图标/标签文本容器：锁死物理大小，绝不准收缩变形 */
-.category-item-row > div:first-child {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  flex-grow: 1 !important;             /* 顶满剩余空间 */
-  flex-shrink: 1 !important;           /* 在极端窄屏下允许缩减文字 */
-  min-width: 0 !important;             /* 极其关键：配合 text-overflow 用 */
-}
-
-/* 3. 中间的文本内容/标题：强行让它正常单行截断并留间距 */
-.category-item-row > div:first-child > span {
-  flex-grow: 1 !important;
-  flex-shrink: 1 !important;
-  min-width: 0 !important;
-  text-align: left !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;  /* 超出部分打省略号 */
-  margin-right: 8px !important;
-}
-
-/* 4. 左边的小 icon margin 代替 gap */
-.category-item-row svg {
-  flex-shrink: 0 !important;           /* 锁定物理大小 */
-  margin-right: 8px !important;        /* 代替失效 of gap */
-}
-
-/* 5. 右侧的垃圾桶和消息数量按钮：单独死锁在最右侧，并强制给它物理点击热区 */
-.category-item-row > div:last-child {
-  flex-shrink: 0 !important;           /* 🚨 核心：死活不准缩 */
-  margin-left: auto !important;        /* 💥 经典魔法：强行把容器/垃圾桶推到整行的最右边 */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-}
-
-/* 小微垃圾桶和数量标签并排 */
-.category-item-row > div:last-child > span {
-  margin-right: 8px !important;
-  flex-shrink: 0 !important;
-}
-
-.category-item-row > div:last-child button {
-  flex-shrink: 0 !important;
-  margin: 0 !important;
-}
-
-/* 6. 解决 note-list-item-footer 栏内部分割与挤压 */
-.note-list-item-footer {
-  display: flex !important;
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-}
-
-.note-list-item-footer > span:first-child {
-  flex-shrink: 0 !important;
-  margin-right: 8px !important;
-}
-
-.note-list-item-actions {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  flex-grow: 1 !important;
-  min-width: 0 !important;
-  margin-left: auto !important; /* 强制推到最右侧 */
-}
-
-/* 分类小铭牌在极端情况下缩略 */
-.note-list-item-actions > span {
-  flex-shrink: 1 !important;
-  min-width: 0 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-  margin-right: 8px !important;
-}
-
-.note-list-item-actions > button {
-  flex-shrink: 0 !important;
 }
 
 /* =======================================================
@@ -1089,7 +942,7 @@ select {
     }
 
     /* 2. 针对旧设备截图里那个拧巴在左侧一窄条的“笔记/列表项卡片” */
-    html.profile-android9 .note-item, html.profile-android13 .note-item, html.profile-tablet .note-item,
+    html.profile-android9 .note-list-item, html.profile-android13 .note-list-item, html.profile-tablet .note-list-item,
     html.profile-android9 [class*="item-row"], html.profile-android13 [class*="item-row"], html.profile-tablet [class*="item-row"],
     html.profile-android9 div[class*="content"] > div, html.profile-android13 div[class*="content"] > div, html.profile-tablet div[class*="content"] > div {
         display: block !important;       /* 放弃不听话的 flex */
@@ -1101,9 +954,9 @@ select {
     }
 
     /* 3. 强行让文本区域 and 删除按钮各自归位 (仅旧设备，精准定位卡片内部元素) */
-    html.profile-android9 div[class*="text"], html.profile-android13 div[class*="text"], html.profile-tablet div[class*="text"],
-    html.profile-android9 div[class*="title"], html.profile-android13 div[class*="title"], html.profile-tablet div[class*="title"],
-    html.profile-android9 .note-item span, html.profile-android13 .note-item span, html.profile-tablet .note-item span,
+    html.profile-android9 .note-list-item div[class*="text"], html.profile-android13 .note-list-item div[class*="text"], html.profile-tablet .note-list-item div[class*="text"],
+    html.profile-android9 .note-list-item div[class*="title"], html.profile-android13 .note-list-item div[class*="title"], html.profile-tablet .note-list-item div[class*="title"],
+    html.profile-android9 .note-list-item span, html.profile-android13 .note-list-item span, html.profile-tablet .note-list-item span,
     html.profile-android9 .category-item-row span, html.profile-android13 .category-item-row span, html.profile-tablet .category-item-row span {
         display: inline-block !important;
         width: 75% !important;           /* 文本占据左边 75% 的空间 */
@@ -1112,9 +965,10 @@ select {
     }
 
     /* 右侧的垃圾桶图标/删除按钮 (仅旧设备) */
-    html.profile-android9 button, html.profile-android13 button, html.profile-tablet button,
-    html.profile-android9 [class*="delete"], html.profile-android13 [class*="delete"], html.profile-tablet [class*="delete"],
-    html.profile-android9 [class*="btn"], html.profile-android13 [class*="btn"], html.profile-tablet [class*="btn"] {
+    html.profile-android9 .note-list-item button, html.profile-android13 .note-list-item button, html.profile-tablet .note-list-item button,
+    html.profile-android9 .note-list-item [class*="delete"], html.profile-android13 .note-list-item [class*="delete"], html.profile-tablet .note-list-item [class*="delete"],
+    html.profile-android9 .note-list-item [class*="btn"], html.profile-android13 .note-list-item [class*="btn"], html.profile-tablet .note-list-item [class*="btn"],
+    html.profile-android9 .category-item-row button, html.profile-android13 .category-item-row button, html.profile-tablet .category-item-row button {
         display: inline-block !important;
         width: 20% !important;           /* 垃圾桶占据右边 20% 的空间 */
         text-align: right !important;

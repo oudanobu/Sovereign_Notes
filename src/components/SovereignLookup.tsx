@@ -461,10 +461,10 @@ export function SovereignLookup({ lang, onClose }: SovereignLookupProps) {
       )}
 
       {/* Main Core Layout: Split Search Display (left-60%) & Add/Edit Forms (right-40%) */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row md:overflow-hidden overflow-y-auto">
         
         {/* LEFT SEARCH & SEARCH RESULTS GRID PANEL */}
-        <div className="flex-1 flex flex-col p-4 md:p-5 border-r border-slate-800 overflow-hidden h-full">
+        <div className="flex-1 flex flex-col p-4 md:p-5 border-r border-slate-800 md:overflow-hidden md:h-full min-h-0 flex-shrink-0 md:flex-shrink">
           
           {/* Reactive search bar component */}
           <div className="relative mb-4 flex-shrink-0">
@@ -604,7 +604,7 @@ export function SovereignLookup({ lang, onClose }: SovereignLookupProps) {
         </div>
 
         {/* RIGHT INPUT PANEL & BULK DATA IMPORTER (right-40%) */}
-        <div className="w-full md:w-[350px] lg:w-[390px] p-4 md:p-5 bg-slate-950 border-t md:border-t-0 border-slate-800 flex flex-col justify-between flex-shrink-0 overflow-y-auto">
+        <div className="w-full md:w-[350px] lg:w-[390px] p-4 md:p-5 bg-slate-950 border-t md:border-t-0 border-slate-800 flex flex-col justify-between flex-shrink-0 md:overflow-y-auto">
           
           <div className="space-y-5">
             {/* Action headers tab layout */}
