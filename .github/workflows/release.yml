@@ -138,16 +138,16 @@ jobs:
           cd ..
 
       # ==================== STEP 3: 编译 Android 5.0 触控真机原生 APK ====================
-      - name: Setup Java JDK 8 (For Android 5.0 Legacy Target and Cordova 9.1.0 Compatibility)
+      - name: Setup Java JDK 17 (For GeckoView 128 Java 17 Compatibility)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '8' # 配合老版 cordova-android 9.1.0 与 Gradle 6.5，锁死 JDK 8
+          java-version: '17'
 
-      - name: Setup Gradle 6.5 Override
+      - name: Setup Gradle 7.5 Override
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '6.5' # 配合 cordova-android 9.1.0 锁定 gradle 6.5 更稳健，避免 XML 以及 Class 格式兼容问题
+          gradle-version: '7.5'
 
       # 🌟【核心修复】临时借用系统预装的 Java 17 来喂给 sdkmanager，避开 ClassVersion 冲突
       # 🌟【终极暴力通关】彻底抛弃傲娇的 sdkmanager，用纯 Linux 原生网络流强行灌注依赖包
@@ -207,8 +207,8 @@ jobs:
           mkdir -p android-geckoview/app/src/main/assets/www
           cp -r dist/* android-geckoview/app/src/main/assets/www/
           
-          # 2. 配置 JDK 11 并执行 Gradle 原生构建 (移除了不支持的 --verbose 选项以解决异常)
-          export JAVA_HOME=$JAVA_HOME_11_X64
+          # 2. 配置 JDK 17 并执行 Gradle 原生构建 (已在 build.gradle 中对齐 Java 17)
+          export JAVA_HOME=$JAVA_HOME_17_X64
           cd android-geckoview
           gradle assembleDebug || true
           cd ..
