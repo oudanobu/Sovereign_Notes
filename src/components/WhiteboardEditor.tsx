@@ -389,6 +389,8 @@ export function WhiteboardEditor({ content, onSave, lang }: WhiteboardEditorProp
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onPointerLeave={handlePointerUp}
           className="absolute inset-0 bg-transparent block"
         />
         

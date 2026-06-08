@@ -459,6 +459,26 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
     setNotes(prev => prev.map(n => n.id === selectedNoteId ? updatedNote : n));
   };
 
+  const handleToggleMarkdownCheckbox = (lineIndex: number) => {
+    if (!selectedNoteId) return;
+    const current = notes.find(n => n.id === selectedNoteId);
+    if (!current || current.type !== 'markdown') return;
+
+    const lines = noteContent.split('\n');
+    if (lineIndex < 0 || lineIndex >= lines.length) return;
+
+    const line = lines[lineIndex];
+    const checklistMatch = line.match(/^([-*]\s\[)([ xX])(\]\s.*)/);
+    if (checklistMatch) {
+      const currentBox = checklistMatch[2];
+      const nextBox = currentBox.toLowerCase() === 'x' ? ' ' : 'x';
+      lines[lineIndex] = `${checklistMatch[1]}${nextBox}${checklistMatch[3]}`;
+      const updatedContent = lines.join('\n');
+      setNoteContent(updatedContent);
+      triggerLocalSave({ content: updatedContent });
+    }
+  };
+
   const handleDeleteNote = async (noteId: string) => {
     // Replaced window.confirm with direct deletion due to Android WebView/iFrame sandbox blocks.
     const current = notes.find(n => n.id === noteId);
@@ -1610,7 +1630,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
 
               {editorMode === 'preview' && activeNoteType === 'markdown' && (
                 <div className="w-full h-full p-8 overflow-y-auto bg-white prose max-w-none scrollbar-thin selectable-content">
-                  <MarkdownRenderer content={noteContent} />
+                  <MarkdownRenderer content={noteContent} onToggleCheckbox={handleToggleMarkdownCheckbox} />
                 </div>
               )}
 
@@ -1628,7 +1648,7 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
                     />
                   </div>
                   <div className="w-1/2 h-full p-6 overflow-y-auto bg-white scrollbar-thin selectable-content">
-                    <MarkdownRenderer content={noteContent} />
+                    <MarkdownRenderer content={noteContent} onToggleCheckbox={handleToggleMarkdownCheckbox} />
                   </div>
                 </div>
               )}

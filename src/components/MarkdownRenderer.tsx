@@ -46,9 +46,10 @@ export function LocalImage({ src, alt, className }: { src: string; alt?: string;
 
 interface MarkdownRendererProps {
   content: string;
+  onToggleCheckbox?: (lineIndex: number) => void;
 }
 
-export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, onToggleCheckbox }: MarkdownRendererProps) {
   if (!content) {
     return <p className="text-gray-400 italic">No content. Start typing Markdown...</p>;
   }
@@ -198,10 +199,14 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           <input
             type="checkbox"
             checked={checked}
-            readOnly
-            className="w-4.5 h-4.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-500"
+            onChange={() => {
+              if (onToggleCheckbox) {
+                onToggleCheckbox(index);
+              }
+            }}
+            className="w-4.5 h-4.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-500 cursor-pointer"
           />
-          <span className={`text-gray-700 leading-normal ${checked ? 'line-through text-gray-400' : ''}`}>
+          <span className={`text-gray-700 leading-normal ${checked ? 'line-through text-gray-450' : ''}`}>
             {parseInline(text)}
           </span>
         </div>
