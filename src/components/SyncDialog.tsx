@@ -540,84 +540,75 @@ export function SyncDialog({
     }
   };
 
-  // 3. Authenticated WebDAV Cloud Sync Client
+  // 3. Authenticated WebDAV Cloud Sync Client (Executed via server-side proxy to bypass CORS + Mixed content blocks)
   const handleWebDavSync = async (direction: 'upload' | 'download') => {
     setIsSyncing(true);
     setErrorMessage(null);
     setSuccessMessage(null);
     setSyncLogs([]);
-    addLog(`Initiating WebDAV ${direction} sequence ...`);
+    addLog(lang === 'zh' ? `正在配置并初始化 WebDAV 账户连接 (方向: ${direction})...` : `Initializing WebDAV proxy configuration (${direction})...`);
 
     try {
-      let finalWebdavUrl = webdavUrl.replace(/\/$/, ""); // remove trailing slash
-      if (webdavPort) {
-        try {
-          const urlObj = new URL(finalWebdavUrl);
-          urlObj.port = webdavPort;
-          finalWebdavUrl = urlObj.toString().replace(/\/$/, "");
-        } catch (e) {
-          finalWebdavUrl = `${finalWebdavUrl}:${webdavPort}`;
-        }
-      }
-      
-      const cleanPath = webdavPath.replace(/^\/+/, "").replace(/\/+$/, "");
-      const targetBackupUrl = `${finalWebdavUrl}/${cleanPath ? cleanPath + '/' : ''}sovereign_sync.json`;
-      addLog(`Target Endpoint: ${targetBackupUrl}`);
+      const dbJson = direction === 'upload' ? await exportDatabaseSnapshot() : null;
 
-      // Basic Authentication Headers
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (webdavUser) {
-        const authBase64 = btoa(`${webdavUser}:${webdavPass}`);
-        headers['Authorization'] = `Basic ${authBase64}`;
+      const response = await fetch('/api/webdav-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: direction,
+          config: {
+            url: webdavUrl,
+            port: webdavPort,
+            user: webdavUser,
+            password: webdavPass,
+            path: webdavPath
+          },
+          payload: dbJson ? JSON.parse(dbJson) : null
+        })
+      });
+
+      const resData = await response.json();
+      
+      if (resData.logs && Array.isArray(resData.logs)) {
+        resData.logs.forEach((log: string) => addLog(log));
+      }
+
+      if (!response.ok || !resData.success) {
+        throw new Error(resData.error || `WebDAV Proxy responded with status ${response.status}`);
       }
 
       if (direction === 'upload') {
-        const dbJson = await exportDatabaseSnapshot();
-        addLog(lang === 'zh' ? '正在汇编本地完整事务型 IndexedDB 序列快照...' : 'Compiling local database transaction snapshot...');
-
-        const response = await fetch(targetBackupUrl, {
-          method: 'PUT',
-          headers,
-          body: dbJson
-        });
-
-        if (!response.ok) {
-          throw new Error(`WebDAV server rejected transmission: status ${response.status}`);
-        }
-
-        addLog('WebDAV PUT request successfully submitted. Backups written.');
-        setSuccessMessage(lang === 'zh' ? 'WebDAV 主权增量级云同步快照上传归档成功！' : 'WebDAV incremental cloud backup uploaded successfully!');
+        setSuccessMessage(
+          lang === 'zh' 
+            ? `🎉 WebDAV 主权增量云同步快照上传归档成功! (${resData.mode === 'simulated' ? '一秒极速模拟沙盒已捕获快照' : '实时在线数据套接字已写入物理节点'})` 
+            : `WebDAV cloud backup uploaded successfully! (${resData.mode === 'simulated' ? 'Handled by virtual emulator storage node' : 'Written to native WebDAV endpoint'})`
+        );
       } else {
         // download
-        addLog(lang === 'zh' ? '正在从您的私有 WebDAV 服务器拉取冲突解析日志...' : 'Pulling sync snapshot from WebDAV servers...');
-        const response = await fetch(targetBackupUrl, {
-          method: 'GET',
-          headers
-        });
-
-        if (response.status === 404) {
-          addLog('WebDAV storage file was not found. Init uploading first.');
-          throw new Error(lang === 'zh' ? '在云端 WebDAV 指定的物理节点中未发现可复原的同盟账本文件。' : 'No cloud snapshot found on the WebDAV storage map path.');
+        addLog(lang === 'zh' ? '正在从您的私有 WebDAV 服务器拉取时序交易合并记录...' : 'Decoding conflict ledger snapshots for double-axis reconciliation...');
+        
+        const parsed = typeof resData.payload === 'string' ? JSON.parse(resData.payload) : resData.payload;
+        if (!parsed) {
+          throw new Error(lang === 'zh' ? 'WebDAV 云端无任何有效的备份记录：请先推送一笔数据至云端。' : 'No available WebDAV backups found yet on the server.');
         }
-
-        if (!response.ok) {
-          throw new Error(`WebDAV fetch failed: status ${response.status}`);
-        }
-
-        const cloudSnapshotText = await response.text();
-        const parsed = JSON.parse(cloudSnapshotText);
 
         addLog(`Analyzing records: Found ${parsed.notes ? parsed.notes.length : 0} cloud notes.`);
         await mergeLwwData(parsed.notes || [], parsed.tags || [], parsed.folders || []);
 
-        setSuccessMessage(t('connectionSuccess'));
+        setSuccessMessage(
+          lang === 'zh'
+            ? `🎉 WebDAV 主权时空链双向融合大功告成！全量 IndexedDB 缓冲数据已完美合龙！`
+            : `Sovereign dual-axis merge of WebDAV notes succeeded! Flawless synchronization.`
+        );
         onSyncCompleted();
       }
     } catch (err: any) {
       addLog(`Error: ${err.message}`);
-      setErrorMessage(`WebDAV Operation Failed: ${err.message}`);
+      setErrorMessage(
+        lang === 'zh' 
+          ? `WebDAV 同步融合故障: ${err.message}. 建议切换 URL 为包含 'webdav-sim' 启用一秒离线极速备份回滚沙盒！`
+          : `WebDAV Sync Operation Failed: ${err.message}. Consider selecting simulated sandbox settings for immediate sandboxed simulator!`
+      );
     } finally {
       setIsSyncing(false);
     }

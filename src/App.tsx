@@ -874,15 +874,16 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               <button
                 {...bindTouchTap(() => {
                   setMainView('notes');
-                  setActivePanel('list');
                   if (activeSidebarTab === 'folders' && !isSidebarCollapsed) {
                     setIsSidebarCollapsed(true);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'true');
+                    setActivePanel('list');
                   } else {
                     setActiveSidebarTab('folders');
                     localStorage.setItem('sovereign_active_sidebar_tab', 'folders');
                     setIsSidebarCollapsed(false);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'false');
+                    setActivePanel('sidebar');
                   }
                   setSelectedTypeFilter('all');
                 })}
@@ -900,15 +901,16 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               <button
                 {...bindTouchTap(() => {
                   setMainView('notes');
-                  setActivePanel('list');
                   if (activeSidebarTab === 'tags' && !isSidebarCollapsed) {
                     setIsSidebarCollapsed(true);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'true');
+                    setActivePanel('list');
                   } else {
                     setActiveSidebarTab('tags');
                     localStorage.setItem('sovereign_active_sidebar_tab', 'tags');
                     setIsSidebarCollapsed(false);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'false');
+                    setActivePanel('sidebar');
                   }
                 })}
                 className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
@@ -925,15 +927,16 @@ This notebook operates with **100% data privacy** and no mandatory cloud depende
               <button
                 {...bindTouchTap(() => {
                   setMainView('notes');
-                  setActivePanel('list');
                   if (activeSidebarTab === 'calendar' && !isSidebarCollapsed) {
                     setIsSidebarCollapsed(true);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'true');
+                    setActivePanel('list');
                   } else {
                     setActiveSidebarTab('calendar');
                     localStorage.setItem('sovereign_active_sidebar_tab', 'calendar');
                     setIsSidebarCollapsed(false);
                     localStorage.setItem('sovereign_sidebar_collapsed', 'false');
+                    setActivePanel('sidebar');
                   }
                 })}
                 className={`p-2.5 rounded-xl transition cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center border ${
